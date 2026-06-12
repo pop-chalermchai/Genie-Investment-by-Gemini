@@ -7,15 +7,15 @@
 - [ ] Design custom valuation template for Valerie's future stock audits.
 
 ## Website V2 Feature Backlog (Phased Implementation)
-- [ ] **Transaction History / Activity Log:** Add a tab to view historical buys/sells chronologically.
 - [ ] **Historical Performance Chart:** A line chart showing portfolio value over time (1M, 6M, YTD, 1Y).
 - [ ] **Watchlist / Radar Board:** Track tickers you don't own yet and integrate with Reverse DCF alerts.
-- [ ] **Detailed Single-Stock View:** Clickable tickers opening a modal with live candlestick charts and metrics.
 - [ ] **Dividend Tracking & Yield Metrics:** Track passive income generation and estimated annual dividends.
 - [ ] **Earnings & Catalyst Calendar:** Widget showing upcoming earnings dates and catalysts.
 - [ ] **Export/Import Data:** Capability to export to CSV for taxes, or import trades from brokers.
 
 ## Completed
+- [x] **Transaction History / Activity Log:** Add a tab to view historical buys/sells chronologically.
+- [x] **Detailed Single-Stock View:** Clickable tickers opening a modal with live candlestick charts and metrics.
 - [x] Build and launch Pop's first interactive portfolio dashboard and research website: [my_first_website/index.html](file:///Users/popular/Desktop/Genie/my_first_website/index.html)
 - [x] Set up Genie workspace.
 - [x] Try out the new research feature (Created MU Stock Thesis!).
