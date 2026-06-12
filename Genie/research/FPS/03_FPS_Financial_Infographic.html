@@ -1,0 +1,1815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forgent Power Solutions (NYSE: FPS) — Financial Infographic Dashboard</title>
+    
+    <!-- Premium Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Modern CSS Custom Properties for Theme Colors */
+        :root {
+            --bg-obsidian: #080c14;
+            --bg-card: rgba(13, 22, 38, 0.65);
+            --bg-card-hover: rgba(18, 30, 52, 0.85);
+            --border-glow: rgba(0, 240, 255, 0.15);
+            --border-muted: rgba(255, 255, 255, 0.08);
+            
+            --accent-cyan: #00f0ff;
+            --accent-cyan-glow: rgba(0, 240, 255, 0.4);
+            --accent-green: #10b981;
+            --accent-green-glow: rgba(16, 185, 129, 0.4);
+            --accent-purple: #c084fc;
+            --accent-purple-glow: rgba(192, 132, 252, 0.4);
+            
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Base Resets and Styling */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-obsidian);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* High-Voltage Ambient Background Glows */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 10%;
+            left: 15%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(0, 240, 255, 0.08) 0%, rgba(0, 0, 0, 0) 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            bottom: 15%;
+            right: 10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(192, 132, 252, 0.06) 0%, rgba(0, 0, 0, 0) 75%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Container Layout */
+        .container {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Typography */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        /* Breathtaking Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border-muted);
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .brand-logo {
+            width: 42px;
+            height: 42px;
+            filter: drop-shadow(0 0 8px var(--accent-cyan-glow));
+        }
+
+        .brand-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--text-primary) 30%, #a5f3fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .ticker-tag {
+            font-family: 'Outfit', sans-serif;
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.15);
+        }
+
+        .ticker-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent-cyan);
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse-glow 1.5s infinite ease-in-out;
+        }
+
+        .header-meta {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .audit-badge {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--accent-green);
+            color: var(--accent-green);
+            padding: 0.4rem 1rem;
+            border-radius: 99px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .val-date {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Glassmorphism Cards */
+        .glass-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-muted);
+            border-radius: 16px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 2rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(130deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0) 50%);
+            pointer-events: none;
+        }
+
+        .glass-card:hover {
+            background: var(--bg-card-hover);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        /* KPI Dashboard Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .kpi-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .kpi-title {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .kpi-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            line-height: 1.1;
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-sub {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .kpi-growth-up {
+            color: var(--accent-green);
+            font-weight: 600;
+        }
+
+        /* Interactive SVG Section */
+        .powertrain-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .powertrain-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 968px) {
+            .powertrain-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .interactive-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 2rem;
+            background: radial-gradient(circle at center, rgba(13, 22, 38, 0.8) 0%, rgba(8, 12, 20, 0.95) 100%);
+            border: 1px solid var(--border-muted);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .powertrain-svg {
+            width: 100%;
+            max-width: 780px;
+            height: auto;
+        }
+
+        /* SVG Interactive styling */
+        .svg-node {
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .svg-node .glow-layer {
+            opacity: 0;
+            transition: var(--transition-smooth);
+            fill: none;
+            stroke-width: 8;
+        }
+
+        .svg-node:hover .glow-layer, .svg-node.active .glow-layer {
+            opacity: 0.4;
+        }
+
+        .svg-node .outline-layer {
+            stroke: var(--text-muted);
+            stroke-width: 1.5;
+            fill: #111b2b;
+            transition: var(--transition-smooth);
+        }
+
+        .svg-node:hover .outline-layer, .svg-node.active .outline-layer {
+            stroke: var(--accent-cyan);
+            fill: #162a42;
+        }
+
+        /* Cable flow dash animations */
+        .power-flow-cable {
+            stroke: var(--text-muted);
+            stroke-width: 2;
+            fill: none;
+            stroke-dasharray: 6, 6;
+            animation: flow-cable 30s linear infinite;
+        }
+
+        .power-flow-cable-active {
+            stroke: var(--accent-cyan);
+            stroke-width: 2.5;
+            fill: none;
+            stroke-dasharray: 8, 4;
+            animation: flow-cable 8s linear infinite;
+            filter: drop-shadow(0 0 3px var(--accent-cyan));
+        }
+
+        .specs-panel {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .specs-header {
+            border-bottom: 1px solid var(--border-muted);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .specs-category {
+            color: var(--accent-cyan);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+
+        .specs-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .specs-body {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            flex-grow: 1;
+        }
+
+        .spec-list {
+            margin-top: 1.2rem;
+            list-style: none;
+        }
+
+        .spec-list li {
+            margin-bottom: 0.8rem;
+            position: relative;
+            padding-left: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .spec-list li::before {
+            content: "✦";
+            position: absolute;
+            left: 0;
+            color: var(--accent-cyan);
+        }
+
+        .spec-quote {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(0, 240, 255, 0.05);
+            border-left: 3px solid var(--accent-cyan);
+            border-radius: 4px;
+            font-style: italic;
+            font-size: 0.85rem;
+            color: #a5f3fc;
+        }
+
+        /* Dual-Case Solver Section */
+        .solver-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .solver-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 968px) {
+            .solver-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .control-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .control-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .control-label span.value-glow {
+            color: var(--accent-cyan);
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* Custom Slider styles */
+        .range-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 99px;
+            background: #1e293b;
+            outline: none;
+            transition: background 0.3s;
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--accent-cyan-glow);
+            transition: transform 0.1s;
+        }
+
+        .range-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.25);
+        }
+
+        .toggle-tabs {
+            display: flex;
+            background: #132237;
+            padding: 0.3rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.6rem;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: var(--transition-smooth);
+        }
+
+        .tab-btn.active {
+            background: var(--accent-cyan);
+            color: #0b1523;
+            box-shadow: 0 4px 15px rgba(0, 240, 255, 0.25);
+        }
+
+        /* Custom input fields alongside slider */
+        .input-row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .input-num-box {
+            background: #0f1c30;
+            border: 1px solid var(--border-muted);
+            border-radius: 8px;
+            color: var(--text-primary);
+            padding: 0.4rem 0.6rem;
+            width: 100px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-align: right;
+            outline: none;
+            transition: var(--transition-smooth);
+        }
+
+        .input-num-box:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 8px var(--accent-cyan-glow);
+        }
+
+        /* Results dashboard styles */
+        .results-panel {
+            background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.05) 0%, rgba(13, 22, 38, 0.8) 70%);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .cagr-hero {
+            text-align: center;
+            padding: 1.5rem;
+            background: rgba(16, 185, 129, 0.03);
+            border: 1px dashed var(--border-glow);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .cagr-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+
+        .cagr-value {
+            font-size: 3.5rem;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            color: var(--accent-green);
+            text-shadow: 0 0 20px var(--accent-green-glow);
+            line-height: 1;
+        }
+
+        .verdict-badge {
+            display: inline-block;
+            margin-top: 0.75rem;
+            padding: 0.3rem 1rem;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid var(--accent-green);
+            color: var(--accent-green);
+            border-radius: 99px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        /* Live Projection SVG Chart */
+        .chart-container {
+            flex-grow: 1;
+            height: 180px;
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .svg-chart {
+            width: 100%;
+            height: 100%;
+        }
+
+        .chart-bar {
+            fill: url(#bar-gradient);
+            transition: height 0.5s ease-out, y 0.5s ease-out;
+            cursor: pointer;
+        }
+
+        .chart-bar:hover {
+            filter: brightness(1.2);
+        }
+
+        .chart-label {
+            fill: var(--text-muted);
+            font-size: 9px;
+            font-family: 'Outfit', sans-serif;
+            text-anchor: middle;
+        }
+
+        .chart-val-label {
+            fill: var(--text-primary);
+            font-size: 8px;
+            font-family: 'Outfit', sans-serif;
+            text-anchor: middle;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .chart-bar-group:hover .chart-val-label {
+            opacity: 1;
+        }
+
+        .parameters-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .parameters-table tr {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .parameters-table tr:last-child {
+            border-bottom: none;
+        }
+
+        .parameters-table td {
+            padding: 0.5rem 0;
+        }
+
+        .parameters-table td:last-child {
+            text-align: right;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Asymmetric Risk-Reward Engine */
+        .payoff-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .payoff-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 968px) {
+            .payoff-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .payoff-visualizer {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at bottom left, rgba(192, 132, 252, 0.05) 0%, rgba(13, 22, 38, 0.8) 70%);
+            padding: 2.5rem;
+        }
+
+        .ratio-ring-container {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            margin-bottom: 1.5rem;
+        }
+
+        .ratio-ring-svg {
+            transform: rotate(-90deg);
+        }
+
+        .ratio-ring-bg {
+            fill: none;
+            stroke: #121e35;
+            stroke-width: 12;
+        }
+
+        .ratio-ring-fill {
+            fill: none;
+            stroke: var(--accent-purple);
+            stroke-width: 12;
+            stroke-dasharray: 471.2;
+            stroke-dashoffset: 471.2;
+            transition: stroke-dashoffset 0.5s ease-out;
+            filter: drop-shadow(0 0 6px var(--accent-purple-glow));
+        }
+
+        .ratio-ring-text-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .ratio-num {
+            font-size: 3rem;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            color: var(--accent-purple);
+            line-height: 1;
+        }
+
+        .ratio-unit {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            margin-top: 0.25rem;
+        }
+
+        .payoff-bars-container {
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .payoff-bar-track {
+            height: 8px;
+            background: #121e35;
+            border-radius: 99px;
+            position: relative;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .payoff-bar-fill-down {
+            position: absolute;
+            right: 50%;
+            height: 100%;
+            background: #f87171;
+            border-radius: 99px 0 0 99px;
+            transition: width 0.3s ease;
+        }
+
+        .payoff-bar-fill-up {
+            position: absolute;
+            left: 50%;
+            height: 100%;
+            background: var(--accent-purple);
+            border-radius: 0 99px 99px 0;
+            transition: width 0.3s ease;
+        }
+
+        .payoff-bar-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Cover Art Panel & Footnotes */
+        .footer-art-panel {
+            background: linear-gradient(180deg, var(--bg-card) 0%, rgba(8, 12, 20, 0.95) 100%);
+            border: 1px solid var(--border-muted);
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin-top: 2rem;
+            display: grid;
+            grid-template-columns: 1.2fr 2fr;
+            gap: 2.5rem;
+            align-items: center;
+        }
+
+        @media (max-width: 868px) {
+            .footer-art-panel {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+        }
+
+        .art-preview-card {
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+            transition: var(--transition-smooth);
+            aspect-ratio: 16/9;
+            background: #090e18;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .art-preview-card:hover {
+            transform: scale(1.02);
+            border-color: var(--accent-cyan);
+        }
+
+        .art-preview-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .art-fallback-svg {
+            width: 100%;
+            height: 100%;
+            padding: 2rem;
+            box-sizing: border-box;
+        }
+
+        .art-details-header {
+            color: var(--accent-purple);
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+
+        .art-details-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .art-details-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .art-btn {
+            background: linear-gradient(135deg, var(--accent-purple) 0%, #a855f7 100%);
+            color: #ffffff;
+            border: none;
+            padding: 0.8rem 1.8rem;
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 20px rgba(192, 132, 252, 0.3);
+            transition: var(--transition-smooth);
+        }
+
+        .art-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(192, 132, 252, 0.45);
+        }
+
+        /* Interactive details overlay/animations */
+        @keyframes pulse-glow {
+            0%, 100% {
+                opacity: 0.8;
+                box-shadow: 0 0 8px var(--accent-cyan-glow);
+            }
+            50% {
+                opacity: 0.4;
+                box-shadow: 0 0 2px var(--accent-cyan-glow);
+            }
+        }
+
+        @keyframes flow-cable {
+            to {
+                stroke-dashoffset: -240;
+            }
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-muted);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- Header -->
+        <header>
+            <div class="header-brand">
+                <svg class="brand-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M50 5L15 55H45L35 95L85 45H55L65 5H50Z" fill="url(#logo-grad)" stroke="#00f0ff" stroke-width="2"/>
+                    <defs>
+                        <linearGradient id="logo-grad" x1="15" y1="5" x2="85" y2="95" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#00f0ff"/>
+                            <stop offset="1" stop-color="#c084fc"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <div>
+                    <h1 class="brand-title">Forgent Power Solutions</h1>
+                    <div style="display: flex; align-items: center; gap: 0.6rem; margin-top: 0.2rem;">
+                        <span class="ticker-tag"><span class="ticker-dot"></span>NYSE: FPS</span>
+                        <span style="color: var(--accent-green); font-weight: 700; font-size: 0.9rem;">$56.35</span>
+                        <span style="color: var(--text-muted); font-size: 0.8rem;">(+19.9% vs Offer)</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-meta">
+                <div class="audit-badge">
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    PASS AUDIT CLEARANCE
+                </div>
+                <span class="val-date">Valuation Audit: June 2, 2026</span>
+            </div>
+        </header>
+
+        <!-- KPI Grid -->
+        <section class="kpi-grid">
+            <div class="glass-card kpi-card">
+                <div>
+                    <div class="kpi-title">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                        Record Backlog
+                    </div>
+                    <div class="kpi-value">$1.98B</div>
+                </div>
+                <div class="kpi-sub">
+                    <span class="kpi-growth-up">+157% YoY</span>
+                    <span>• Book-to-Bill: 2.3x</span>
+                </div>
+            </div>
+            
+            <div class="glass-card kpi-card">
+                <div>
+                    <div class="kpi-title">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                        Revenue Hyper-Growth
+                    </div>
+                    <div class="kpi-value" style="color: var(--accent-cyan); text-shadow: 0 0 10px rgba(0, 240, 255, 0.15);">103% YoY</div>
+                </div>
+                <div class="kpi-sub">
+                    <span>Q3 Revenue: $378.7M</span>
+                </div>
+            </div>
+
+            <div class="glass-card kpi-card">
+                <div>
+                    <div class="kpi-title">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Lead-Time Moat
+                    </div>
+                    <div class="kpi-value">6 Months</div>
+                </div>
+                <div class="kpi-sub">
+                    <span>vs. Utility peer average up to 48 months</span>
+                </div>
+            </div>
+
+            <div class="glass-card kpi-card">
+                <div>
+                    <div class="kpi-title">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z"></path></svg>
+                        Asymmetric Target
+                    </div>
+                    <div class="kpi-value" style="color: var(--accent-purple); text-shadow: 0 0 10px var(--accent-purple-glow);">$71.00</div>
+                </div>
+                <div class="kpi-sub">
+                    <span class="kpi-growth-up">3.0x Payoff</span>
+                    <span>at $47.00 Offering Entry</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Powertrain Section -->
+        <section class="powertrain-section">
+            <h2 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.6rem;">
+                <svg width="24" height="24" fill="none" stroke="var(--accent-cyan)" stroke-width="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                Electrical Distribution Powertrain Moat
+            </h2>
+            
+            <div class="powertrain-grid">
+                <!-- SVG Diagram Card -->
+                <div class="glass-card interactive-diagram">
+                    <svg class="powertrain-svg" viewBox="0 0 680 260" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <!-- Ambient glowing filters -->
+                            <filter id="neon-glow" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur stdDeviation="6" result="blur" />
+                                <feMerge>
+                                    <feMergeNode in="blur" />
+                                    <feMergeNode in="SourceGraphic" />
+                                </feMerge>
+                            </filter>
+                        </defs>
+
+                        <!-- Electrical cables with power flowing -->
+                        <path id="cable-1" class="power-flow-cable" d="M 50 130 L 170 130" />
+                        <path id="cable-1-active" class="power-flow-cable-active" d="M 50 130 L 170 130" />
+                        
+                        <path id="cable-2" class="power-flow-cable" d="M 270 130 L 390 130" />
+                        <path id="cable-2-active" class="power-flow-cable-active" d="M 270 130 L 390 130" />
+
+                        <path id="cable-3" class="power-flow-cable" d="M 490 130 L 610 130" />
+                        <path id="cable-3-active" class="power-flow-cable-active" d="M 490 130 L 610 130" />
+
+                        <!-- Flow Indicator Arrows -->
+                        <polygon points="120,126 128,130 120,134" fill="var(--accent-cyan)" filter="url(#neon-glow)" />
+                        <polygon points="340,126 348,130 340,134" fill="var(--accent-cyan)" filter="url(#neon-glow)" />
+                        <polygon points="560,126 568,130 560,134" fill="var(--accent-cyan)" filter="url(#neon-glow)" />
+
+                        <!-- Node 1: Substation Transformer -->
+                        <g class="svg-node active" id="node-transformer" onclick="selectNode('transformer')">
+                            <!-- Outer glow ring -->
+                            <rect class="glow-layer" x="160" y="70" width="120" height="120" rx="10" stroke="var(--accent-cyan)" />
+                            <!-- Main box outline -->
+                            <rect class="outline-layer" x="170" y="80" width="100" height="100" rx="8" />
+                            <!-- Visual design elements inside box -->
+                            <!-- Core winding representations -->
+                            <circle cx="205" cy="130" r="18" stroke="#00f0ff" stroke-width="2" fill="none" stroke-dasharray="2,2" />
+                            <circle cx="235" cy="130" r="18" stroke="#c084fc" stroke-width="2" fill="none" stroke-dasharray="2,2" />
+                            <path d="M 195 130 C 195 110, 245 110, 245 130" stroke="#10b981" stroke-width="2" fill="none" />
+                            <path d="M 195 130 C 195 150, 245 150, 245 130" stroke="#10b981" stroke-width="2" fill="none" />
+                            <!-- High Voltage lightning Bolt inside -->
+                            <path d="M 218 115 L 210 130 L 222 130 L 216 145" stroke="#00f0ff" stroke-width="2" fill="none" />
+                            <text x="220" y="195" fill="var(--text-primary)" font-size="10" font-family="Outfit" text-anchor="middle" font-weight="600">Substation Transformer</text>
+                        </g>
+
+                        <!-- Node 2: MV Switchgear -->
+                        <g class="svg-node" id="node-switchgear" onclick="selectNode('switchgear')">
+                            <!-- Outer glow ring -->
+                            <rect class="glow-layer" x="380" y="70" width="120" height="120" rx="10" stroke="var(--accent-cyan)" />
+                            <!-- Main box outline -->
+                            <rect class="outline-layer" x="390" y="80" width="100" height="100" rx="8" />
+                            <!-- Visual panels inside box -->
+                            <line x1="410" y1="95" x2="470" y2="95" stroke="var(--text-muted)" stroke-width="2" />
+                            <line x1="410" y1="165" x2="470" y2="165" stroke="var(--text-muted)" stroke-width="2" />
+                            <!-- Switch breaker icons -->
+                            <rect x="405" y="110" width="16" height="36" rx="2" fill="#111b2b" stroke="var(--text-muted)" />
+                            <rect x="432" y="110" width="16" height="36" rx="2" fill="#111b2b" stroke="var(--accent-cyan)" />
+                            <rect x="459" y="110" width="16" height="36" rx="2" fill="#111b2b" stroke="var(--text-muted)" />
+                            <!-- Status dots -->
+                            <circle cx="413" cy="118" r="3" fill="#ef4444" />
+                            <circle cx="440" cy="118" r="3" fill="#10b981" />
+                            <circle cx="467" cy="118" r="3" fill="#ef4444" />
+                            <text x="440" y="195" fill="var(--text-primary)" font-size="10" font-family="Outfit" text-anchor="middle" font-weight="600">MV Switchgear</text>
+                        </g>
+
+                        <!-- Node 3: Modular eHouse -->
+                        <g class="svg-node" id="node-ehouse" onclick="selectNode('ehouse')">
+                            <!-- Outer glow ring -->
+                            <rect class="glow-layer" x="600" y="70" width="120" height="120" rx="10" stroke="var(--accent-cyan)" />
+                            <!-- Main box outline -->
+                            <rect class="outline-layer" x="610" y="80" width="100" height="100" rx="8" />
+                            <!-- eHouse design elements -->
+                            <rect x="620" y="92" width="80" height="76" rx="4" fill="#0c1624" stroke="var(--text-muted)" />
+                            <!-- Internal units inside cutaway -->
+                            <rect x="625" y="100" width="12" height="60" fill="none" stroke="var(--accent-cyan)" stroke-width="1" />
+                            <rect x="641" y="100" width="12" height="60" fill="none" stroke="var(--accent-purple)" stroke-width="1" />
+                            <rect x="657" y="100" width="12" height="60" fill="none" stroke="var(--accent-green)" stroke-width="1" />
+                            <!-- Cooling fans representation -->
+                            <circle cx="682" cy="110" r="6" stroke="var(--text-muted)" fill="none" stroke-width="1.5" />
+                            <circle cx="682" cy="110" r="1.5" fill="var(--accent-cyan)" />
+                            <circle cx="682" cy="126" r="6" stroke="var(--text-muted)" fill="none" stroke-width="1.5" />
+                            <circle cx="682" cy="126" r="1.5" fill="var(--accent-cyan)" />
+                            <!-- Door lines -->
+                            <line x1="673" y1="140" x2="691" y2="140" stroke="var(--text-muted)" />
+                            <text x="660" y="195" fill="var(--text-primary)" font-size="10" font-family="Outfit" text-anchor="middle" font-weight="600">Modular eHouse</text>
+                        </g>
+
+                        <!-- Input Grid side indicator -->
+                        <text x="35" y="100" fill="var(--accent-cyan)" font-size="9" font-family="Outfit" text-anchor="middle" font-weight="700" letter-spacing="0.1em">UTILITY GRID</text>
+                        <text x="35" y="112" fill="var(--text-secondary)" font-size="7" font-family="Outfit" text-anchor="middle">HIGH VOLTAGE</text>
+                        <line x1="10" y1="130" x2="60" y2="130" stroke="var(--accent-cyan)" stroke-width="1.5" />
+                    </svg>
+                </div>
+
+                <!-- Specs Card -->
+                <div class="glass-card specs-panel" id="specs-panel">
+                    <div class="specs-header">
+                        <div class="specs-category" id="spec-node-category">POWERTRAIN HARDWARE</div>
+                        <h3 class="specs-title" id="spec-node-title">Substation Utility Transformer</h3>
+                    </div>
+                    <div class="specs-body">
+                        <p id="spec-node-desc">Highly customized electromagnetic units that step utility transmission levels (up to 345kV) down to distribution-ready medium voltages (e.g., 34.5kV or 13.8kV). Essential for massive utility interconnection pipelines and dedicated hyperscaler substations.</p>
+                        <ul class="spec-list" id="spec-node-bullets">
+                            <li>Optimized with copper or aluminum wind cores for high durability.</li>
+                            <li>Equipped with real-time digital thermographic sensors.</li>
+                            <li>Forgent delivers custom units in 6–9 months vs. industry averages of 3–4 years.</li>
+                        </ul>
+                        <div class="spec-quote" id="spec-node-quote">
+                            "Forgent's domestic manufacturing capacity resolves the most severe bottleneck in data center construction today: immediate power access."
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Solver Section -->
+        <section class="solver-section">
+            <h2 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.6rem;">
+                <svg width="24" height="24" fill="none" stroke="var(--accent-green)" stroke-width="2" viewBox="0 0 24 24"><path d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                Audited Reverse DCF Real-Time Solver
+            </h2>
+            
+            <div class="solver-grid">
+                <!-- Parameters Control Card -->
+                <div class="glass-card">
+                    <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Solver Inputs</h3>
+                    
+                    <!-- Net Debt Toggle Tabs -->
+                    <div class="control-group">
+                        <label class="control-label">Net Debt Structure Selection</label>
+                        <div class="toggle-tabs">
+                            <button class="tab-btn active" onclick="setNetDebtScenario('case1')">Case 1: Core Debt ($506.2M)</button>
+                            <button class="tab-btn" onclick="setNetDebtScenario('case2')">Case 2: Adjusted Debt ($713.5M)</button>
+                        </div>
+                    </div>
+
+                    <!-- Target Entry Price -->
+                    <div class="control-group">
+                        <div class="control-label">
+                            <span>Entry Share Price ($P_0$)</span>
+                            <span class="value-glow" id="label-share-price">$47.00</span>
+                        </div>
+                        <div class="input-row">
+                            <input type="range" class="range-slider" id="slider-share-price" min="20" max="100" step="0.5" value="47.0" oninput="updateSolverValues()">
+                            <input type="number" class="input-num-box" id="num-share-price" value="47.00" step="0.50" onchange="syncInputToSlider('share-price')">
+                        </div>
+                    </div>
+
+                    <!-- Starting FCF Base -->
+                    <div class="control-group">
+                        <div class="control-label">
+                            <span>Starting FCF Base ($FCF_0$)</span>
+                            <span class="value-glow" id="label-fcf-base">$150.0M</span>
+                        </div>
+                        <div class="input-row">
+                            <input type="range" class="range-slider" id="slider-fcf-base" min="50" max="350" step="5" value="150" oninput="updateSolverValues()">
+                            <input type="number" class="input-num-box" id="num-fcf-base" value="150.0" step="5.0" onchange="syncInputToSlider('fcf-base')">
+                        </div>
+                    </div>
+
+                    <!-- WACC -->
+                    <div class="control-group">
+                        <div class="control-label">
+                            <span>WACC ($r$)</span>
+                            <span class="value-glow" id="label-wacc">10.0%</span>
+                        </div>
+                        <div class="input-row">
+                            <input type="range" class="range-slider" id="slider-wacc" min="6.0" max="18.0" step="0.1" value="10.0" oninput="updateSolverValues()">
+                            <input type="number" class="input-num-box" id="num-wacc" value="10.0" step="0.1" onchange="syncInputToSlider('wacc')">
+                        </div>
+                    </div>
+
+                    <!-- Terminal Growth Rate -->
+                    <div class="control-group">
+                        <div class="control-label">
+                            <span>Terminal Growth Rate ($g$)</span>
+                            <span class="value-glow" id="label-terminal-growth">3.0%</span>
+                        </div>
+                        <div class="input-row">
+                            <input type="range" class="range-slider" id="slider-terminal-growth" min="0.0" max="6.0" step="0.1" value="3.0" oninput="updateSolverValues()">
+                            <input type="number" class="input-num-box" id="num-terminal-growth" value="3.0" step="0.1" onchange="syncInputToSlider('terminal-growth')">
+                        </div>
+                    </div>
+
+                    <!-- Shares Outstanding (hidden editable parameters for power users) -->
+                    <div style="display: flex; gap: 1rem; border-top: 1px solid var(--border-muted); padding-top: 1rem;">
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Diluted Shares Outstanding</label>
+                            <input type="text" id="param-shares" value="244,118,850" style="background: none; border: none; color: var(--text-secondary); font-family: Outfit; font-weight: 600; width: 100%; outline: none;" onchange="updateSharesParam()">
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Current Net Debt ($)</label>
+                            <input type="text" id="param-net-debt" value="506,200,000" style="background: none; border: none; color: var(--text-secondary); font-family: Outfit; font-weight: 600; width: 100%; outline: none;" onchange="updateNetDebtParam()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Solver Outputs & Graph Card -->
+                <div class="glass-card results-panel">
+                    <div class="cagr-hero">
+                        <div class="cagr-label">Implied 10-Yr FCF Growth rate</div>
+                        <div class="cagr-value" id="solved-cagr">25.98%</div>
+                        <div class="verdict-badge" id="verdict-verdict">Undervalued (Hurdle highly achievable)</div>
+                    </div>
+
+                    <!-- Dynamic SVG Bar Chart of FCF Projections -->
+                    <div class="chart-container">
+                        <svg class="svg-chart" id="projection-chart" viewBox="0 0 420 180">
+                            <defs>
+                                <linearGradient id="bar-gradient" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-color="var(--accent-green)" stop-opacity="0.8"/>
+                                    <stop offset="100%" stop-color="#122a36" stop-opacity="0.1"/>
+                                </linearGradient>
+                            </defs>
+                            
+                            <!-- Dynamic elements will be injected here by JavaScript -->
+                        </svg>
+                    </div>
+
+                    <!-- Detailed Parameters Table -->
+                    <table class="parameters-table">
+                        <tr>
+                            <td>Implied Equity Value (Market Cap)</td>
+                            <td id="table-equity-val">$11,473,585,950</td>
+                        </tr>
+                        <tr>
+                            <td>Net Debt Applied</td>
+                            <td id="table-net-debt">$506,200,000</td>
+                        </tr>
+                        <tr>
+                            <td>Target Enterprise Value (EV)</td>
+                            <td id="table-target-ev" style="color: var(--accent-cyan);">$11,979,785,950</td>
+                        </tr>
+                        <tr>
+                            <td>Implied Year 10 Free Cash Flow</td>
+                            <td id="table-y10-fcf" style="color: var(--accent-green);">$1,510.8M</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Asymmetric Payoff Engine Section -->
+        <section class="payoff-section">
+            <h2 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.6rem;">
+                <svg width="24" height="24" fill="none" stroke="var(--accent-purple)" stroke-width="2" viewBox="0 0 24 24"><path d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 009 11.571V9m.002-2a3.003 3.003 0 013 3v1c0 1.032-.211 2.013-.593 2.905m5.016-6.79C17.747 8.62 18 10.278 18 12c0 1.116-.145 2.197-.417 3.228m-4.285-7.415a6 6 0 11-10.86 0L10 2l3.707 3.707a6 6 0 01.714 5.343z"></path></svg>
+                Asymmetric Risk-Reward Evaluator
+            </h2>
+
+            <div class="payoff-grid">
+                <!-- Interactive Payoff Sliders -->
+                <div class="glass-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                            <h3>Scenario Inputs</h3>
+                            <div class="toggle-tabs" style="margin-bottom: 0;">
+                                <button class="tab-btn active" id="payoff-tab-a" onclick="setPayoffScenario('A')">Scenario A (Near-Term)</button>
+                                <button class="tab-btn" id="payoff-tab-b" onclick="setPayoffScenario('B')">Scenario B (Multi-Year)</button>
+                            </div>
+                        </div>
+
+                        <!-- Entry Offering Price Slider -->
+                        <div class="control-group">
+                            <div class="control-label">
+                                <span>Entry Price ($P_0$)</span>
+                                <span class="value-glow" id="label-payoff-entry">$47.00</span>
+                            </div>
+                            <div class="input-row">
+                                <input type="range" class="range-slider" id="slider-payoff-entry" min="30" max="60" step="0.5" value="47.0" oninput="updatePayoffCalculation()">
+                            </div>
+                        </div>
+
+                        <!-- Downside Floor Slider -->
+                        <div class="control-group">
+                            <div class="control-label">
+                                <span>Downside Floor ($P_{down}$)</span>
+                                <span class="value-glow" style="color: #f87171;" id="label-payoff-down">$39.00</span>
+                            </div>
+                            <div class="input-row">
+                                <input type="range" class="range-slider" id="slider-payoff-down" min="20" max="45" step="0.5" value="39.0" oninput="updatePayoffCalculation()">
+                            </div>
+                        </div>
+
+                        <!-- Upside Target Slider -->
+                        <div class="control-group">
+                            <div class="control-label">
+                                <span>Upside Target Price ($P_{up}$)</span>
+                                <span class="value-glow" style="color: var(--accent-purple);" id="label-payoff-up">$71.00</span>
+                            </div>
+                            <div class="input-row">
+                                <input type="range" class="range-slider" id="slider-payoff-up" min="50" max="100" step="0.5" value="71.0" oninput="updatePayoffCalculation()">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; border-top: 1px solid var(--border-muted); padding-top: 1rem; margin-top: 1rem;">
+                        <strong>Audit Verdict:</strong> Valerie's mandated 3.0x ratio holds precisely at $47.00. Downside is protected by a solid 30.0x forward EBITDA floor under near-term backlog.
+                    </div>
+                </div>
+
+                <!-- Payoff Ratio Dynamic visualizer -->
+                <div class="glass-card payoff-visualizer">
+                    <div class="ratio-ring-container">
+                        <svg class="ratio-ring-svg" width="180" height="180">
+                            <circle class="ratio-ring-bg" cx="90" cy="90" r="75" />
+                            <circle class="ratio-ring-fill" id="payoff-ratio-ring" cx="90" cy="90" r="75" />
+                        </svg>
+                        <div class="ratio-ring-text-container">
+                            <div class="ratio-num" id="payoff-ratio-val">3.00x</div>
+                            <div class="ratio-unit" id="payoff-pass-label" style="color: var(--accent-green); font-weight: 700;">PASS</div>
+                        </div>
+                    </div>
+
+                    <div class="payoff-bars-container">
+                        <div class="payoff-bar-track">
+                            <div class="payoff-bar-fill-down" id="payoff-fill-down" style="width: 17%;"></div>
+                            <div class="payoff-bar-fill-up" id="payoff-fill-up" style="width: 51%;"></div>
+                        </div>
+                        <div class="payoff-bar-labels">
+                            <span id="bar-label-down">Downside: -17.0%</span>
+                            <span style="font-weight: 600;">Offering Baseline</span>
+                            <span style="color: var(--accent-purple);" id="bar-label-up">Upside: +51.1%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Cover Art Reference & Footnotes -->
+        <footer class="footer-art-panel">
+            <div class="art-preview-card">
+                <!-- Tries to load generated cover art, showing beautiful vector placeholder on fail -->
+                <img class="art-preview-img" src="fps_report_cover_art.png" alt="Forgent Report Cover Art" onerror="this.style.display='none'; document.getElementById('vector-art-placeholder').style.display='block';">
+                
+                <div id="vector-art-placeholder" class="art-fallback-svg" style="display: none; width: 100%; height: 100%;">
+                    <svg viewBox="0 0 320 180" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Abstract cover art design -->
+                        <rect width="320" height="180" fill="#0b101c" />
+                        <circle cx="160" cy="90" r="70" stroke="url(#cover-circle-grad)" stroke-width="1" opacity="0.3"/>
+                        <path d="M 60 140 L 140 30 L 180 110 L 260 40" stroke="url(#cover-line-grad)" stroke-width="2" />
+                        <text x="160" y="155" fill="var(--text-secondary)" font-family="Outfit" font-size="10" text-anchor="middle" font-weight="500">FORGENT POWER SOLUTIONS</text>
+                        <text x="160" y="167" fill="var(--accent-purple)" font-family="Outfit" font-size="8" text-anchor="middle" font-weight="700" letter-spacing="0.05em">COVER ART WORK</text>
+                        <defs>
+                            <linearGradient id="cover-circle-grad" x1="0" y1="0" x2="320" y2="180">
+                                <stop stop-color="#00f0ff"/>
+                                <stop offset="1" stop-color="#c084fc"/>
+                            </linearGradient>
+                            <linearGradient id="cover-line-grad" x1="60" y1="30" x2="260" y2="140">
+                                <stop stop-color="#10b981"/>
+                                <stop offset="0.5" stop-color="#00f0ff"/>
+                                <stop offset="1" stop-color="#c084fc"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+            </div>
+
+            <div>
+                <div class="art-details-header">REPORT COVER ART REF</div>
+                <h3 class="art-details-title">Forgent Power Solutions: Design Underwriting</h3>
+                <p class="art-details-desc">
+                    The premium report cover art for Forgent is located at 
+                    <code>/Users/popular/Desktop/Genie/research/FPS/fps_report_cover_art.png</code>. 
+                    It represents the structural convergence of energy networks, high-voltage equipment, and secular hyperscaler growth pipelines.
+                </p>
+                <a href="file:///Users/popular/Desktop/Genie/research/FPS/fps_report_cover_art.png" class="art-btn" target="_blank">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    Open Cover Art File
+                </a>
+            </div>
+        </footer>
+
+        <footer>
+            <p>Forgent Power Solutions (NYSE: FPS) Quantitative Audit Infographic • Form S-1 Valuation Baseline</p>
+            <p style="font-size: 0.75rem; margin-top: 0.5rem; color: var(--text-muted);">This dashboard is designed and coded in clean HTML/CSS/SVG with a bisection solver in vanilla JS. All figures audited and verified by Wall Street Purist Christian.</p>
+        </footer>
+
+    </div>
+
+    <!-- Real-time Mathematical Engine Script -->
+    <script>
+        // --- Static Audited Parameters ---
+        const sharesOutstanding = 244118850;
+        const case1NetDebt = 506200000;
+        const case2NetDebt = 713500000;
+
+        // Current UI state variables
+        let currentNetDebt = case1NetDebt;
+        let selectedNetDebtScenarioName = "case1";
+
+        // Powertrain hardware specifications data
+        const hardwareSpecs = {
+            transformer: {
+                category: "POWERTRAIN HARDWARE",
+                title: "Substation Utility Transformer",
+                desc: "Highly customized electromagnetic units that step utility transmission levels (up to 345kV) down to distribution-ready medium voltages (e.g., 34.5kV or 13.8kV). Essential for massive utility interconnection pipelines and dedicated hyperscaler substations.",
+                bullets: [
+                    "Optimized with copper or aluminum wind cores for high durability.",
+                    "Equipped with real-time digital thermographic sensors.",
+                    "Forgent delivers custom units in 6–9 months vs. industry averages of 3–4 years."
+                ],
+                quote: "Forgent's domestic manufacturing capacity resolves the most severe bottleneck in data center construction today: immediate power access."
+            },
+            switchgear: {
+                category: "POWER FLOW PROTECTION",
+                title: "Medium-Voltage Switchgear",
+                desc: "Consists of electrical disconnect switches, fuses, and circuit breakers used to control, protect, and isolate electrical equipment across massive hyperscaler data centers. Ensures resilient and failure-proof grid loads.",
+                bullets: [
+                    "Engineered with solid dielectric insulation to minimize carbon footprints.",
+                    "Integrates with smart SCADA systems for automated grid protection.",
+                    "High pricing power due to strict quality controls and short lead times."
+                ],
+                quote: "Switchgear acts as the nervous system of the power infrastructure, routing currents with nanosecond circuit-breaker precision."
+            },
+            ehouse: {
+                category: "PREFABRICATED ARCHITECTURES",
+                title: "Modular eHouse (Prefabricated Electrical Room)",
+                desc: "Forgent's highest margin, fastest-scaling product. Houses integrating medium/low voltage switchgear, Automatic Transfer Switches (ATS), Uninterruptible Power Systems (UPS), Lithium-ion batteries, and industrial climate control HVAC cabinets into a pre-tested deployable shelter.",
+                bullets: [
+                    "Enables parallel enclosure fabrication with internal components assembly, reducing construction timeline by 50%.",
+                    "Extremely popular with hyperscalers (AWS, MSFT) to match AI data center cluster cycles.",
+                    "Entire modular structure pre-tested under live loads in factory before delivery."
+                ],
+                quote: "eHouses represent the ultimate custom 'plug-and-play' solution for power delivery, capturing massive premium pricing."
+            }
+        };
+
+        // --- Bisection Solver Implementation ---
+        
+        // Calculate EV derived from FCF_0, growth rate, WACC (r), and Terminal Growth (g)
+        function calculateEV(fcf_0, growth, r, g) {
+            let pv_fcf = 0.0;
+            // Discount first 10 years of cash flows
+            for (let t = 1; t <= 10; t++) {
+                let fcf_t = fcf_0 * Math.pow(1.0 + growth, t);
+                pv_fcf += fcf_t / Math.pow(1.0 + r, t);
+            }
+            // Year 10 Terminal Value
+            let fcf_10 = fcf_0 * Math.pow(1.0 + growth, 10);
+            let tv = (fcf_10 * (1.0 + g)) / (r - g);
+            let pv_tv = tv / Math.pow(1.0 + r, 10);
+            
+            return pv_fcf + pv_tv;
+        }
+
+        // Bisection search solver to solve growth rate matching Target EV
+        function solveGrowthRate(target_ev, fcf_0, r, g) {
+            let low = -0.99;
+            let high = 5.0;
+            let tol = 1e-12;
+            let max_iter = 100;
+            let mid = 0.0;
+            
+            for (let i = 0; i < max_iter; i++) {
+                mid = (low + high) / 2.0;
+                let ev = calculateEV(fcf_0, mid, r, g);
+                if (Math.abs(ev - target_ev) < tol) {
+                    return mid;
+                }
+                if (ev < target_ev) {
+                    low = mid;
+                } else {
+                    high = mid;
+                }
+            }
+            return mid;
+        }
+
+        // --- Core UI Controller Functions ---
+
+        // Node Selector in SVG powertrain
+        function selectNode(nodeId) {
+            // Remove active classes
+            document.querySelectorAll('.svg-node').forEach(el => el.classList.remove('active'));
+            // Add active class to selected
+            document.getElementById(`node-${nodeId}`).classList.add('active');
+
+            // Also toggle active animation line
+            document.querySelectorAll('.power-flow-cable-active').forEach((el, index) => {
+                el.style.opacity = '0.3';
+            });
+            if (nodeId === 'transformer') {
+                document.getElementById('cable-1-active').style.opacity = '1';
+            } else if (nodeId === 'switchgear') {
+                document.getElementById('cable-1-active').style.opacity = '1';
+                document.getElementById('cable-2-active').style.opacity = '1';
+            } else if (nodeId === 'ehouse') {
+                document.getElementById('cable-1-active').style.opacity = '1';
+                document.getElementById('cable-2-active').style.opacity = '1';
+                document.getElementById('cable-3-active').style.opacity = '1';
+            }
+
+            // Update Specs Panel content with fade-in effect
+            const panel = document.getElementById('specs-panel');
+            panel.style.opacity = '0.5';
+            panel.style.transform = 'translateY(2px)';
+            
+            setTimeout(() => {
+                const data = hardwareSpecs[nodeId];
+                document.getElementById('spec-node-category').textContent = data.category;
+                document.getElementById('spec-node-title').textContent = data.title;
+                document.getElementById('spec-node-desc').textContent = data.desc;
+                
+                const list = document.getElementById('spec-node-bullets');
+                list.innerHTML = '';
+                data.bullets.forEach(bullet => {
+                    const li = document.createElement('li');
+                    li.textContent = bullet;
+                    list.appendChild(li);
+                });
+                
+                document.getElementById('spec-node-quote').innerHTML = `"${data.quote}"`;
+                panel.style.opacity = '1';
+                panel.style.transform = 'translateY(0)';
+            }, 150);
+        }
+
+        // Handle sync between inputs and sliders
+        function syncInputToSlider(paramName) {
+            const inputEl = document.getElementById(`num-${paramName}`);
+            const sliderEl = document.getElementById(`slider-${paramName}`);
+            let val = parseFloat(inputEl.value);
+            
+            // Constrain
+            const min = parseFloat(sliderEl.min);
+            const max = parseFloat(sliderEl.max);
+            if (val < min) val = min;
+            if (val > max) val = max;
+            
+            sliderEl.value = val;
+            inputEl.value = val;
+            updateSolverValues();
+        }
+
+        // Handle Net Debt Scenario switching
+        function setNetDebtScenario(scenario) {
+            selectedNetDebtScenarioName = scenario;
+            const buttons = document.querySelectorAll('.toggle-tabs button');
+            if (scenario === 'case1') {
+                currentNetDebt = case1NetDebt;
+                buttons[0].classList.add('active');
+                buttons[1].classList.remove('active');
+            } else {
+                currentNetDebt = case2NetDebt;
+                buttons[0].classList.remove('active');
+                buttons[1].classList.add('active');
+            }
+            
+            // Update hidden parameter value
+            document.getElementById('param-net-debt').value = currentNetDebt.toLocaleString();
+            updateSolverValues();
+        }
+
+        // Custom shares field update
+        function updateSharesParam() {
+            const sharesStr = document.getElementById('param-shares').value.replace(/,/g, '');
+            const parsed = parseInt(sharesStr);
+            if (!isNaN(parsed) && parsed > 0) {
+                updateSolverValues();
+            }
+        }
+
+        // Custom Net Debt field update
+        function updateNetDebtParam() {
+            const debtStr = document.getElementById('param-net-debt').value.replace(/,/g, '');
+            const parsed = parseFloat(debtStr);
+            if (!isNaN(parsed)) {
+                currentNetDebt = parsed;
+                // Remove active styling on scenario tabs if it doesn't match standard
+                const buttons = document.querySelectorAll('.toggle-tabs button');
+                if (currentNetDebt === case1NetDebt) {
+                    buttons[0].classList.add('active');
+                    buttons[1].classList.remove('active');
+                } else if (currentNetDebt === case2NetDebt) {
+                    buttons[0].classList.remove('active');
+                    buttons[1].classList.add('active');
+                } else {
+                    buttons[0].classList.remove('active');
+                    buttons[1].classList.remove('active');
+                }
+                updateSolverValues();
+            }
+        }
+
+        // Master dynamic calculation updates
+        function updateSolverValues() {
+            // Fetch raw slider values
+            const sharePrice = parseFloat(document.getElementById('slider-share-price').value);
+            const fcfBase = parseFloat(document.getElementById('slider-fcf-base').value);
+            const waccPercent = parseFloat(document.getElementById('slider-wacc').value);
+            const termGrowthPercent = parseFloat(document.getElementById('slider-terminal-growth').value);
+            
+            // Sync values to text boxes
+            document.getElementById('num-share-price').value = sharePrice.toFixed(2);
+            document.getElementById('num-fcf-base').value = fcfBase.toFixed(1);
+            document.getElementById('num-wacc').value = waccPercent.toFixed(1);
+            document.getElementById('num-terminal-growth').value = termGrowthPercent.toFixed(1);
+
+            // Display labels updates
+            document.getElementById('label-share-price').textContent = `$${sharePrice.toFixed(2)}`;
+            document.getElementById('label-fcf-base').textContent = `$${fcfBase.toFixed(1)}M`;
+            document.getElementById('label-wacc').textContent = `${waccPercent.toFixed(1)}%`;
+            document.getElementById('label-terminal-growth').textContent = `${termGrowthPercent.toFixed(1)}%`;
+
+            // Calculate derived parameters
+            const sharesStr = document.getElementById('param-shares').value.replace(/,/g, '');
+            const activeShares = parseInt(sharesStr) || sharesOutstanding;
+            
+            const equityValue = sharePrice * activeShares;
+            const targetEV = equityValue + currentNetDebt;
+
+            // Solver parameters in clean units
+            const fcfBaseVal = fcfBase * 1000000;
+            const r = waccPercent / 100;
+            const g = termGrowthPercent / 100;
+
+            // Trigger the Bisection solver!
+            const impliedGrowth = solveGrowthRate(targetEV, fcfBaseVal, r, g);
+            const impliedGrowthPercent = impliedGrowth * 100;
+
+            // Update UI with calculated values
+            document.getElementById('solved-cagr').textContent = `${impliedGrowthPercent.toFixed(2)}%`;
+            
+            const impliedY10FCF = fcfBaseVal * Math.pow(1.0 + impliedGrowth, 10);
+            document.getElementById('table-y10-fcf').textContent = `$${(impliedY10FCF / 1000000).toLocaleString(undefined, {maximumFractionDigits: 1})}M`;
+            
+            document.getElementById('table-equity-val').textContent = `$${equityValue.toLocaleString(undefined, {maximumFractionDigits: 0})}`;
+            document.getElementById('table-net-debt').textContent = `$${currentNetDebt.toLocaleString(undefined, {maximumFractionDigits: 0})}`;
+            document.getElementById('table-target-ev').textContent = `$${targetEV.toLocaleString(undefined, {maximumFractionDigits: 0})}`;
+
+            // Handle verdict rating text
+            const verdictEl = document.getElementById('verdict-verdict');
+            if (impliedGrowthPercent < 20.0) {
+                verdictEl.textContent = "Deep Margin of Safety (Asymmetric Bargain)";
+                verdictEl.style.color = "var(--accent-purple)";
+                verdictEl.style.borderColor = "var(--accent-purple)";
+                verdictEl.style.background = "rgba(192, 132, 252, 0.12)";
+            } else if (impliedGrowthPercent <= 28.0) {
+                verdictEl.textContent = "Undervalued (Hurdle highly achievable)";
+                verdictEl.style.color = "var(--accent-green)";
+                verdictEl.style.borderColor = "var(--accent-green)";
+                verdictEl.style.background = "rgba(16, 185, 129, 0.12)";
+            } else {
+                verdictEl.textContent = "Fully Valued (Premium AI Growth baked in)";
+                verdictEl.style.color = "var(--accent-cyan)";
+                verdictEl.style.borderColor = "var(--accent-cyan)";
+                verdictEl.style.background = "rgba(0, 240, 255, 0.12)";
+            }
+
+            // Re-render Dynamic Chart
+            renderChart(fcfBase, impliedGrowth);
+        }
+
+        // --- Dynamic Custom SVG Chart Renderer ---
+        function renderChart(fcfBase, growth) {
+            const chart = document.getElementById('projection-chart');
+            
+            // Compute projected values for 11 years (0 to 10)
+            const projections = [];
+            for (let t = 0; t <= 10; t++) {
+                projections.push(fcfBase * Math.pow(1 + growth, t));
+            }
+            
+            const maxVal = Math.max(...projections) * 1.15;
+            const minVal = 0;
+            
+            // Build the dynamic SVG structures
+            let svgContent = '';
+            
+            // Add gridlines
+            for (let i = 1; i <= 4; i++) {
+                const yGrid = 15 + i * 30;
+                svgContent += `<line x1="30" y1="${yGrid}" x2="400" y2="${yGrid}" stroke="rgba(255,255,255,0.05)" stroke-width="1" />`;
+            }
+
+            // Draw X and Y Axes
+            svgContent += `<line x1="30" y1="145" x2="400" y2="145" stroke="var(--border-muted)" stroke-width="1.5" />`;
+            svgContent += `<line x1="30" y1="15" x2="30" y2="145" stroke="var(--border-muted)" stroke-width="1" />`;
+
+            // Draw Y-Axis labels (min, mid, max)
+            svgContent += `<text x="22" y="20" fill="var(--text-muted)" font-size="7" text-anchor="end">${(maxVal).toFixed(0)}M</text>`;
+            svgContent += `<text x="22" y="80" fill="var(--text-muted)" font-size="7" text-anchor="end">${(maxVal/2).toFixed(0)}M</text>`;
+            svgContent += `<text x="22" y="145" fill="var(--text-muted)" font-size="7" text-anchor="end">0M</text>`;
+
+            const barWidth = 22;
+            const chartGap = 11;
+            const startX = 40;
+
+            // Generate bars and line path points
+            let linePoints = '';
+            
+            for (let t = 0; t <= 10; t++) {
+                const fcfVal = projections[t];
+                
+                // Scale value to chart height (130px height limit)
+                const barHeight = (fcfVal / maxVal) * 130;
+                const xPos = startX + t * (barWidth + chartGap);
+                const yPos = 145 - barHeight;
+
+                linePoints += `${xPos + barWidth/2},${yPos} `;
+
+                // Add Bar shape
+                svgContent += `
+                    <g class="chart-bar-group">
+                        <rect class="chart-bar" x="${xPos}" y="${yPos}" width="${barWidth}" height="${barHeight}" rx="3" />
+                        <!-- Tooltip text that appears on hover -->
+                        <text class="chart-val-label" x="${xPos + barWidth/2}" y="${yPos - 6}">$${fcfVal.toFixed(0)}M</text>
+                        <text class="chart-label" x="${xPos + barWidth/2}" y="160">Y${t}</text>
+                    </g>
+                `;
+            }
+
+            // Add smooth flow curve line along peak of bars
+            svgContent += `
+                <path d="M ${linePoints}" fill="none" stroke="var(--accent-cyan)" stroke-width="1.5" filter="url(#neon-glow)" style="opacity:0.75" />
+            `;
+            
+            // Re-inject chart inner elements
+            const defs = chart.querySelector('defs');
+            chart.innerHTML = '';
+            chart.appendChild(defs);
+            chart.innerHTML += svgContent;
+        }
+
+        // --- Interactive Asymmetric Payoff Engine ---
+        
+        let activePayoffScenario = 'A';
+
+        function setPayoffScenario(scenario) {
+            activePayoffScenario = scenario;
+            
+            const btnA = document.getElementById('payoff-tab-a');
+            const btnB = document.getElementById('payoff-tab-b');
+            
+            if (scenario === 'A') {
+                btnA.classList.add('active');
+                btnB.classList.remove('active');
+                
+                document.getElementById('slider-payoff-entry').value = 47.0;
+                document.getElementById('slider-payoff-down').value = 39.0;
+                document.getElementById('slider-payoff-up').value = 71.0;
+            } else {
+                btnA.classList.remove('active');
+                btnB.classList.add('active');
+                
+                document.getElementById('slider-payoff-entry').value = 47.0;
+                document.getElementById('slider-payoff-down').value = 35.0;
+                document.getElementById('slider-payoff-up').value = 83.0;
+            }
+            updatePayoffCalculation();
+        }
+
+        function updatePayoffCalculation() {
+            const entry = parseFloat(document.getElementById('slider-payoff-entry').value);
+            const downside = parseFloat(document.getElementById('slider-payoff-down').value);
+            const upside = parseFloat(document.getElementById('slider-payoff-up').value);
+
+            // Constraint: Downside must be below entry, upside must be above entry
+            if (downside >= entry) {
+                document.getElementById('slider-payoff-down').value = entry - 1;
+            }
+            if (upside <= entry) {
+                document.getElementById('slider-payoff-up').value = entry + 1;
+            }
+
+            // Redefining validated parameters
+            const adjDownside = parseFloat(document.getElementById('slider-payoff-down').value);
+            const adjUpside = parseFloat(document.getElementById('slider-payoff-up').value);
+
+            // Display labels
+            document.getElementById('label-payoff-entry').textContent = `$${entry.toFixed(2)}`;
+            document.getElementById('label-payoff-down').textContent = `$${adjDownside.toFixed(2)}`;
+            document.getElementById('label-payoff-up').textContent = `$${adjUpside.toFixed(2)}`;
+
+            // Payoff Ratio: (Upside - Entry) / (Entry - Downside)
+            const downDelta = entry - adjDownside;
+            const upDelta = adjUpside - entry;
+            const payoffRatio = upDelta / downDelta;
+
+            // Percentage moves
+            const downMovePercent = (downDelta / entry) * 100;
+            const upMovePercent = (upDelta / entry) * 100;
+
+            // Update visuals
+            document.getElementById('payoff-ratio-val').textContent = `${payoffRatio.toFixed(2)}x`;
+            
+            // Adjust SVG Ring
+            const ringFill = document.getElementById('payoff-ratio-ring');
+            // Circ = 2 * PI * r = 2 * 3.14159 * 75 = 471.2
+            // Scale ring relative to target 3.0x payoff ratio
+            const targetRatio = 3.0;
+            const fillRatio = Math.min(payoffRatio / 5.0, 1.0); // max scale out of 5.0
+            const strokeOffset = 471.2 - (471.2 * fillRatio);
+            ringFill.style.strokeDashoffset = strokeOffset;
+
+            // Trigger Pass indicator color styling
+            const passLabel = document.getElementById('payoff-pass-label');
+            if (payoffRatio >= 3.0) {
+                passLabel.textContent = "PASS";
+                passLabel.style.color = "var(--accent-green)";
+                ringFill.style.stroke = "var(--accent-purple)";
+                document.getElementById('payoff-ratio-val').style.color = "var(--accent-purple)";
+            } else {
+                passLabel.textContent = "FAIL";
+                passLabel.style.color = "#ef4444";
+                ringFill.style.stroke = "#ef4444";
+                document.getElementById('payoff-ratio-val').style.color = "#ef4444";
+            }
+
+            // Sync visual bar indicators
+            const maxPercent = Math.max(downMovePercent, upMovePercent, 80);
+            const downBarWidth = (downMovePercent / maxPercent) * 50; // max 50% width
+            const upBarWidth = (upMovePercent / maxPercent) * 50;
+
+            document.getElementById('payoff-fill-down').style.width = `${downBarWidth}%`;
+            document.getElementById('payoff-fill-up').style.width = `${upBarWidth}%`;
+
+            document.getElementById('bar-label-down').textContent = `Downside: -${downMovePercent.toFixed(1)}%`;
+            document.getElementById('bar-label-up').textContent = `Upside: +${upMovePercent.toFixed(1)}%`;
+        }
+
+        // --- Window Onload Handlers ---
+        window.onload = function() {
+            // Set starting defaults
+            updateSolverValues();
+            updatePayoffCalculation();
+            
+            // Init cable flow indicator line levels
+            document.getElementById('cable-1-active').style.opacity = '1';
+        }
+    </script>
+</body>
+</html>

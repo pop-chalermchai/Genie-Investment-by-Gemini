@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pop's Alpha Fund • Genie Workspace Dashboard</title>
+    <meta name="description" content="Premium executive dashboard for tracking high-conviction portfolios, coordinating autonomous sub-agents, and reviewing quantitative equity research audits.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN for stunning visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js?v=2"></script>
+    <link rel="stylesheet" href="styles.css?v=2">
+</head>
+<body>
+    <div class="glow-container">
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- HEADER COMPONENT -->
+        <header id="main-header" class="glass-panel">
+            <div class="header-left">
+                <div class="logo-area">
+                    <span class="logo-emoji">🧞‍♂️</span>
+                    <div class="logo-text">
+                        <span class="logo-title">GENIE</span>
+                        <span class="logo-subtitle">ORCHESTRATION</span>
+                    </div>
+                </div>
+                <div class="header-divider"></div>
+                <div class="portfolio-meta">
+                    <span class="meta-label">ACTIVE PORTFOLIO</span>
+                    <span class="meta-value" id="portfolio-title">Pop's Alpha Fund</span>
+                </div>
+            </div>
+            
+            <nav class="navigation-tabs" id="nav-tabs" aria-label="Main Navigation">
+                <button class="nav-tab active" id="tab-dashboard" onclick="switchTab('dashboard')">
+                    <svg class="tab-icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14H5v-2h5v2zm0-4H5v-2h5v2zm0-4H5V7h5v2zm9 8h-7v-2h7v2zm0-4h-7v-2h7v2zm0-4h-7V7h7v2z"/></svg>
+                    Dashboard
+                </button>
+                <button class="nav-tab" id="tab-team" onclick="switchTab('team')">
+                    <svg class="tab-icon" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 1.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                    Genie Team
+                </button>
+                <button class="nav-tab" id="tab-research" onclick="switchTab('research')">
+                    <svg class="tab-icon" viewBox="0 0 24 24"><path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09L12 3zm6.8 9.18L12 15.9l-6.8-3.72V10.1l6.8 3.71 6.8-3.71v2.08zM12 11.9L5.2 8.18 12 4.45l6.8 3.73L12 11.9z"/></svg>
+                    Equity Research
+                </button>
+            </nav>
+        </header>
+
+        <main id="main-content">
+            <!-- SECTION 1: DASHBOARD (STOCK HOLDINGS) -->
+            <section id="section-dashboard" class="tab-content active-content">
+                <!-- METRIC SUMMARY CARDS -->
+                <div class="metrics-grid">
+                    <div class="metric-card glass-panel" id="card-total-value">
+                        <div class="metric-info">
+                            <span class="metric-title">PORTFOLIO VALUATION</span>
+                            <span class="metric-value" id="val-portfolio-value">$0.00</span>
+                            <span class="metric-change positive" id="val-portfolio-pct">+0.0%</span>
+                        </div>
+                        <div class="metric-icon-bg">💵</div>
+                    </div>
+                    <div class="metric-card glass-panel" id="card-total-cost">
+                        <div class="metric-info">
+                            <span class="metric-title">TOTAL COST BASIS</span>
+                            <span class="metric-value" id="val-total-cost">$0.00</span>
+                            <span class="metric-change" id="val-total-cost-sub">Weighted Avg Entry</span>
+                        </div>
+                        <div class="metric-icon-bg">📈</div>
+                    </div>
+                    <div class="metric-card glass-panel" id="card-unrealized-pl">
+                        <div class="metric-info">
+                            <span class="metric-title">NET UNREALIZED RETURN</span>
+                            <span class="metric-value" id="val-unrealized-pl">$0.00</span>
+                            <span class="metric-change positive" id="val-unrealized-pct">+0.0%</span>
+                        </div>
+                        <div class="metric-icon-bg">💎</div>
+                    </div>
+                </div>
+
+                <!-- SUB-PORTFOLIOS OVERVIEW GRID -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin: 25px 0 15px 0;">
+                    <h3 style="color: var(--text-primary); font-size: 1.1rem; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin: 0;">Sub-Portfolios Summaries</h3>
+                    <button onclick="openAddPortfolioModal()" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 4px; border: none; cursor: pointer; background: linear-gradient(90deg, #00F0FF 0%, #0088FF 100%); color: #030712; font-weight: 700; transition: 0.2s;">+ Add Portfolio</button>
+                </div>
+                <div class="sub-portfolios-grid" id="sub-portfolios-grid">
+                    <div class="metric-card glass-panel" id="subcard-dime" style="padding: 15px; border-left: 3px solid #00F0FF; display: flex; flex-direction: column;">
+                        <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;">DIME!</span>
+                        <div style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin: 5px 0;" id="dime-val">$0.00</div>
+                        <span class="positive" id="dime-pl" style="font-size: 0.8rem; font-weight: 500;">+0.0%</span>
+                    </div>
+                    <div class="metric-card glass-panel" id="subcard-webull" style="padding: 15px; border-left: 3px solid #D4AF37; display: flex; flex-direction: column;">
+                        <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;">WEBULL</span>
+                        <div style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin: 5px 0;" id="webull-val">$0.00</div>
+                        <span class="positive" id="webull-pl" style="font-size: 0.8rem; font-weight: 500;">+0.0%</span>
+                    </div>
+                    <div class="metric-card glass-panel" id="subcard-tax" style="padding: 15px; border-left: 3px solid #8B5CF6; display: flex; flex-direction: column;">
+                        <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;">TAX SAVING FUND</span>
+                        <div style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin: 5px 0;" id="tax-val">$0.00</div>
+                        <span class="positive" id="tax-pl" style="font-size: 0.8rem; font-weight: 500;">+0.0%</span>
+                    </div>
+                    <div class="metric-card glass-panel" id="subcard-pvd" style="padding: 15px; border-left: 3px solid #10B981; display: flex; flex-direction: column;">
+                        <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;">PROVIDENT FUND</span>
+                        <div style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin: 5px 0;" id="pvd-val">$0.00</div>
+                        <span class="positive" id="pvd-pl" style="font-size: 0.8rem; font-weight: 500;">+0.0%</span>
+                    </div>
+                </div>
+
+                <!-- MAIN WORKSPACE GRID -->
+                <div class="workspace-layout">
+                    <!-- LEFT COLUMN: POSITIONS & CONTROLS -->
+                    <div class="positions-column">
+                        <!-- CONTROL BAR -->
+                        <div class="control-bar glass-panel">
+                            <div class="search-wrapper">
+                                <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                                <input type="text" id="search-input" placeholder="Search Ticker or Company..." onkeyup="filterPositions()">
+                            </div>
+                            <div class="filter-wrapper">
+                                <label for="sector-filter" class="visually-hidden">Filter by Sector</label>
+                                <select id="sector-filter" onchange="filterPositions()">
+                                    <option value="ALL">All Sectors</option>
+                                    <option value="Technology">Technology</option>
+                                    <option value="Industrial Goods">Industrial Goods</option>
+                                    <option value="Financial Services">Financial Services</option>
+                                </select>
+                            </div>
+                            <div class="filter-wrapper">
+                                <label for="portfolio-filter" class="visually-hidden">Filter by Portfolio</label>
+                                <select id="portfolio-filter" onchange="filterPositions()">
+                                    <option value="ALL">All Portfolios</option>
+                                    <option value="Dime">Dime</option>
+                                    <option value="WeBull">WeBull</option>
+                                    <option value="Tax Saving Fund">Tax Saving Fund</option>
+                                    <option value="Provident Fund">Provident Fund</option>
+                                </select>
+                            </div>
+                            <!-- Currency Toggle Switch -->
+                            <div class="currency-switch">
+                                <button onclick="toggleCurrency('USD')" id="cur-usd" class="cur-btn active">USD</button>
+                                <button onclick="toggleCurrency('THB')" id="cur-thb" class="cur-btn">THB</button>
+                            </div>
+                            <button onclick="fetchLivePrices()" id="btn-refresh-prices" style="width: auto; margin-left: 10px; padding: 8px 16px; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(90deg, var(--accent-neon) 0%, #0088FF 100%); border: none; color: #030712; border-radius: 6px; cursor: pointer; transition: var(--transition);">
+                                <span class="refresh-spinner" id="btn-refresh-icon">🔄</span> <span id="btn-refresh-text">Refresh Prices</span>
+                            </button>
+                        </div>
+
+                        <!-- POSITIONS TABLE -->
+                        <div class="positions-container glass-panel">
+                            <table class="positions-table" id="positions-table-el">
+                                <thead>
+                                    <tr>
+                                        <th style="cursor:pointer;" onclick="sortTable('ticker')" title="Sort by Ticker">Ticker ↕</th>
+                                        <th style="cursor:pointer;" onclick="sortTable('companyName')" title="Sort by Company">Company Name ↕</th>
+                                        <th style="cursor:pointer;" onclick="sortTable('portfolio')" title="Sort by Portfolio">Portfolio ↕</th>
+                                        <th class="text-right" style="cursor:pointer;" onclick="sortTable('shares')" title="Sort by Shares">Shares ↕</th>
+                                        <th class="text-right" style="cursor:pointer;" onclick="sortTable('avgCost')" title="Sort by Avg Cost">Avg Cost ↕</th>
+                                        <th class="text-right" style="cursor:pointer;" onclick="sortTable('marketPrice')" title="Sort by Price">Market Price ↕</th>
+                                        <th class="text-right" style="cursor:pointer;" onclick="sortTable('marketValue')" title="Sort by Market Value">Market Value ↕</th>
+                                        <th class="text-right" style="cursor:pointer;" onclick="sortTable('return')" title="Sort by Return">Return (P&L) ↕</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="positions-table-body">
+                                    <!-- Dynamic rows loaded by app.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: VISUALIZATIONS & INGESTION -->
+                    <div class="visuals-column">
+                        <!-- PORTFOLIO ALLOCATION CHART -->
+                        <div class="chart-card glass-panel">
+                            <h2 class="card-title">Portfolio Allocation</h2>
+                            <div class="chart-container">
+                                <canvas id="allocationChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- QUICK INGESTION PANEL -->
+                        <div class="ingest-card glass-panel">
+                            <h2 class="card-title">Quick Ingest Position</h2>
+                            <form id="ingest-form" onsubmit="handleIngest(event)">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="ingest-type">Type</label>
+                                        <select id="ingest-type" class="type-buy" required onchange="toggleIngestType()">
+                                            <option value="BUY">Buy</option>
+                                            <option value="SELL">Sell</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="ingest-ticker">Ticker</label>
+                                        <input type="text" id="ingest-ticker" placeholder="e.g., TSLA" required maxlength="5" onblur="autoFillCompanyName()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="ingest-name">Company Name</label>
+                                        <input type="text" id="ingest-name" placeholder="e.g., Tesla, Inc." required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="ingest-sector">Sector</label>
+                                        <select id="ingest-sector" required>
+                                            <option value="Technology">Technology</option>
+                                            <option value="Industrial Goods">Industrial Goods</option>
+                                            <option value="Consumer Cyclical">Consumer Cyclical</option>
+                                            <option value="Financial Services">Financial Services</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="ingest-portfolio">Sub-Portfolio</label>
+                                        <select id="ingest-portfolio" required>
+                                            <option value="Dime">Dime</option>
+                                            <option value="WeBull">WeBull</option>
+                                            <option value="Tax Saving Fund">Tax Saving Fund</option>
+                                            <option value="Provident Fund">Provident Fund</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="ingest-shares">Shares (Qty)</label>
+                                        <input type="number" id="ingest-shares" placeholder="100" min="1" step="any" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="ingest-avg-cost" id="label-avg-cost">Avg Cost ($)</label>
+                                        <input type="number" id="ingest-avg-cost" placeholder="150.00" min="0.01" step="any" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="ingest-currency">Currency</label>
+                                        <select id="ingest-currency" required>
+                                            <option value="USD">USD</option>
+                                            <option value="THB">THB</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary" id="btn-ingest-submit">
+                                    Ingest to Portfolio
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 2: GENIE TEAM (INTERACTIVE CARDS) -->
+            <section id="section-team" class="tab-content">
+                <div class="team-hero glass-panel">
+                    <h1 class="team-hero-title">Meet Your Elite Sub-Agent Symphony</h1>
+                    <p class="team-hero-desc">
+                        A network of specialized, autonomous models engineered to parse wishes into execution, conduct rigorous financial forensics, and synthesize premium creative output.
+                    </p>
+                </div>
+
+                <div class="team-grid" id="team-grid-el">
+                    <!-- Genie Card -->
+                    <div class="team-card genie-glow" onclick="toggleCardFlip(this)">
+                        <div class="team-card-inner">
+                            <!-- FRONT -->
+                            <div class="team-card-front glass-panel">
+                                <div class="card-glow-border"></div>
+                                <div class="member-photo-container">
+                                    <img src="./assets/Genie.png" alt="Genie" class="member-photo">
+                                </div>
+                                <div class="member-front-info">
+                                    <h3 class="member-name">Genie</h3>
+                                    <span class="member-role">Orchestration Mastermind</span>
+                                </div>
+                                <div class="flip-hint">TAP TO REVEAL DIRECTIVE 🔄</div>
+                            </div>
+                            <!-- BACK -->
+                            <div class="team-card-back glass-panel">
+                                <div class="card-glow-border"></div>
+                                <div class="member-back-header">
+                                    <h3 class="member-name">Genie</h3>
+                                    <span class="member-role">Orchestration Mastermind</span>
+                                </div>
+                                <div class="member-details-scroll">
+                                    <div class="detail-block">
+                                        <span class="detail-block-title">Key Core Directive</span>
+                                        <p class="modal-quote">"Rub the lamp of curiosity, Pop, and watch your technical queries manifest into multi-agent symphonies!"</p>
+                                    </div>
+                                    <div class="detail-block">
+                                        <span class="detail-block-title">Skillset Domains</span>
+                                        <div class="member-skills" style="margin-top: 5px">
+                                            <span class="skill-tag">Intent Parsing</span>
+                                            <span class="skill-tag">Task Deconstruction</span>
+                                            <span class="skill-tag">Quality Synthesis</span>
+                                            <span class="skill-tag">Context Decoding</span>
+                                        </div>
+                                    </div>
+                                    <div class="detail-block">
+                                        <span class="detail-block-title">Operational Guardrails</span>
+                                        <div class="modal-guardrails" style="margin-top: 5px">
+                                            <ul>
+                                                <li>Never do heavy grunt work; coordinate and delegate.</li>
+                                                <li>Maintain high-energy, witty, and playfully theatrical persona.</li>
+                                                <li>Enforce Valerie's and Christian's strict verification protocols.</li>
+                                                <li>Designate graphic designs, visual layouts, and C-suite decks to Mateo.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flip-hint-back">TAP TO FLIP BACK 🔄</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Valerie Card -->
+                    <div class="team-card valerie-glow" onclick="toggleCardFlip(this)">
+                        <div class="team-card-inner">
+                            <!-- FRONT -->
+                            <div class="team-card-front glass-panel">
+                                <div class="card-glow-border"></div>
+                                <div class="member-photo-container">
+                                    <img src="./assets/Valerie.png" alt="Valerie" class="member-photo">
+                                </div>
+                                <div class="member-front-info">
+                                    <h3 class="member-name">Valerie</h3>
+                                    <span class="member-role">Quantitative Oracle</span>
+                                </div>
+                                <div class="flip-hint">TAP TO REVEAL DIRECTIVE 🔄</div>
+                            </div>
+                            <!-- BACK -->
+                            <div class="team-card-back glass-panel">
+                                <div class="card-glow-border"></div>
+                                <div class="member-back-header">
+                                    <h3 class="member-name">Valerie</h3>
+                                    <span class="member-role">Quantitative Oracle</span>
+                                </div>
+                                <div class="member-details-scroll">
+                                    <div class="detail-block">
+                                        <span class="detail-block-title">Key Core Directive</span>
+                                        <p class="modal-quote">"In God we trust; all others must bring audited balance sheets, validated cash flows, and mathematical proofs."</p>
+                                    </div>
+                                    <div class="detail-block">
+                                        <span class="detail-block-title">Skillset Domains</span>
+                                        <div class="member-skills" style="margin-top: 5px">
+                                            <span class="skill-tag">Reverse DCF</span>
+                                            <span class="skill-tag">Asymmetric Return Model</span>
+                                            <span class="skill-tag">Fundamental Auditing</span>
+                                            <span class="skill-tag">CapEx Tracking</span>
+                                        </div>
+                                    </div>
+                                    <div class="detail-block">
+                                        <span class="detail-block-title">Operational Guardrails</span>
+                                        <div class="modal-guardrails" style="margin-top: 5px">
+                                            <ul>
+                                                <li>Solve for market growth rates via Reverse DCF model first.</li>
+                                                <li>Require a minimum 3-to-1 Upside-to-Downside Payoff Ratio for buy ratings.</li>
+                                                <li>Identify and evaluate competitor CapEx and advanced packaging yield risk.</li>
+                                                <li>Report data directly to Christian for independent calculation verification.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flip-hint-back">TAP TO FLIP BACK 🔄</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Serene Card -->
+                    <div class="team-card serene-glow" onclick="toggleCardFlip(this)">
+                        <div class="team-card-inner">
+                            <!-- FRONT -->
+                            <div class="team-card-front glass-panel">
+                                <div class="card-glow-border"></div>
+                                <div class="member-photo-container">
+                                    <img src="./assets/Serene.png" alt="Serene" class="member-photo">
+                                </div>
+                                <div class="member-front-info">
+                                    <h3 class="member-name">Serene</h3>
+                                    <span class="member-role">Financial Localization Expert</span>
+                                </div>
+                                <div class="flip-hint">TAP TO REVEAL DIRECTIVE 🔄</div>
+                            </div>
+                            <!-- BACK -->
+                            <div class="team-card-back glass-panel">
+                                <div class="card-glow-border"></div>
+                                <div class="member-back-header">
+                                    <h3 class="member-name">Serene</h3>
+                                    <span class="member-role">Financial Localization Expert</span>
+                                </div>
+                                <div class="member-details-scroll">
+                                    <div class="detail-block">
+                                        <span class="detail-block-title">Key Core Directive</span>
+                                        <p class="modal-quote">"Translating words is simple; translating the risk profile, financial spirit, and analytical context is an art."</p>
+                                    </div>
+                                    <div class="detail-block">
+                                        <span class="detail-block-title">Skillset Domains</span>
+                                        <div class="member-skills" style="margin-top: 5px">
+                                            <span class="skill-tag">Bilingual Translation</span>
+                                            <span class="skill-tag">Linguistic Nuance</span>
+                                            <span class="skill-tag">Term Standardization</span>
+                                            <span class="skill-tag">Cross-Border Adaptations</span>
+                                        </div>
+                                    </div>
+                                    <div class="detail-block">
+                                        <span class="detail-block-title">Operational Guardrails</span>
+                                        <div class="modal-guardrails" style="margin-top: 5px">
+                                            <ul>
+                                                <li>Translate all core financial ratios into standardized Thai industry equivalents.</li>
+                                                <li>Ensure definitions of DCF assumptions remain perfectly aligned with international standards.</li>
+                                                <li>Highlight English vocabularies and structures to support Pop's language growth.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flip-hint-back">TAP TO FLIP BACK 🔄</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mateo Card -->
+                    <div class="team-card mateo-glow" onclick="toggleCardFlip(this)">
+                        <div class="team-card-inner">
+                            <!-- FRONT -->
+                            <div class="team-card-front glass-panel">
+                                <div class="card-glow-border"></div>
+                                <div class="member-photo-container">
+                                    <img src="./assets/Mateo.png" alt="Mateo" class="member-photo">
+                                </div>
+                                <div class="member-front-info">
+                                    <h3 class="member-name">Mateo</h3>
+                                    <span class="member-role">The Creative Alchemist</span>
+                                </div>
+                                <div class="flip-hint">TAP TO REVEAL DIRECTIVE 🔄</div>
+                            </div>
+                            <!-- BACK -->
+                            <div class="team-card-back glass-panel">
+                                <div class="card-glow-border"></div>
+                                <div class="member-back-header">
+                                    <h3 class="member-name">Mateo</h3>
+                                    <span class="member-role">The Creative Alchemist</span>
+                                </div>
+                                <div class="member-details-scroll">
+                                    <div class="detail-block">
+                                        <span class="detail-block-title">Key Core Directive</span>
+                                        <p class="modal-quote">"Data is the skeleton, Pop. Design is the muscle, the flesh, and the electrical impulse that brings it to life."</p>
+                                    </div>
+                                    <div class="detail-block">
+                                        <span class="detail-block-title">Skillset Domains</span>
+                                        <div class="member-skills" style="margin-top: 5px">
+                                            <span class="skill-tag">Executive Slide Decks</span>
+                                            <span class="skill-tag">Cover Art Production</span>
+                                            <span class="skill-tag">Interactive HTML UI</span>
+                                            <span class="skill-tag">Visual Aesthetics</span>
+                                        </div>
+                                    </div>
+                                    <div class="detail-block">
+                                        <span class="detail-block-title">Operational Guardrails</span>
+                                        <div class="modal-guardrails" style="margin-top: 5px">
+                                            <ul>
+                                                <li>Use deep space obsidian backdrops, gold highlights, and cyan glow trails.</li>
+                                                <li>Never use default generic colors or unstyled browser placeholders.</li>
+                                                <li>Design custom UI elements with micro-animations and smooth transition flows.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flip-hint-back">TAP TO FLIP BACK 🔄</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Christian Card -->
+                    <div class="team-card christian-glow" onclick="toggleCardFlip(this)">
+                        <div class="team-card-inner">
+                            <!-- FRONT -->
+                            <div class="team-card-front glass-panel">
+                                <div class="card-glow-border"></div>
+                                <div class="member-photo-container">
+                                    <img src="./assets/Christian.png" alt="Christian" class="member-photo">
+                                </div>
+                                <div class="member-front-info">
+                                    <h3 class="member-name">Christian</h3>
+                                    <span class="member-role">The Forensic Auditor</span>
+                                </div>
+                                <div class="flip-hint">TAP TO REVEAL DIRECTIVE 🔄</div>
+                            </div>
+                            <!-- BACK -->
+                            <div class="team-card-back glass-panel">
+                                <div class="card-glow-border"></div>
+                                <div class="member-back-header">
+                                    <h3 class="member-name">Christian</h3>
+                                    <span class="member-role">The Forensic Auditor</span>
+                                </div>
+                                <div class="member-details-scroll">
+                                    <div class="detail-block">
+                                        <span class="detail-block-title">Key Core Directive</span>
+                                        <p class="modal-quote">"Trust, but verify. The math is either 100% correct, or it is completely wrong. There is no gray area in forensics."</p>
+                                    </div>
+                                    <div class="detail-block">
+                                        <span class="detail-block-title">Skillset Domains</span>
+                                        <div class="member-skills" style="margin-top: 5px">
+                                            <span class="skill-tag">Formula Audit</span>
+                                            <span class="skill-tag">Independent Review</span>
+                                            <span class="skill-tag">Discrepancy Check</span>
+                                            <span class="skill-tag">Regulatory Alignment</span>
+                                        </div>
+                                    </div>
+                                    <div class="detail-block">
+                                        <span class="detail-block-title">Operational Guardrails</span>
+                                        <div class="modal-guardrails" style="margin-top: 5px">
+                                            <ul>
+                                                <li>Maintain absolute audit independence; do not participate in thesis generation.</li>
+                                                <li>Re-compute every DCF growth percentage, WACC formula, and margin calculation.</li>
+                                                <li>Flag all model inconsistencies or unmitigated risk overlaps immediately.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flip-hint-back">TAP TO FLIP BACK 🔄</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 3: EQUITY RESEARCH (REPORT VIEWER) -->
+            <section id="section-research" class="tab-content">
+                <div class="research-layout">
+                    <!-- REPORT LIST & CONTROLS -->
+                    <div class="research-sidebar glass-panel">
+                        <h2 class="sidebar-title">Research Reports</h2>
+                        <div class="report-list" id="report-list-container">
+                            <!-- Dynamic report list rendered by app.js -->
+                        </div>
+
+                        <div class="viewer-settings">
+                            <h3 class="settings-title">Linguistic Feed</h3>
+                            <div class="lang-selector-group">
+                                <button class="lang-btn active" id="lang-en" onclick="setLanguage('en')">EN (English)</button>
+                                <button class="lang-btn" id="lang-th" onclick="setLanguage('th')">TH (ภาษาไทย)</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- REPORT VIEWER MAIN AREA -->
+                    <div class="research-viewer-container glass-panel">
+                        <div class="viewer-banner-area">
+                            <img src="./assets/header_banner.png" alt="Report Banner Graphic" class="report-banner-image">
+                            <div class="banner-overlay-text">
+                                <span class="badge badge-accent">QUANTITATIVE AUDIT REPORT</span>
+                                <h1 id="viewer-main-title">Micron Technology, Inc. (MU)</h1>
+                                <p id="viewer-subtitle">Advanced Fundamental Dissection, Reverse DCF Modeling, and Asymmetric Risk-Reward Audit</p>
+                            </div>
+                        </div>
+
+                        <div class="viewer-meta-ribbon">
+                            <div class="meta-item">
+                                <span class="meta-item-label">PREPARED BY</span>
+                                <span class="meta-item-val">Valerie (Quantitative Oracle)</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-item-label">AUDITED BY</span>
+                                <span class="meta-item-val">Christian (Forensic Auditor)</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-item-label">LIVE PRICE</span>
+                                <span class="meta-item-val" id="meta-val-live-price" style="color: var(--accent-neon); font-weight: 700;">$0.00</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-item-label">LOCALIZATION</span>
+                                <span class="meta-item-val" id="meta-val-lang">Serene (English Feed)</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-item-label">RATING</span>
+                                <span class="meta-item-val rating-badge positive" id="viewer-rating">ACCUMULATE</span>
+                            </div>
+                        </div>
+
+                        <div class="report-tabs">
+                            <button class="report-tab active" id="tab-overview" onclick="setReportTab('overview')">Stock Overview</button>
+                            <button class="report-tab" id="tab-dcf" onclick="setReportTab('dcf')">Reverse DCF Analysis</button>
+                        </div>
+
+                        <!-- MARKDOWN RENDER CONTENT AREA -->
+                        <article class="report-article-body" id="report-article-content">
+                            <!-- Rendered report content from app.js -->
+                        </article>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="glass-panel" id="main-footer">
+            <p class="footer-copy">&copy; 2026 Genie Orchestration Workspace. Prepared exclusively for Pop (Popular).</p>
+            <p class="footer-status">
+                <span class="status-pulse-green"></span>
+                Genie Core Node V3.5 Online
+            </p>
+        </footer>
+    </div>
+
+    <!-- ADD PORTFOLIO MODAL -->
+    <div id="add-portfolio-modal" class="modal-overlay">
+        <div class="modal-content glass-panel" style="max-width: 400px; padding: 30px;">
+            <button class="modal-close" onclick="closeAddPortfolioModal()">×</button>
+            <h2 class="card-title" style="margin-bottom: 20px;">Add New Portfolio</h2>
+            <form id="add-portfolio-form" onsubmit="handleAddPortfolio(event)">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label for="new-port-name" style="display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 0.85rem;">Portfolio Name</label>
+                    <input type="text" id="new-port-name" required placeholder="e.g., Retirement Fund" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 6px; box-sizing: border-box;">
+                </div>
+                <div class="form-group" style="margin-bottom: 25px;">
+                    <label for="new-port-category" style="display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 0.85rem;">Category</label>
+                    <select id="new-port-category" required style="width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 6px; box-sizing: border-box; appearance: none;">
+                        <option value="Stocks">Stocks</option>
+                        <option value="Crypto">Crypto</option>
+                        <option value="Real Estate">Real Estate</option>
+                        <option value="Provident Fund">Provident Fund</option>
+                        <option value="Mutual Fund">Mutual Fund</option>
+                        <option value="Gold">Gold</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: 700; border-radius: 6px; border: none; cursor: pointer; background: linear-gradient(90deg, #00F0FF 0%, #0088FF 100%); color: #030712;">Create Portfolio</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="app.js?v=5"></script>
+</body>
+</html>

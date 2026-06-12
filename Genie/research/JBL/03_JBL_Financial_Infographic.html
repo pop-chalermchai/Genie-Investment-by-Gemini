@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jabil Inc. (JBL) - Q2 FY2026 Intelligent Infrastructure Infographic</title>
+    <!-- Google Fonts for premium typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* CSS Reset and Global Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg-obsidian: #0A0D14;
+            --bg-card: #121722;
+            --bg-card-hover: #171E2D;
+            --border-color: #202A3E;
+            --border-hover: #314261;
+            
+            --neon-blue: #00E5FF;
+            --neon-blue-glow: rgba(0, 229, 255, 0.4);
+            --neon-blue-dim: rgba(0, 229, 255, 0.15);
+            
+            --copper-gold: #FF9F1C;
+            --copper-gold-glow: rgba(255, 159, 28, 0.4);
+            --copper-gold-dim: rgba(255, 159, 28, 0.15);
+            
+            --text-primary: #F0F4F8;
+            --text-secondary: #8E9BAE;
+            --text-muted: #5C6A7E;
+            
+            --verdict-overvalued: #FF3860;
+            --verdict-overvalued-glow: rgba(255, 56, 96, 0.4);
+            --verdict-overvalued-dim: rgba(255, 56, 96, 0.15);
+
+            --emerald-green: #00E676;
+            --emerald-green-dim: rgba(0, 230, 118, 0.15);
+        }
+
+        body {
+            background-color: var(--bg-obsidian);
+            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            padding: 2.5rem;
+            min-height: 100vh;
+        }
+
+        /* Typography */
+        h1, h2, h3, h4, h5 {
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* App Layout Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header Styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 2rem;
+            position: relative;
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 250px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--neon-blue), var(--copper-gold));
+            box-shadow: 0 0 10px var(--neon-blue-glow);
+        }
+
+        .header-title-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .badge-premium {
+            background: linear-gradient(135deg, var(--copper-gold-dim), rgba(255, 159, 28, 0.05));
+            border: 1px solid var(--copper-gold);
+            color: var(--copper-gold);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            width: fit-content;
+            box-shadow: 0 0 8px rgba(255, 159, 28, 0.1);
+        }
+
+        header h1 {
+            font-size: 2.25rem;
+            background: linear-gradient(135deg, #FFFFFF 30%, #AEBDD1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .meta-stamp {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            text-align: right;
+            gap: 0.25rem;
+        }
+
+        .meta-stamp .date {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .meta-stamp .status {
+            font-size: 0.75rem;
+            color: var(--emerald-green);
+            background-color: var(--emerald-green-dim);
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            border: 1px solid rgba(0, 230, 118, 0.3);
+        }
+
+        .pulsing-dot {
+            width: 6px;
+            height: 6px;
+            background-color: var(--emerald-green);
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse-green 2s infinite;
+        }
+
+        @keyframes pulse-green {
+            0% {
+                transform: scale(0.9);
+                box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.7);
+            }
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 6px rgba(0, 230, 118, 0);
+            }
+            100% {
+                transform: scale(0.9);
+                box-shadow: 0 0 0 0 rgba(0, 230, 118, 0);
+            }
+        }
+
+        /* Dashboard Grid Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        @media (max-width: 1100px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Left Side: Financial Cards */
+        .financial-column {
+            display: flex;
+            flex-direction: column;
+            gap: 1.75rem;
+        }
+
+        /* Right Side: Product Profiles and Calculator */
+        .strategic-column {
+            display: flex;
+            flex-direction: column;
+            gap: 1.75rem;
+        }
+
+        /* Component Card base */
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.75rem;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: var(--border-hover);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Glow effects for cards */
+        .card-glow-blue::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--neon-blue), transparent);
+        }
+
+        .card-glow-gold::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--copper-gold), transparent);
+        }
+
+        .card-glow-verdict::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--verdict-overvalued), transparent);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            text-transform: uppercase;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        /* Metric Grid inside Cards */
+        .metrics-grid-2x2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .metric-block {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .metric-value {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+
+        .metric-value.neon-blue-text {
+            color: var(--neon-blue);
+            text-shadow: 0 0 15px rgba(0, 229, 255, 0.25);
+        }
+
+        .metric-value.copper-gold-text {
+            color: var(--copper-gold);
+            text-shadow: 0 0 15px rgba(255, 159, 28, 0.25);
+        }
+
+        .metric-growth {
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            width: fit-content;
+        }
+
+        .growth-up {
+            color: var(--emerald-green);
+            background-color: var(--emerald-green-dim);
+        }
+
+        /* Horizontal Splitter */
+        .card-divider {
+            height: 1px;
+            background-color: var(--border-color);
+            margin: 1.25rem 0;
+        }
+
+        /* Valuation Badge */
+        .valuation-badge-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: rgba(255, 56, 96, 0.05);
+            border: 1px dashed rgba(255, 56, 96, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .valuation-text-info h4 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--verdict-overvalued);
+            text-shadow: 0 0 10px rgba(255, 56, 96, 0.2);
+        }
+
+        .valuation-text-info p {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .verdict-tag {
+            background-color: var(--verdict-overvalued-dim);
+            border: 1px solid var(--verdict-overvalued);
+            color: var(--verdict-overvalued);
+            font-size: 0.85rem;
+            font-weight: 800;
+            padding: 0.35rem 1rem;
+            border-radius: 6px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            box-shadow: 0 0 12px var(--verdict-overvalued-glow);
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% {
+                box-shadow: 0 0 4px var(--verdict-overvalued-glow);
+            }
+            50% {
+                box-shadow: 0 0 15px var(--verdict-overvalued-glow);
+            }
+            100% {
+                box-shadow: 0 0 4px var(--verdict-overvalued-glow);
+            }
+        }
+
+        /* Valuation Scale slider or blocks */
+        .valuation-scale {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .scale-track {
+            height: 10px;
+            background-color: var(--border-color);
+            border-radius: 9999px;
+            position: relative;
+            margin: 1rem 0;
+            overflow: visible;
+        }
+
+        .scale-fill {
+            height: 100%;
+            border-radius: 9999px;
+            background: linear-gradient(90deg, var(--emerald-green) 0%, var(--copper-gold) 60%, var(--verdict-overvalued) 100%);
+            width: 100%;
+        }
+
+        .scale-marker {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: var(--text-primary);
+            border: 3px solid var(--bg-obsidian);
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+            z-index: 10;
+        }
+
+        .scale-marker-label {
+            position: absolute;
+            top: -24px;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            font-weight: 700;
+            white-space: nowrap;
+            background-color: var(--bg-obsidian);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        .scale-legend {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        /* AI Driver Product Profiles */
+        .driver-profile {
+            display: flex;
+            gap: 1.25rem;
+            align-items: flex-start;
+        }
+
+        .driver-icon-wrapper {
+            width: 54px;
+            height: 54px;
+            border-radius: 12px;
+            background-color: rgba(0, 229, 255, 0.05);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: var(--neon-blue);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover .driver-icon-wrapper {
+            background-color: var(--neon-blue-dim);
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
+            color: var(--neon-blue);
+        }
+
+        .driver-icon-wrapper.gold {
+            color: var(--copper-gold);
+            background-color: rgba(255, 159, 28, 0.03);
+        }
+
+        .card:hover .driver-icon-wrapper.gold {
+            background-color: var(--copper-gold-dim);
+            border-color: var(--copper-gold);
+            box-shadow: 0 0 15px rgba(255, 159, 28, 0.2);
+            color: var(--copper-gold);
+        }
+
+        .driver-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            flex-grow: 1;
+        }
+
+        .driver-details h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .driver-details .subtitle {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+
+        .driver-details p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            line-height: 1.4;
+        }
+
+        .tag-pill-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .tag-pill {
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.25rem 0.6rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .card:hover .tag-pill {
+            border-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .card:hover .tag-pill.highlight-blue {
+            border-color: rgba(0, 229, 255, 0.3);
+            background-color: rgba(0, 229, 255, 0.03);
+            color: var(--neon-blue);
+        }
+
+        .card:hover .tag-pill.highlight-gold {
+            border-color: rgba(255, 159, 28, 0.3);
+            background-color: rgba(255, 159, 28, 0.03);
+            color: var(--copper-gold);
+        }
+
+        /* Interactive Sensitivity Calculator Section */
+        .calculator-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .calculator-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .calc-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            line-height: 1.4;
+        }
+
+        .calc-control-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .calc-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 0.6rem;
+        }
+
+        .fcf-toggle-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .toggle-btn {
+            background-color: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.6rem;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            text-align: center;
+        }
+
+        .toggle-btn:hover {
+            border-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            background-color: rgba(255, 255, 255, 0.04);
+        }
+
+        .toggle-btn.active {
+            background-color: var(--neon-blue-dim);
+            border-color: var(--neon-blue);
+            color: var(--neon-blue);
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.15);
+        }
+
+        .method-toggle-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .toggle-btn.active-gold {
+            background-color: var(--copper-gold-dim);
+            border-color: var(--copper-gold);
+            color: var(--copper-gold);
+            box-shadow: 0 0 10px rgba(255, 159, 28, 0.15);
+        }
+
+        /* Big Implied Growth Output Screen */
+        .calculator-screen {
+            background-color: rgba(10, 13, 20, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            position: relative;
+        }
+
+        .calculator-screen::before {
+            content: 'DYNAMIC ENGINE';
+            position: absolute;
+            top: 6px;
+            left: 10px;
+            font-size: 0.6rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+        }
+
+        .screen-output-value {
+            font-size: 3.25rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--neon-blue);
+            text-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+            line-height: 1;
+            margin: 0.5rem 0;
+            transition: all 0.3s ease;
+        }
+
+        .screen-output-value.method-b-active {
+            color: var(--copper-gold);
+            text-shadow: 0 0 20px rgba(255, 159, 28, 0.4);
+        }
+
+        .screen-output-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+
+        .screen-output-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            line-height: 1.3;
+            max-width: 90%;
+            margin-top: 0.25rem;
+        }
+
+        /* Payoff Audit Matrix Card */
+        .payoff-matrix-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .payoff-item {
+            background-color: rgba(255, 255, 255, 0.01);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .payoff-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .payoff-item-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .payoff-item-badge {
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+        }
+
+        .payoff-item-badge.fail {
+            background-color: var(--verdict-overvalued-dim);
+            color: var(--verdict-overvalued);
+            border: 1px solid rgba(255, 56, 96, 0.3);
+        }
+
+        .payoff-item-badge.pass {
+            background-color: var(--emerald-green-dim);
+            color: var(--emerald-green);
+            border: 1px solid rgba(0, 230, 118, 0.3);
+        }
+
+        .payoff-item-val {
+            font-size: 1.5rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            margin-top: 0.25rem;
+        }
+
+        .payoff-item-ratio {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .payoff-item-desc {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            line-height: 1.3;
+        }
+
+        /* SVG Icon styling */
+        svg.inline-icon {
+            width: 100%;
+            height: 100%;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 1.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 4rem;
+            border-top: 1px solid var(--border-color);
+            padding-top: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        footer a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        footer a:hover {
+            color: var(--neon-blue);
+        }
+
+        /* Custom scrollbar for premium dark feel */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-obsidian);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-hover);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- Header -->
+        <header>
+            <div class="header-title-container">
+                <span class="badge-premium">Mateo's Alchemy Room — Visual Intelligence Asset</span>
+                <h1>JABIL INC. (NYSE: JBL)</h1>
+                <p>Q2 FY2026 Intelligent Infrastructure & Thermal Architecture Audit</p>
+            </div>
+            <div class="meta-stamp">
+                <span class="date mono">2026-06-02</span>
+                <span class="status">
+                    <span class="pulsing-dot"></span>
+                    christian clearance clear
+                </span>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Content Grid -->
+        <div class="dashboard-grid">
+            
+            <!-- Left Column: Financial Audit & Valuation -->
+            <div class="financial-column">
+                
+                <!-- Card 1: Revenue & Growth (Blue Glow) -->
+                <div class="card card-glow-blue">
+                    <div class="card-title">
+                        <span>Topline Performance</span>
+                        <span class="mono" style="color: var(--neon-blue); font-size: 0.75rem;">Q2 FY26 Filed Apr 8, 2026</span>
+                    </div>
+                    <div class="metrics-grid-2x2">
+                        <div class="metric-block">
+                            <span class="metric-label">Consolidated Net Revenue</span>
+                            <span class="metric-value neon-blue-text">$8.28B</span>
+                            <span class="metric-growth growth-up">
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                    <path d="M12 19V5M5 12l7-7 7 7"/>
+                                </svg>
+                                +23% YoY
+                            </span>
+                        </div>
+                        <div class="metric-block">
+                            <span class="metric-label">Intelligent Infrastructure Segment</span>
+                            <span class="metric-value copper-gold-text">$4.00B</span>
+                            <span class="metric-growth growth-up">
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                    <path d="M12 19V5M5 12l7-7 7 7"/>
+                                </svg>
+                                +52% YoY
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-divider"></div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;">
+                        <span style="color: var(--text-secondary);">Infrastructure Segment Share:</span>
+                        <span class="mono" style="color: var(--text-primary); font-weight: 700;">~48.3% of Total Revenue</span>
+                    </div>
+                </div>
+
+                <!-- Card 2: Earnings & Profitability (Blue Glow) -->
+                <div class="card card-glow-blue">
+                    <div class="card-title">
+                        <span>Earnings & Margins</span>
+                        <span class="mono" style="color: var(--text-secondary); font-size: 0.75rem;">Robust Operating Leverage</span>
+                    </div>
+                    <div class="metrics-grid-2x2">
+                        <div class="metric-block">
+                            <span class="metric-label">GAAP Diluted EPS</span>
+                            <span class="metric-value">$2.08</span>
+                        </div>
+                        <div class="metric-block">
+                            <span class="metric-label">Core Non-GAAP EPS</span>
+                            <span class="metric-value neon-blue-text">$2.69</span>
+                        </div>
+                        <div class="metric-block">
+                            <span class="metric-label">GAAP Operating Income</span>
+                            <span class="metric-value">$374M</span>
+                            <span class="mono" style="font-size: 0.75rem; color: var(--text-secondary);">4.52% Operating Margin</span>
+                        </div>
+                        <div class="metric-block">
+                            <span class="metric-label">Core Non-GAAP Operating Income</span>
+                            <span class="metric-value copper-gold-text">$436M</span>
+                            <span class="mono" style="font-size: 0.75rem; color: var(--text-secondary);">5.27% Operating Margin</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Capital Structure (Blue Glow) -->
+                <div class="card card-glow-blue">
+                    <div class="card-title">
+                        <span>Balance Sheet & Liquidity</span>
+                        <span class="mono" style="color: var(--emerald-green); font-size: 0.75rem;">Proactive Maturities Managed</span>
+                    </div>
+                    <div class="metrics-grid-2x2">
+                        <div class="metric-block">
+                            <span class="metric-label">Cash & Equivalents</span>
+                            <span class="metric-value" style="color: var(--emerald-green);">$1.83B</span>
+                        </div>
+                        <div class="metric-block">
+                            <span class="metric-label">Total Outstanding Debt</span>
+                            <span class="metric-value" style="color: #E2E8F0;">$3.876B</span>
+                        </div>
+                    </div>
+                    <div class="card-divider"></div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.8rem; color: var(--text-secondary);">
+                        <div>
+                            <span>Net Debt Burden:</span>
+                            <div class="mono" style="color: var(--text-primary); font-size: 1.1rem; font-weight: 700; margin-top: 0.1rem;">$2.046 Billion</div>
+                        </div>
+                        <div>
+                            <span>Refinancing Operations:</span>
+                            <div style="color: var(--text-primary); margin-top: 0.1rem; font-size: 0.75rem;">
+                                Issued <strong style="color: var(--copper-gold);">$1.0B Senior Notes</strong> in Jan 2026 to retire short-term paper and mitigate refinancing risks.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4: Valuation Verdict & Asymmetric Payoff Check (Red Glow) -->
+                <div class="card card-glow-verdict">
+                    <div class="card-title">
+                        <span style="color: var(--verdict-overvalued);">Valuation & Asymmetric Upside Audit</span>
+                        <span class="mono" style="color: var(--verdict-overvalued); font-size: 0.75rem; font-weight: 800;">VERDICT: OVERVALUED</span>
+                    </div>
+                    
+                    <div class="valuation-badge-container">
+                        <div class="valuation-text-info">
+                            <h4>Current Price: ~$365.00</h4>
+                            <p>Trades at ~30x Core FY26 EPS Guidance vs. historical 10x-15x range.</p>
+                        </div>
+                        <span class="verdict-tag">OVERVALUED</span>
+                    </div>
+
+                    <div class="valuation-scale">
+                        <div class="scale-track">
+                            <div class="scale-fill"></div>
+                            <!-- Markers -->
+                            <div class="scale-marker" style="left: 20%;">
+                                <div class="scale-marker-label mono">$230 Bear</div>
+                            </div>
+                            <div class="scale-marker" style="left: 45%;">
+                                <div class="scale-marker-label mono" style="color: var(--emerald-green); border-color: var(--emerald-green); font-weight: 800;">$285 Entry Limit</div>
+                            </div>
+                            <div class="scale-marker" style="left: 77%;">
+                                <div class="scale-marker-label mono" style="color: var(--verdict-overvalued); border-color: var(--verdict-overvalued);">$365 Current</div>
+                            </div>
+                            <div class="scale-marker" style="left: 95%;">
+                                <div class="scale-marker-label mono">$450 Bull</div>
+                            </div>
+                        </div>
+                        <div class="scale-legend">
+                            <span>Strong Margin of Safety</span>
+                            <span>Historical Multiple Mean</span>
+                            <span>Speculative Expansion Ceiling</span>
+                        </div>
+                    </div>
+
+                    <div class="card-divider"></div>
+
+                    <!-- Asymmetric Payoff Matrix Grid -->
+                    <div class="payoff-matrix-grid">
+                        <div class="payoff-item">
+                            <div class="payoff-item-header">
+                                <span class="payoff-item-title">Current Entry ($365)</span>
+                                <span class="payoff-item-badge fail">FAIL</span>
+                            </div>
+                            <span class="payoff-item-val" style="color: var(--verdict-overvalued);">0.63x</span>
+                            <span class="payoff-item-desc">Upside of $85 vs Downside of $135. Heavily skewed to the bear case. Fails 3-to-1 rule.</span>
+                        </div>
+                        <div class="payoff-item">
+                            <div class="payoff-item-header">
+                                <span class="payoff-item-title">Limit Entry ($285)</span>
+                                <span class="payoff-item-badge pass">PASS</span>
+                            </div>
+                            <span class="payoff-item-val" style="color: var(--emerald-green);">3.00x</span>
+                            <span class="payoff-item-desc">Upside of $165 vs Downside of $55. Perfectly satisfying strict asymmetric risk-reward hurdle.</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: AI Strategic Infrastructure & Interactive Engine -->
+            <div class="strategic-column">
+                
+                <!-- Card 5: Intelligent Infrastructure (Gold Glow) -->
+                <div class="card card-glow-gold">
+                    <div class="driver-profile">
+                        <div class="driver-icon-wrapper gold">
+                            <!-- Custom Hand-crafted Inline SVG: Network/Integration Grid -->
+                            <svg class="inline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <rect x="2" y="2" width="20" height="6" rx="1" />
+                                <rect x="2" y="9" width="20" height="6" rx="1" />
+                                <rect x="2" y="16" width="20" height="6" rx="1" />
+                                <path d="M6 5h.01M6 12h.01M6 19h.01" stroke-width="2.5" />
+                                <path d="M10 5h.01M10 12h.01M10 19h.01" stroke-width="2.5" />
+                                <path d="M18 5h2M18 12h2M18 19h2" />
+                            </svg>
+                        </div>
+                        <div class="driver-details">
+                            <span class="subtitle">AI Core Infrastructure Link</span>
+                            <h3>Intelligent Infrastructure Segment</h3>
+                            <p>Active co-design co-engineering from silicon photonics level up to full-rack hyperscaler server integration, transforming from simple assembly to high-barrier system partner.</p>
+                            <div class="tag-pill-container">
+                                <span class="tag-pill highlight-gold">Full-Rack Integration</span>
+                                <span class="tag-pill highlight-gold">800G / 1.6T Transceivers</span>
+                                <span class="tag-pill highlight-gold">Co-Packaged Optics (CPO)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 6: Mikros Technologies Acquisition (Gold Glow) -->
+                <div class="card card-glow-gold">
+                    <div class="driver-profile">
+                        <div class="driver-icon-wrapper gold">
+                            <!-- Custom Hand-crafted Inline SVG: Advanced Liquid Cooling Loop -->
+                            <svg class="inline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M12 2v20M8 5h8M8 19h8" />
+                                <path d="M16 10c0-2-2-4-4-4s-4 2-4 4 2 4 4 4 4-2 4-4z" />
+                                <path d="M12 6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z" />
+                                <path d="M5 12h14" stroke-dasharray="2 2" />
+                            </svg>
+                        </div>
+                        <div class="driver-details">
+                            <span class="subtitle">Liquid Thermal Moat</span>
+                            <h3>Mikros Technologies Acquisition</h3>
+                            <p>Proprietary micro-channel liquid cooling technology and advanced cold-plate integration to resolve massive heat dissipation challenges from high-density AI clusters.</p>
+                            <div class="tag-pill-container">
+                                <span class="tag-pill highlight-gold">Micro-channel Thermal Coldplates</span>
+                                <span class="tag-pill highlight-gold">Liquid Cooling loops</span>
+                                <span class="tag-pill highlight-gold">100kW+ Rack Support</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 7: Hanley Energy Acquisition (Gold Glow) -->
+                <div class="card card-glow-gold">
+                    <div class="driver-profile">
+                        <div class="driver-icon-wrapper gold">
+                            <!-- Custom Hand-crafted Inline SVG: Power grid / management node -->
+                            <svg class="inline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                                <circle cx="12" cy="12" r="10" stroke-dasharray="2 2" />
+                            </svg>
+                        </div>
+                        <div class="driver-details">
+                            <span class="subtitle">Grid-Scale Power Moat</span>
+                            <h3>Hanley Energy Acquisition</h3>
+                            <p>Crucial energy management, control systems, and substation grid-scale energy systems for hyperscalers to handle high-power transmission architectures safely.</p>
+                            <div class="tag-pill-container">
+                                <span class="tag-pill highlight-gold">Power Substation Controls</span>
+                                <span class="tag-pill highlight-gold">Hyperscaler Energy Management</span>
+                                <span class="tag-pill highlight-gold">Operational Security</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Card: Dynamic Reverse DCF Sensitivity Engine (Blue Glow) -->
+                <div class="card card-glow-blue">
+                    <div class="calculator-header">
+                        <div class="calculator-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--neon-blue);">
+                                <rect x="4" y="4" width="16" height="16" rx="2" />
+                                <path d="M9 9h6M9 13h6M9 17h6" />
+                            </svg>
+                            <span>Reverse DCF Implied Growth Engine</span>
+                        </div>
+                        <span class="badge-premium" style="font-size: 0.65rem; border-color: var(--neon-blue); color: var(--neon-blue); background-color: var(--neon-blue-dim);">Interactive Simulator</span>
+                    </div>
+                    <p class="calc-subtitle">Solve for the exact 10-year annual Free Cash Flow growth rate baked into the current stock price under different normalized starting bases.</p>
+                    
+                    <!-- FCF Base Toggle -->
+                    <div class="calc-control-group">
+                        <div class="calc-label">1. Select Free Cash Flow Base (FCF₀)</div>
+                        <div class="fcf-toggle-buttons">
+                            <button class="toggle-btn active" onclick="setFCFBase('1.0B', this)">$1.0B (Depressed)</button>
+                            <button class="toggle-btn" onclick="setFCFBase('1.2B', this)">$1.2B (Normalized)</button>
+                            <button class="toggle-btn" onclick="setFCFBase('1.5B', this)">$1.5B (Optimistic)</button>
+                        </div>
+                    </div>
+
+                    <!-- Method Toggle -->
+                    <div class="calc-control-group">
+                        <div class="calc-label">2. Select DCF Methodology</div>
+                        <div class="method-toggle-group">
+                            <button id="methodA_btn" class="toggle-btn active" onclick="setMethod('Method A', this)">Method A: Equity Targeted</button>
+                            <button id="methodB_btn" class="toggle-btn" onclick="setMethod('Method B', this)">Method B: EV Targeted</button>
+                        </div>
+                    </div>
+
+                    <!-- Output Screen -->
+                    <div class="calculator-screen">
+                        <span class="screen-output-label">Implied 10-Yr FCF CAGR</span>
+                        <div id="outputVal" class="screen-output-value">15.98%</div>
+                        <span id="outputDesc" class="screen-output-desc">Solving DCF targeting Equity Value ($38.544B) at WACC=10.0%, Terminal Growth=3.0%.</span>
+                    </div>
+
+                    <div style="margin-top: 1rem; font-size: 0.75rem; color: var(--text-muted); text-align: center; font-style: italic;">
+                        *Historical 4-year actual FCF CAGR (FY21-FY25) is 19.8% ($0.64B to $1.318B).
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <span>Corporate Financial & Strategic Physical Layer Infographic — Jabil Inc.</span>
+            <span>Designed by <strong style="color: var(--copper-gold);">Mateo, The Creative Alchemist</strong></span>
+        </footer>
+
+    </div>
+
+    <!-- Interactive Engine Script -->
+    <script>
+        // Data matrix containing the exact forensic verified growth rates
+        const dcfMatrix = {
+            '1.0B': {
+                'Method A': { rate: '15.98%', desc: 'Solving Equity Targeted Reverse DCF ($38.544B) from a depressed starting Cash Flow base. Highly conservative scenario.' },
+                'Method B': { rate: '16.68%', desc: 'Solving EV Targeted Reverse DCF ($40.590B, counting $2.046B Net Debt). Reflects debt obligations.' }
+            },
+            '1.2B': {
+                'Method A': { rate: '13.55%', desc: 'Solving Equity Targeted Reverse DCF ($38.544B) from a normalized starting Cash Flow base of $1.2B.' },
+                'Method B': { rate: '14.22%', desc: 'Solving EV Targeted Reverse DCF ($40.590B, counting $2.046B Net Debt) from a normalized starting Cash Flow base of $1.2B.' }
+            },
+            '1.5B': {
+                'Method A': { rate: '10.52%', desc: 'Solving Equity Targeted Reverse DCF ($38.544B) from an optimistic starting Cash Flow base. High near-term infrastructure flow assumed.' },
+                'Method B': { rate: '11.21%', desc: 'Solving EV Targeted Reverse DCF ($40.590B, counting $2.046B Net Debt) from an optimistic starting Cash Flow base of $1.5B.' }
+            }
+        };
+
+        let currentFCF = '1.0B';
+        let currentMethod = 'Method A';
+
+        function setFCFBase(fcfVal, btn) {
+            // Update button UI
+            const buttons = btn.parentElement.querySelectorAll('.toggle-btn');
+            buttons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            currentFCF = fcfVal;
+            updateEngine();
+        }
+
+        function setMethod(methodVal, btn) {
+            // Update button UI
+            const buttons = btn.parentElement.querySelectorAll('.toggle-btn');
+            buttons.forEach(b => {
+                b.classList.remove('active');
+                b.classList.remove('active-gold');
+            });
+            
+            if (methodVal === 'Method A') {
+                btn.classList.add('active');
+                document.getElementById('outputVal').classList.remove('method-b-active');
+            } else {
+                btn.classList.add('active-gold');
+                document.getElementById('outputVal').classList.add('method-b-active');
+            }
+
+            currentMethod = methodVal;
+            updateEngine();
+        }
+
+        function updateEngine() {
+            const result = dcfMatrix[currentFCF][currentMethod];
+            const valEl = document.getElementById('outputVal');
+            const descEl = document.getElementById('outputDesc');
+
+            // Apply fade animation
+            valEl.style.opacity = 0;
+            setTimeout(() => {
+                valEl.innerText = result.rate;
+                descEl.innerText = result.desc;
+                valEl.style.opacity = 1;
+            }, 100);
+        }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            updateEngine();
+        });
+    </script>
+</body>
+</html>

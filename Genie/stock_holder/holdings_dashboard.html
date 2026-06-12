@@ -1,0 +1,2508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aetheris // Pop's Premium Portfolio Intelligence</title>
+  
+  <!-- Premium Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ==========================================
+       1. PREMIUM DESIGN SYSTEM VARIABLES & RESET
+       ========================================== */
+    :root {
+      --bg-dark: #07080c;
+      --bg-card: rgba(13, 16, 27, 0.65);
+      --bg-card-hover: rgba(20, 25, 42, 0.8);
+      --border-color: rgba(255, 255, 255, 0.05);
+      --border-hover: rgba(0, 242, 254, 0.25);
+      
+      /* Neon Accents */
+      --primary: hsl(182, 100%, 50%);       /* Electric Cyan */
+      --primary-rgb: 0, 242, 254;
+      --secondary: hsl(272, 100%, 65%);     /* Cyber Purple */
+      --secondary-rgb: 157, 78, 221;
+      --accent: hsl(212, 100%, 55%);        /* Ice Blue */
+      
+      /* Semantic Colors */
+      --success: hsl(152, 90%, 50%);        /* Vibrant Emerald */
+      --success-bg: rgba(0, 245, 160, 0.08);
+      --success-border: rgba(0, 245, 160, 0.2);
+      --danger: hsl(342, 95%, 55%);         /* Cyber Crimson */
+      --danger-bg: rgba(255, 51, 102, 0.08);
+      --danger-border: rgba(255, 51, 102, 0.2);
+      
+      /* Typography Colors */
+      --text-primary: #f3f4f6;
+      --text-secondary: #a3b3cc;
+      --text-muted: #64748b;
+      --text-dim: #3d495c;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-primary);
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Ambient Glowing Orbs and Sci-Fi Grid */
+    body::before {
+      content: "";
+      position: fixed;
+      top: -15%;
+      left: -10%;
+      width: 120vw;
+      height: 120vh;
+      background: 
+        radial-gradient(circle at 15% 20%, rgba(var(--primary-rgb), 0.09) 0%, transparent 45%),
+        radial-gradient(circle at 85% 75%, rgba(var(--secondary-rgb), 0.08) 0%, transparent 45%);
+      z-index: -2;
+      pointer-events: none;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-size: 50px 50px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.012) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.012) 1px, transparent 1px);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* Elegant Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.3);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(var(--primary-rgb), 0.3);
+    }
+
+    /* ==========================================
+       2. TYPOGRAPHY & LAYOUT UTILITIES
+       ========================================== */
+    h1, h2, h3, h4 {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem;
+    }
+
+    /* Glassmorphic Base Card */
+    .glass-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .glass-card:hover {
+      border-color: var(--border-hover);
+      box-shadow: 0 15px 40px -10px rgba(0, 0, 0, 0.6), 
+                  0 0 20px rgba(var(--primary-rgb), 0.05);
+    }
+
+    /* ==========================================
+       3. HEADER COMPONENT
+       ========================================== */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2.5rem;
+      position: relative;
+    }
+
+    .brand-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      background-color: var(--primary);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--primary);
+      animation: pulse-glow 2s infinite;
+    }
+
+    .brand-title {
+      font-size: 2.25rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff 30%, var(--text-secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .brand-title span {
+      background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .system-status {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .status-item {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+
+    .status-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+
+    .status-value {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--text-primary);
+    }
+
+    .status-value.success {
+      color: var(--success);
+      text-shadow: 0 0 10px rgba(0, 245, 160, 0.2);
+    }
+
+    /* ==========================================
+       4. TOP KPI CARDS SECTION
+       ========================================== */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .kpi-card {
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .kpi-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .kpi-icon {
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .kpi-value {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.15rem;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.1;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.01em;
+    }
+
+    .kpi-trend {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+    }
+
+    .kpi-trend.up {
+      color: var(--success);
+      background: var(--success-bg);
+      border: 1px solid var(--success-border);
+    }
+
+    .kpi-trend.down {
+      color: var(--danger);
+      background: var(--danger-bg);
+      border: 1px solid var(--danger-border);
+    }
+
+    /* Card Micro Sparklines */
+    .kpi-sparkline {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 45px;
+      pointer-events: none;
+      opacity: 0.25;
+      transition: opacity 0.3s ease;
+    }
+
+    .kpi-card:hover .kpi-sparkline {
+      opacity: 0.55;
+    }
+
+    /* ==========================================
+       5. CHARTS & ANALYTICS LAYOUT
+       ========================================== */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 4fr 5fr;
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .chart-card {
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .chart-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Chart Interactive Tabs */
+    .chart-tabs {
+      display: flex;
+      gap: 0.5rem;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 0.25rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      padding: 0.4rem 0.8rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Donut Chart Visual Setup */
+    .donut-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      height: 250px;
+      position: relative;
+    }
+
+    .donut-visual-wrapper {
+      position: relative;
+      width: 220px;
+      height: 220px;
+    }
+
+    .donut-center-info {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 140px;
+      pointer-events: none;
+    }
+
+    .donut-center-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 0.15rem;
+      font-weight: 700;
+    }
+
+    .donut-center-value {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.1;
+      margin-bottom: 0.15rem;
+    }
+
+    .donut-center-sub {
+      font-size: 0.7rem;
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* Sector Legend Styles */
+    .donut-legend {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-height: 240px;
+      overflow-y: auto;
+      padding-right: 0.5rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.4rem 0.6rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+
+    .legend-item:hover {
+      background: rgba(255, 255, 255, 0.03);
+      border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .legend-item.dimmed {
+      opacity: 0.25;
+    }
+
+    .legend-label-col {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .legend-color-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .legend-name {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      max-width: 140px;
+    }
+
+    .legend-value-col {
+      text-align: right;
+    }
+
+    .legend-val {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .legend-pct {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+    }
+
+    /* Leaderboards Stack View */
+    .leaderboard-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      height: 250px;
+      overflow-y: auto;
+      padding-right: 0.5rem;
+    }
+
+    .leaderboard-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0.75rem;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .leaderboard-row:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.08);
+      transform: translateX(4px);
+    }
+
+    /* Background fills represent comparative weight */
+    .row-bg-progress {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: linear-gradient(90deg, rgba(var(--primary-rgb), 0.035) 0%, rgba(var(--primary-rgb), 0.005) 100%);
+      z-index: 1;
+      transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+
+    .leaderboard-row:hover .row-bg-progress {
+      background: linear-gradient(90deg, rgba(var(--primary-rgb), 0.055) 0%, rgba(var(--primary-rgb), 0.005) 100%);
+    }
+
+    .row-asset-details {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      z-index: 2;
+    }
+
+    .row-ticker-badge {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #fff;
+      padding: 0.25rem 0.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      min-width: 52px;
+      text-align: center;
+      text-shadow: 0 0 5px rgba(255,255,255,0.1);
+    }
+
+    .row-company-name {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      max-width: 170px;
+    }
+
+    .row-metrics-col {
+      text-align: right;
+      z-index: 2;
+    }
+
+    .row-val {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .row-subval {
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    /* ==========================================
+       6. INTERACTIVE PROJECTION CALCULATOR CARD
+       ========================================== */
+    .projection-card {
+      margin-bottom: 2.5rem;
+      padding: 2rem;
+    }
+
+    .projection-grid {
+      display: grid;
+      grid-template-columns: 4fr 7fr;
+      gap: 2.5rem;
+      align-items: center;
+    }
+
+    .calculator-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .calc-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .calc-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .calc-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .calc-val-bubble {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--primary);
+      text-shadow: 0 0 10px rgba(var(--primary-rgb), 0.2);
+    }
+
+    .calc-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 5px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.06);
+      outline: none;
+      transition: background 0.3s;
+    }
+
+    .calc-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 10px var(--primary);
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+
+    .calc-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .projection-summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      padding: 1rem;
+      border-radius: 12px;
+      margin-top: 0.5rem;
+    }
+
+    .summary-metric {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .summary-metric-val {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* Projection SVG Elements */
+    .projection-visual-panel {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .projection-svg-wrapper {
+      width: 100%;
+      height: 250px;
+      position: relative;
+    }
+
+    .chart-tooltip {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(13, 16, 27, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      font-size: 0.75rem;
+      z-index: 10;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    }
+
+    /* ==========================================
+       7. HOLDINGS LEDGER / DATA TABLE SECTION
+       ========================================== */
+    .ledger-card {
+      padding: 2rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .ledger-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .ledger-title-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .ledger-title-count {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--primary);
+      border-radius: 6px;
+    }
+
+    .ledger-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    /* Glowing Search Bar */
+    .search-wrapper {
+      position: relative;
+      min-width: 280px;
+    }
+
+    .search-input {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 0.65rem 1rem 0.65rem 2.5rem;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.85rem;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 15px rgba(var(--primary-rgb), 0.15);
+      background: rgba(0, 0, 0, 0.4);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    /* Filter Chips Container */
+    .filter-scroll-container {
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .filter-chip {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--text-secondary);
+      padding: 0.4rem 0.9rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: 20px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .filter-chip:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    .filter-chip.active {
+      background: rgba(var(--primary-rgb), 0.08);
+      border-color: var(--primary);
+      color: var(--primary);
+      box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.1);
+    }
+
+    /* Breathtaking Table Layout */
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.85rem;
+    }
+
+    th {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+
+    th:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: #fff;
+    }
+
+    .sort-indicator {
+      display: inline-flex;
+      margin-left: 0.25rem;
+      color: var(--text-muted);
+    }
+
+    td {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      color: var(--text-primary);
+      transition: background 0.2s;
+    }
+
+    tr {
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    tr.highlighted td {
+      background: rgba(var(--primary-rgb), 0.02);
+      border-bottom-color: rgba(var(--primary-rgb), 0.1);
+    }
+
+    /* Elegant Custom Badges */
+    .td-asset {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .td-ticker {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      color: #fff;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .td-company {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      max-width: 180px;
+    }
+
+    .sector-badge {
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-secondary);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      display: inline-block;
+      margin-top: 0.2rem;
+    }
+
+    .numeric-cell {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 500;
+    }
+
+    .bold-numeric {
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .pill-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .pill-badge.up {
+      color: var(--success);
+      background: var(--success-bg);
+      border: 1px solid var(--success-border);
+      text-shadow: 0 0 5px rgba(0, 245, 160, 0.1);
+    }
+
+    .pill-badge.down {
+      color: var(--danger);
+      background: var(--danger-bg);
+      border: 1px solid var(--danger-border);
+      text-shadow: 0 0 5px rgba(255, 51, 102, 0.1);
+    }
+
+    /* Allocation Progress Bar */
+    .allocation-bar-container {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      min-width: 120px;
+    }
+
+    .allocation-bar-track {
+      flex: 1;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 2px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .allocation-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--secondary) 0%, var(--primary) 100%);
+      border-radius: 2px;
+      transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .allocation-text {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      min-width: 32px;
+      text-align: right;
+    }
+
+    /* Pagination Footer Container */
+    .pagination-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .entries-selector-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .entries-select {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-color);
+      color: #fff;
+      padding: 0.35rem 0.5rem;
+      border-radius: 6px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .page-btn {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--text-secondary);
+      padding: 0.4rem 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .page-btn:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.06);
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .page-btn.active {
+      background: rgba(var(--primary-rgb), 0.1);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .page-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    /* ==========================================
+       8. SIDE PANEL DETAILS DRAWER
+       ========================================== */
+    .drawer-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(4, 5, 8, 0.5);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .drawer-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .details-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 440px;
+      height: 100vh;
+      background: rgba(10, 12, 22, 0.92);
+      backdrop-filter: blur(40px) saturate(180%);
+      border-left: 1px solid rgba(255, 255, 255, 0.08);
+      z-index: 1001;
+      transform: translateX(100%);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: -20px 0 50px rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      padding: 2.25rem;
+      overflow-y: auto;
+    }
+
+    .details-drawer.active {
+      transform: translateX(0);
+    }
+
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .drawer-close-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--text-secondary);
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .drawer-close-btn:hover {
+      background: rgba(255, 51, 102, 0.1);
+      color: var(--danger);
+      border-color: rgba(255, 51, 102, 0.2);
+    }
+
+    .drawer-asset-profile {
+      margin-bottom: 2rem;
+    }
+
+    .drawer-ticker-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .drawer-ticker {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .drawer-company {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+      margin-top: 0.15rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .drawer-badge-grid {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .drawer-badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--text-secondary);
+    }
+
+    .drawer-badge.colored {
+      background: rgba(var(--primary-rgb), 0.06);
+      border-color: rgba(var(--primary-rgb), 0.2);
+      color: var(--primary);
+    }
+
+    .drawer-divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.06);
+      margin-bottom: 1.75rem;
+    }
+
+    .drawer-stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .drawer-stat-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      padding: 1rem;
+    }
+
+    .drawer-stat-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+    }
+
+    .drawer-stat-val {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* Position visual indicator inside drawer */
+    .position-comparison-widget {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .widget-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      margin-bottom: 0.75rem;
+      font-weight: 700;
+    }
+
+    .range-bar-track {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 3px;
+      position: relative;
+      margin: 1.5rem 0 0.5rem 0;
+    }
+
+    .range-marker {
+      position: absolute;
+      top: 50%;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 8px currentColor;
+    }
+
+    .range-marker.avg {
+      background: var(--secondary);
+      color: var(--secondary);
+    }
+
+    .range-marker.curr {
+      background: var(--primary);
+      color: var(--primary);
+    }
+
+    .range-legend {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+    }
+
+    .range-indicator-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .range-indicator-label {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    /* Custom Projection simulation for drawer asset */
+    .drawer-projection-box {
+      background: rgba(var(--primary-rgb), 0.03);
+      border: 1px solid rgba(var(--primary-rgb), 0.1);
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+
+    /* ==========================================
+       9. REUSABLE ANIMATIONS
+       ========================================== */
+    @keyframes pulse-glow {
+      0% {
+        transform: scale(0.9);
+        box-shadow: 0 0 5px rgba(var(--primary-rgb), 0.5);
+      }
+      50% {
+        transform: scale(1.1);
+        box-shadow: 0 0 15px rgba(var(--primary-rgb), 0.8);
+      }
+      100% {
+        transform: scale(0.9);
+        box-shadow: 0 0 5px rgba(var(--primary-rgb), 0.5);
+      }
+    }
+
+    @keyframes rotate-slow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1024px) {
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+      .projection-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      .system-status {
+        width: 100%;
+        justify-content: space-between;
+      }
+      .details-drawer {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- HEADER -->
+    <header>
+      <div class="brand-group">
+        <div class="brand-meta">
+          <div class="live-dot"></div>
+          Live Intelligence Dashboard
+        </div>
+        <h1 class="brand-title">AETHERIS <span>PORTFOLIO</span></h1>
+      </div>
+      
+      <div class="system-status">
+        <div class="status-item">
+          <span class="status-label">Engine Node</span>
+          <span class="status-value">AGN-Alpha-9</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Database Sync</span>
+          <span class="status-value success">Active</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Asset Registry</span>
+          <span class="status-value">37 Stocks</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- KPI METRICS SUMMARY -->
+    <section class="kpi-grid">
+      
+      <!-- Total Valuation -->
+      <div class="glass-card kpi-card">
+        <div class="kpi-label-row">
+          <span class="kpi-label">Market Value</span>
+          <div class="kpi-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+        </div>
+        <div class="kpi-value" id="kpi-value-market">$--</div>
+        <div class="kpi-trend up" id="kpi-growth-cap">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="18 15 12 9 6 15"/></svg>
+          <span id="kpi-growth-percent">--%</span>
+        </div>
+        
+        <!-- Subtle Sparkline -->
+        <svg class="kpi-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="gradient-spark-1" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="var(--primary)" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path d="M0,25 Q15,10 30,22 T60,8 T90,5 L100,5 L100,30 L0,30 Z" fill="url(#gradient-spark-1)"></path>
+          <path d="M0,25 Q15,10 30,22 T60,8 T90,5 L100,5" fill="none" stroke="var(--primary)" stroke-width="1.5"></path>
+        </svg>
+      </div>
+
+      <!-- Cost Basis -->
+      <div class="glass-card kpi-card">
+        <div class="kpi-label-row">
+          <span class="kpi-label">Initial Capital</span>
+          <div class="kpi-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"/><line x1="12" y1="10" x2="12" y2="14"/></svg>
+          </div>
+        </div>
+        <div class="kpi-value" id="kpi-value-cost">$--</div>
+        <span class="kpi-trend" style="color: var(--text-muted); background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04);">
+          Deployed Cash
+        </span>
+        
+        <!-- Muted Sparkline -->
+        <svg class="kpi-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
+          <path d="M0,20 L100,20" fill="none" stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="3,3"></path>
+        </svg>
+      </div>
+
+      <!-- Unrealized Gains -->
+      <div class="glass-card kpi-card">
+        <div class="kpi-label-row">
+          <span class="kpi-label">Net Gain / Loss</span>
+          <div class="kpi-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          </div>
+        </div>
+        <div class="kpi-value" id="kpi-value-gain">$--</div>
+        <div class="kpi-trend up" id="kpi-gain-status">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="18 15 12 9 6 15"/></svg>
+          <span id="kpi-gain-percent-badge">+--%</span>
+        </div>
+        
+        <!-- Glowing Green Sparkline -->
+        <svg class="kpi-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="gradient-spark-3" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="var(--success)" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="var(--success)" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path d="M0,28 Q20,25 40,15 T80,5 L100,2 L100,30 L0,30 Z" fill="url(#gradient-spark-3)"></path>
+          <path d="M0,28 Q20,25 40,15 T80,5 L100,2" fill="none" stroke="var(--success)" stroke-width="1.5"></path>
+        </svg>
+      </div>
+
+      <!-- Net Growth Gauge Card -->
+      <div class="glass-card kpi-card">
+        <div class="kpi-label-row">
+          <span class="kpi-label">ROI Progress</span>
+          <div class="kpi-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+        </div>
+        <div class="kpi-value" id="kpi-value-roi">--%</div>
+        <span class="kpi-trend up" id="kpi-roi-status-label" style="background: rgba(157, 78, 221, 0.08); border-color: rgba(157, 78, 221, 0.2); color: var(--secondary);">
+          Growth Factor
+        </span>
+        
+        <!-- Cyber Purple Sparkline -->
+        <svg class="kpi-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="gradient-spark-4" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="var(--secondary)" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="var(--secondary)" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path d="M0,25 C20,22 30,12 50,15 C70,18 80,4 100,1 L100,30 L0,30 Z" fill="url(#gradient-spark-4)"></path>
+          <path d="M0,25 C20,22 30,12 50,15 C70,18 80,4 100,1" fill="none" stroke="var(--secondary)" stroke-width="1.5"></path>
+        </svg>
+      </div>
+
+    </section>
+
+    <!-- VISUAL ANALYTICS LAYOUT -->
+    <section class="charts-grid">
+      
+      <!-- Sector Donut Chart -->
+      <div class="glass-card chart-card">
+        <div class="chart-header">
+          <h2 class="chart-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.21 15.89A10 10 0 1 1 8 2.83M22 12A10 10 0 0 0 12 2v10z"/></svg>
+            Sector Allocation
+          </h2>
+          <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">By Valuation</span>
+        </div>
+        
+        <div class="donut-container">
+          <div class="donut-visual-wrapper">
+            <svg width="220" height="220" viewBox="0 0 220 220" id="donut-svg">
+              <!-- Rings rendered dynamically inside JS -->
+            </svg>
+            <div class="donut-center-info">
+              <span class="donut-center-label" id="donut-center-title">All Sectors</span>
+              <span class="donut-center-value" id="donut-center-value">$--</span>
+              <span class="donut-center-sub" id="donut-center-sub">100% Allocation</span>
+            </div>
+          </div>
+          <div class="donut-legend" id="donut-legend-list">
+            <!-- Legend rendered dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Performance Leaders & Laggards Leaderboard -->
+      <div class="glass-card chart-card">
+        <div class="chart-header">
+          <h2 class="chart-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Asset Leaderboard
+          </h2>
+          <div class="chart-tabs">
+            <button class="tab-btn active" onclick="switchLeaderboardTab('value', this)">Value</button>
+            <button class="tab-btn" onclick="switchLeaderboardTab('gains', this)">Gains %</button>
+            <button class="tab-btn" onclick="switchLeaderboardTab('losses', this)">Losses %</button>
+          </div>
+        </div>
+        
+        <div class="leaderboard-container" id="leaderboard-stack">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- DYNAMIC INVESTMENT PROJECTION CALCULATOR -->
+    <section class="glass-card projection-card">
+      <div class="chart-header" style="margin-bottom: 2rem;">
+        <h2 class="chart-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          Horizon Compounding Simulator
+        </h2>
+        <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">CAGR Growth Projection</span>
+      </div>
+
+      <div class="projection-grid">
+        
+        <!-- Controls -->
+        <div class="calculator-panel">
+          
+          <div class="calc-input-group">
+            <div class="calc-label-row">
+              <span class="calc-label">Initial Balance</span>
+              <span class="calc-val-bubble" id="proj-val-init">$11,294.10</span>
+            </div>
+            <input type="range" class="calc-slider" id="proj-slider-init" min="1000" max="50000" step="500" value="11294" oninput="calculateProjection()">
+          </div>
+
+          <div class="calc-input-group">
+            <div class="calc-label-row">
+              <span class="calc-label">Monthly Contribution</span>
+              <span class="calc-val-bubble" id="proj-val-monthly">$300</span>
+            </div>
+            <input type="range" class="calc-slider" id="proj-slider-monthly" min="0" max="3000" step="50" value="300" oninput="calculateProjection()">
+          </div>
+
+          <div class="calc-input-group">
+            <div class="calc-label-row">
+              <span class="calc-label">Expected CAGR</span>
+              <span class="calc-val-bubble" id="proj-val-rate">12%</span>
+            </div>
+            <input type="range" class="calc-slider" id="proj-slider-rate" min="5" max="30" step="1" value="12" oninput="calculateProjection()">
+          </div>
+
+          <div class="calc-input-group">
+            <div class="calc-label-row">
+              <span class="calc-label">Timeline Horizon</span>
+              <span class="calc-val-bubble" id="proj-val-years">15 Years</span>
+            </div>
+            <input type="range" class="calc-slider" id="proj-slider-years" min="5" max="30" step="1" value="15" oninput="calculateProjection()">
+          </div>
+
+          <div class="projection-summary">
+            <div class="summary-metric">
+              <span class="calc-label" style="font-size: 0.65rem;">Total Investment</span>
+              <span class="summary-metric-val" id="proj-sum-invested">$--</span>
+            </div>
+            <div class="summary-metric">
+              <span class="calc-label" style="font-size: 0.65rem;">Interest Earned</span>
+              <span class="summary-metric-val" id="proj-sum-interest" style="color: var(--success);">$--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Render Output Graph -->
+        <div class="projection-visual-panel">
+          <div class="projection-svg-wrapper" id="projection-svg-box">
+            <div class="chart-tooltip" id="proj-chart-tooltip">--</div>
+            <svg width="100%" height="100%" viewBox="0 0 600 250" preserveAspectRatio="none" id="projection-svg">
+              <!-- Rendered via JS -->
+            </svg>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- HOLDINGS LEDGER SECTION -->
+    <section class="glass-card ledger-card">
+      
+      <div class="ledger-header">
+        <div class="ledger-title-group">
+          <h2 class="chart-title" style="font-size: 1.35rem;">Asset Ledger</h2>
+          <span class="ledger-title-count" id="ledger-count">37 Assets Loaded</span>
+        </div>
+        
+        <div class="ledger-controls">
+          <div class="search-wrapper">
+            <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" class="search-input" id="table-search" placeholder="Search by ticker, company..." onkeyup="handleFilterChange()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Filter Chips -->
+      <div class="filter-scroll-container" id="filter-chips">
+        <!-- Generated Dynamically -->
+      </div>
+
+      <!-- Asset Grid Table -->
+      <div class="table-responsive">
+        <table id="holdings-table">
+          <thead>
+            <tr>
+              <th onclick="handleSort('ticker')">Asset <span class="sort-indicator" id="sort-ticker">↕</span></th>
+              <th onclick="handleSort('market_value')">Market Value <span class="sort-indicator" id="sort-market_value">↕</span></th>
+              <th onclick="handleSort('avg_cost')">Avg Cost <span class="sort-indicator" id="sort-avg_cost">↕</span></th>
+              <th onclick="handleSort('current_price')">Current Price <span class="sort-indicator" id="sort-current_price">↕</span></th>
+              <th onclick="handleSort('gain')">Unrealized Profit <span class="sort-indicator" id="sort-gain">↕</span></th>
+              <th onclick="handleSort('gain_pct')">Gain/Loss % <span class="sort-indicator" id="sort-gain_pct">↕</span></th>
+              <th onclick="handleSort('allocation')">Allocation <span class="sort-indicator" id="sort-allocation">↕</span></th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <!-- Populated dynamically via JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination Footer -->
+      <div class="pagination-footer">
+        <div class="entries-selector-group">
+          Show
+          <select class="entries-select" id="page-size-select" onchange="changePageSize(this.value)">
+            <option value="8">8 Positions</option>
+            <option value="15" selected>15 Positions</option>
+            <option value="30">30 Positions</option>
+            <option value="all">All Positions</option>
+          </select>
+          per page
+        </div>
+        <div class="pagination-controls" id="pagination-nav">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <!-- DETAILS PANEL DRAWER -->
+  <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+  <div class="details-drawer" id="details-drawer">
+    <div class="drawer-header">
+      <h3 style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em;">Asset Diagnostics</h3>
+      <button class="drawer-close-btn" onclick="closeDrawer()">&times;</button>
+    </div>
+
+    <div class="drawer-asset-profile" id="drawer-profile">
+      <!-- Populated Dynamically -->
+    </div>
+
+    <div class="drawer-divider"></div>
+
+    <div class="drawer-stats-grid" id="drawer-stats">
+      <!-- Populated Dynamically -->
+    </div>
+
+    <div class="drawer-divider"></div>
+
+    <!-- Position range comparing cost basis to market price -->
+    <div class="position-comparison-widget" id="drawer-range-widget">
+      <!-- Rendered dynamically -->
+    </div>
+
+    <!-- Mini compounding simulator for asset -->
+    <div class="drawer-projection-box" id="drawer-sim-box">
+      <!-- Rendered dynamically -->
+    </div>
+  </div>
+
+  <!-- ==========================================
+       10. APPLICATION CORE DATA AND SCRIPT
+       ========================================== -->
+  <script>
+    // Asset Core Data Array Ingested
+    const holdings = [
+      {"ticker": "RKLB", "company": "Rocket Lab USA, Inc.", "shares": 11.9185157, "avg_cost": 34.1526, "current_price": 126.32, "market_value": 1505.55, "gain": 1098.50, "gain_pct": 269.87, "sector": "Space Technology"},
+      {"ticker": "NVDA", "company": "NVIDIA Corporation", "shares": 4.4755656, "avg_cost": 121.3254, "current_price": 228.62, "market_value": 1023.20, "gain": 480.20, "gain_pct": 88.44, "sector": "Technology"},
+      {"ticker": "EOSE", "company": "Eos Energy Enterprises", "shares": 74.0000000, "avg_cost": 7.9895, "current_price": 9.01, "market_value": 666.74, "gain": 75.52, "gain_pct": 12.77, "sector": "Energy Storage"},
+      {"ticker": "AAPL", "company": "Apple Inc.", "shares": 1.8883674, "avg_cost": 178.3953, "current_price": 310.09, "market_value": 585.56, "gain": 248.69, "gain_pct": 73.82, "sector": "Technology"},
+      {"ticker": "AMZN", "company": "Amazon.com, Inc.", "shares": 2.0782085, "avg_cost": 201.5438, "current_price": 258.19, "market_value": 536.57, "gain": 117.72, "gain_pct": 28.11, "sector": "Consumer Cyclical"},
+      {"ticker": "PLTR", "company": "Palantir Technologies", "shares": 3.2619040, "avg_cost": 98.3137, "current_price": 151.79, "market_value": 495.12, "gain": 174.43, "gain_pct": 54.39, "sector": "Technology"},
+      {"ticker": "LLY", "company": "Eli Lilly and Company", "shares": 0.4198325, "avg_cost": 830.9504, "current_price": 1064.24, "market_value": 446.80, "gain": 97.94, "gain_pct": 28.08, "sector": "Healthcare"},
+      {"ticker": "ARM", "company": "ARM Holdings plc", "shares": 1.0562994, "avg_cost": 117.8601, "current_price": 400.91, "market_value": 423.48, "gain": 298.99, "gain_pct": 240.16, "sector": "Technology"},
+      {"ticker": "JEPQ", "company": "JPMorgan Nasdaq Premium", "shares": 6.6849909, "avg_cost": 52.9654, "current_price": 60.77, "market_value": 406.25, "gain": 52.17, "gain_pct": 14.74, "sector": "Financials"},
+      {"ticker": "SOFI", "company": "SoFi Technologies, Inc.", "shares": 19.0261206, "avg_cost": 19.1301, "current_price": 17.85, "market_value": 339.62, "gain": -24.36, "gain_pct": -6.69, "sector": "Financials"},
+      {"ticker": "GOOG", "company": "Alphabet Inc. Class C", "shares": 0.8986779, "avg_cost": 212.3119, "current_price": 366.96, "market_value": 329.78, "gain": 138.98, "gain_pct": 72.84, "sector": "Technology"},
+      {"ticker": "RBRK", "company": "Rubrik, Inc.", "shares": 4.0000000, "avg_cost": 63.8630, "current_price": 82.29, "market_value": 329.16, "gain": 73.71, "gain_pct": 28.85, "sector": "Technology"},
+      {"ticker": "AVGO", "company": "Broadcom Inc.", "shares": 0.6679405, "avg_cost": 167.8620, "current_price": 479.00, "market_value": 319.94, "gain": 207.82, "gain_pct": 185.35, "sector": "Technology"},
+      {"ticker": "HOOD", "company": "Robinhood Markets", "shares": 3.4220807, "avg_cost": 96.2829, "current_price": 86.48, "market_value": 295.94, "gain": -33.55, "gain_pct": -10.18, "sector": "Financials"},
+      {"ticker": "CRWD", "company": "CrowdStrike Holdings", "shares": 0.3633041, "avg_cost": 345.7159, "current_price": 752.84, "market_value": 273.51, "gain": 147.91, "gain_pct": 117.76, "sector": "Technology"},
+      {"ticker": "NBIS", "company": "Nebius Group N.V.", "shares": 1.0000000, "avg_cost": 115.9495, "current_price": 269.63, "market_value": 269.63, "gain": 153.68, "gain_pct": 132.54, "sector": "Technology"},
+      {"ticker": "TSM", "company": "Taiwan Semiconductor", "shares": 0.6004837, "avg_cost": 203.1029, "current_price": 440.88, "market_value": 264.74, "gain": 142.78, "gain_pct": 117.07, "sector": "Technology"},
+      {"ticker": "MSFT", "company": "Microsoft Corporation", "shares": 0.5384151, "avg_cost": 430.8386, "current_price": 444.50, "market_value": 239.33, "gain": 7.36, "gain_pct": 3.17, "sector": "Technology"},
+      {"ticker": "LITE", "company": "Lumentum Holdings Inc.", "shares": 0.2229064, "avg_cost": 895.8020, "current_price": 993.87, "market_value": 221.54, "gain": 21.86, "gain_pct": 10.95, "sector": "Technology"},
+      {"ticker": "META", "company": "Meta Platforms, Inc.", "shares": 0.3660904, "avg_cost": 618.3719, "current_price": 603.13, "market_value": 220.80, "gain": -5.58, "gain_pct": -2.46, "sector": "Technology"},
+      {"ticker": "CIFR", "company": "Cipher Mining Inc.", "shares": 8.0000000, "avg_cost": 17.2862, "current_price": 25.49, "market_value": 203.92, "gain": 65.63, "gain_pct": 47.46, "sector": "Energy Storage"},
+      {"ticker": "IREN", "company": "Iris Energy Limited", "shares": 3.0000000, "avg_cost": 43.4650, "current_price": 67.37, "market_value": 202.11, "gain": 71.72, "gain_pct": 55.00, "sector": "Energy Storage"},
+      {"ticker": "ORCL", "company": "Oracle Corporation", "shares": 0.8096045, "avg_cost": 246.6760, "current_price": 240.66, "market_value": 194.84, "gain": -4.87, "gain_pct": -2.44, "sector": "Technology"},
+      {"ticker": "ANET", "company": "Arista Networks, Inc.", "shares": 1.0000000, "avg_cost": 129.4360, "current_price": 173.97, "market_value": 173.97, "gain": 44.53, "gain_pct": 34.41, "sector": "Technology"},
+      {"ticker": "TMDX", "company": "TransMedics Group", "shares": 2.3158220, "avg_cost": 82.7870, "current_price": 68.00, "market_value": 157.48, "gain": -34.24, "gain_pct": -17.96, "sector": "Healthcare"},
+      {"ticker": "GLW", "company": "Corning Incorporated", "shares": 0.7953773, "avg_cost": 188.2880, "current_price": 196.74, "market_value": 156.48, "gain": 6.72, "gain_pct": 4.49, "sector": "Technology"},
+      {"ticker": "IONQ", "company": "IonQ, Inc.", "shares": 2.0000000, "avg_cost": 36.6198, "current_price": 70.16, "market_value": 140.32, "gain": 67.08, "gain_pct": 91.59, "sector": "Technology"},
+      {"ticker": "NFLX", "company": "Netflix, Inc.", "shares": 1.4416557, "avg_cost": 96.9718, "current_price": 84.02, "market_value": 121.13, "gain": -18.67, "gain_pct": -13.36, "sector": "Consumer Cyclical"},
+      {"ticker": "AAOI", "company": "Applied Optoelectronics", "shares": 0.6053779, "avg_cost": 156.6790, "current_price": 197.20, "market_value": 119.38, "gain": 24.53, "gain_pct": 25.86, "sector": "Technology"},
+      {"ticker": "CEG", "company": "Constellation Energy", "shares": 0.4222293, "avg_cost": 247.7564, "current_price": 266.22, "market_value": 112.41, "gain": 7.80, "gain_pct": 7.45, "sector": "Utilities"},
+      {"ticker": "CRML", "company": "Critical Metals Corp.", "shares": 9.0000000, "avg_cost": 13.8082, "current_price": 12.26, "market_value": 110.34, "gain": -13.93, "gain_pct": -11.21, "sector": "Utilities"},
+      {"ticker": "ONDS", "company": "Ondas Holdings Inc.", "shares": 8.0000000, "avg_cost": 9.8721, "current_price": 13.35, "market_value": 106.80, "gain": 27.82, "gain_pct": 35.23, "sector": "Technology"},
+      {"ticker": "MU", "company": "Micron Technology", "shares": 0.0679113, "avg_cost": 735.0760, "current_price": 1027.47, "market_value": 69.78, "gain": 19.86, "gain_pct": 39.78, "sector": "Technology"},
+      {"ticker": "OKLO", "company": "Oklo Inc.", "shares": 1.0000000, "avg_cost": 63.1791, "current_price": 68.38, "market_value": 68.38, "gain": 5.20, "gain_pct": 8.23, "sector": "Utilities"},
+      {"ticker": "ASML", "company": "ASML Holding N.V.", "shares": 0.0378987, "avg_cost": 1053.8630, "current_price": 1684.06, "market_value": 63.82, "gain": 23.88, "gain_pct": 59.80, "sector": "Technology"},
+      {"ticker": "CAT", "company": "Caterpillar Inc.", "shares": 0.0562983, "avg_cost": 886.7060, "current_price": 896.24, "market_value": 50.46, "gain": 0.54, "gain_pct": 1.08, "sector": "Industrial Goods"},
+      {"ticker": "MELI", "company": "MercadoLibre, Inc.", "shares": 0.0290665, "avg_cost": 1717.4420, "current_price": 1693.27, "market_value": 49.22, "gain": -0.70, "gain_pct": -1.41, "sector": "Consumer Cyclical"}
+    ];
+
+    // Sector Theme Styling Palette (HSL System)
+    const sectorPalette = {
+      "Technology": "hsl(192, 100%, 50%)",
+      "Space Technology": "hsl(272, 100%, 65%)",
+      "Energy Storage": "hsl(32, 100%, 55%)",
+      "Financials": "hsl(212, 100%, 55%)",
+      "Consumer Cyclical": "hsl(152, 100%, 48%)",
+      "Healthcare": "hsl(342, 100%, 60%)",
+      "Utilities": "hsl(45, 100%, 50%)",
+      "Industrial Goods": "hsl(200, 15%, 65%)"
+    };
+
+    // Application State Variables
+    let currentFilteredData = [...holdings];
+    let sortColumn = 'market_value';
+    let sortDirection = 'desc';
+    let selectedSector = 'All';
+    let currentPage = 1;
+    let pageSize = 15;
+    let currentLeaderboardTab = 'value';
+
+    // Summary calculation numbers
+    const totalMarketValue = 11294.10;
+    const totalCostBasis = 7526.43;
+    const totalUnrealizedGain = 3767.67;
+    const portfolioReturnPct = 50.06;
+
+    // Initialization Sequence
+    window.onload = function() {
+      initCounters();
+      calculateSectors();
+      renderLeaderboardStack();
+      renderFilterChips();
+      calculateProjection();
+      renderHoldingsTable();
+      setupSliderSynchronizers();
+    };
+
+    // ==========================================
+    // COUNTER ANIMATIONS UTILITY
+    // ==========================================
+    function initCounters() {
+      animateNumericValue(document.getElementById('kpi-value-market'), 0, totalMarketValue, 1200, true);
+      animateNumericValue(document.getElementById('kpi-value-cost'), 0, totalCostBasis, 1200, true);
+      animateNumericValue(document.getElementById('kpi-value-gain'), 0, totalUnrealizedGain, 1200, true);
+      animateNumericValue(document.getElementById('kpi-value-roi'), 0, portfolioReturnPct, 1200, false, true);
+
+      // Setup growth values in capsules
+      document.getElementById('kpi-growth-percent').innerText = `+${portfolioReturnPct.toFixed(2)}%`;
+      document.getElementById('kpi-gain-percent-badge').innerText = `+${portfolioReturnPct.toFixed(2)}%`;
+    }
+
+    function animateNumericValue(element, start, end, duration, isCurrency = false, isPercentage = false) {
+      let startTimestamp = null;
+      const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        const easeVal = progress * (2 - progress); // Quad out ease
+        const currentVal = easeVal * (end - start) + start;
+        
+        if (isCurrency) {
+          element.innerText = '$' + currentVal.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          });
+        } else if (isPercentage) {
+          element.innerText = `+${currentVal.toFixed(2)}%`;
+        } else {
+          element.innerText = currentVal.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          });
+        }
+        
+        if (progress < 1) {
+          window.requestAnimationFrame(step);
+        }
+      };
+      window.requestAnimationFrame(step);
+    }
+
+    // ==========================================
+    // SECTOR DONUT CHART GENERATION (VANILLA SVG)
+    // ==========================================
+    function calculateSectors() {
+      const sectorTotals = {};
+      holdings.forEach(item => {
+        sectorTotals[item.sector] = (sectorTotals[item.sector] || 0) + item.market_value;
+      });
+
+      // Sort segments by total market value
+      const sortedSectors = Object.entries(sectorTotals).sort((a, b) => b[1] - a[1]);
+      
+      const svg = document.getElementById('donut-svg');
+      const legendBox = document.getElementById('donut-legend-list');
+      
+      const radius = 80;
+      const cx = 110;
+      const cy = 110;
+      const circumference = 2 * Math.PI * radius; // 502.65
+      
+      let accumulatedPercent = 0;
+      let svgHtml = '';
+      let legendHtml = '';
+      
+      sortedSectors.forEach(([sector, value], index) => {
+        const percent = (value / totalMarketValue) * 100;
+        const strokeLength = (percent / 100) * circumference;
+        const strokeOffset = circumference - (accumulatedPercent / 100) * circumference;
+        accumulatedPercent += percent;
+        
+        const color = sectorPalette[sector] || "hsl(200, 10%, 50%)";
+        
+        // Dynamic slice segment (stacked SVG circle)
+        svgHtml += `
+          <circle class="donut-segment" 
+                  cx="${cx}" cy="${cy}" r="${radius}"
+                  fill="transparent" 
+                  stroke="${color}" 
+                  stroke-width="16" 
+                  stroke-dasharray="${strokeLength} ${circumference}"
+                  stroke-dashoffset="${strokeOffset}" 
+                  transform="rotate(-90 ${cx} ${cy})"
+                  data-sector="${sector}"
+                  data-value="${value.toFixed(2)}"
+                  data-percent="${percent.toFixed(1)}"
+                  style="transition: stroke-width 0.3s ease, filter 0.3s ease; cursor: pointer;"
+                  onmouseenter="highlightDonutSlice(this)" 
+                  onmouseleave="resetDonutSlice()">
+          </circle>
+        `;
+
+        legendHtml += `
+          <div class="legend-item" data-sector="${sector}" onmouseenter="highlightLegend('${sector}')" onmouseleave="resetLegend()">
+            <div class="legend-label-col">
+              <span class="legend-color-dot" style="background-color: ${color}; box-shadow: 0 0 8px ${color}"></span>
+              <span class="legend-name">${sector}</span>
+            </div>
+            <div class="legend-value-col">
+              <div class="legend-val">$${value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+              <div class="legend-pct">${percent.toFixed(1)}%</div>
+            </div>
+          </div>
+        `;
+      });
+      
+      svg.innerHTML = svgHtml;
+      legendBox.innerHTML = legendHtml;
+    }
+
+    function highlightDonutSlice(element) {
+      const sector = element.getAttribute('data-sector');
+      const val = parseFloat(element.getAttribute('data-value'));
+      const pct = element.getAttribute('data-percent');
+      
+      // Inflate hovered segment stroke width and add filter glow
+      const slices = document.querySelectorAll('.donut-segment');
+      slices.forEach(slice => {
+        if(slice === element) {
+          slice.setAttribute('stroke-width', '22');
+          slice.style.filter = `drop-shadow(0px 0px 8px ${slice.getAttribute('stroke')})`;
+        } else {
+          slice.style.opacity = '0.35';
+        }
+      });
+
+      // Show focused labels
+      document.getElementById('donut-center-title').innerText = sector;
+      document.getElementById('donut-center-value').innerText = '$' + val.toLocaleString('en-US', {minimumFractionDigits:2});
+      document.getElementById('donut-center-sub').innerText = `${pct}% Allocation`;
+      document.getElementById('donut-center-sub').style.color = element.getAttribute('stroke');
+    }
+
+    function resetDonutSlice() {
+      const slices = document.querySelectorAll('.donut-segment');
+      slices.forEach(slice => {
+        slice.setAttribute('stroke-width', '16');
+        slice.style.filter = 'none';
+        slice.style.opacity = '1';
+      });
+
+      document.getElementById('donut-center-title').innerText = "All Sectors";
+      document.getElementById('donut-center-value').innerText = '$' + totalMarketValue.toLocaleString('en-US', {minimumFractionDigits:2});
+      document.getElementById('donut-center-sub').innerText = "100% Allocation";
+      document.getElementById('donut-center-sub').style.color = "var(--primary)";
+    }
+
+    function highlightLegend(sector) {
+      const segments = document.querySelectorAll('.donut-segment');
+      segments.forEach(segment => {
+        if(segment.getAttribute('data-sector') === sector) {
+          highlightDonutSlice(segment);
+        }
+      });
+    }
+
+    function resetLegend() {
+      resetDonutSlice();
+    }
+
+    // ==========================================
+    // ASSET LEADERBOARD STACK LIST IMPLEMENTATION
+    // ==========================================
+    function switchLeaderboardTab(type, btn) {
+      currentLeaderboardTab = type;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderLeaderboardStack();
+    }
+
+    function renderLeaderboardStack() {
+      const container = document.getElementById('leaderboard-stack');
+      let sorted = [...holdings];
+      
+      if (currentLeaderboardTab === 'value') {
+        sorted.sort((a, b) => b.market_value - a.market_value);
+      } else if (currentLeaderboardTab === 'gains') {
+        sorted.sort((a, b) => b.gain_pct - a.gain_pct);
+      } else if (currentLeaderboardTab === 'losses') {
+        sorted.sort((a, b) => a.gain_pct - b.gain_pct);
+      }
+
+      // Display top 8 segments
+      const maxLeaderVal = Math.max(...sorted.map(h => currentLeaderboardTab === 'value' ? h.market_value : Math.abs(h.gain_pct)));
+      
+      let html = '';
+      for (let i = 0; i < Math.min(8, sorted.length); i++) {
+        const item = sorted[i];
+        let displayVal = '';
+        let subVal = '';
+        let subColor = '';
+        let fillWidthPercent = 0;
+        
+        if (currentLeaderboardTab === 'value') {
+          displayVal = '$' + item.market_value.toLocaleString(undefined, {minimumFractionDigits: 2});
+          subVal = `${item.shares.toFixed(2)} Shares`;
+          subColor = 'var(--text-muted)';
+          fillWidthPercent = (item.market_value / maxLeaderVal) * 100;
+        } else {
+          displayVal = (item.gain_pct >= 0 ? '+' : '') + item.gain_pct.toFixed(2) + '%';
+          subVal = (item.gain >= 0 ? '+$' : '-$') + Math.abs(item.gain).toLocaleString(undefined, {minimumFractionDigits: 2});
+          subColor = item.gain_pct >= 0 ? 'var(--success)' : 'var(--danger)';
+          fillWidthPercent = (Math.abs(item.gain_pct) / maxLeaderVal) * 100;
+        }
+
+        const strokeColor = item.gain_pct >= 0 ? 'var(--primary)' : 'var(--danger)';
+
+        html += `
+          <div class="leaderboard-row" onclick="viewAssetDetails('${item.ticker}')">
+            <div class="row-bg-progress" style="width: ${fillWidthPercent}%; background: linear-gradient(90deg, rgba(${item.gain_pct >= 0 ? '0, 242, 254' : '255, 51, 102'}, 0.05) 0%, rgba(0,0,0,0) 100%);"></div>
+            <div class="row-asset-details">
+              <span class="row-ticker-badge" style="border-color: rgba(${item.gain_pct >= 0 ? '0, 242, 254' : '255, 51, 102'}, 0.2);">${item.ticker}</span>
+              <span class="row-company-name">${item.company}</span>
+            </div>
+            <div class="row-metrics-col">
+              <div class="row-val">${displayVal}</div>
+              <div class="row-subval" style="color: ${subColor}">${subVal}</div>
+            </div>
+          </div>
+        `;
+      }
+      
+      container.innerHTML = html;
+    }
+
+    // ==========================================
+    // DYNAMIC INTERACTIVE PROJECTION LINE GRAPH
+    // ==========================================
+    function setupSliderSynchronizers() {
+      // Initialize projections and sync labels instantly
+      calculateProjection();
+    }
+
+    function calculateProjection() {
+      const initVal = parseFloat(document.getElementById('proj-slider-init').value);
+      const monthlyContribution = parseFloat(document.getElementById('proj-slider-monthly').value);
+      const rate = parseFloat(document.getElementById('proj-slider-rate').value) / 100;
+      const years = parseInt(document.getElementById('proj-slider-years').value);
+
+      // Sync user bubble labels
+      document.getElementById('proj-val-init').innerText = '$' + initVal.toLocaleString('en-US');
+      document.getElementById('proj-val-monthly').innerText = '$' + monthlyContribution.toLocaleString('en-US');
+      document.getElementById('proj-val-rate').innerText = (rate * 100).toFixed(0) + '%';
+      document.getElementById('proj-val-years').innerText = years + ' Years';
+
+      // Perform month-by-month compounding formula
+      let balance = initVal;
+      let totalInvested = initVal;
+      const monthlyRate = rate / 12;
+      const timelinePoints = [{ year: 0, balance: initVal, invested: initVal }];
+
+      for (let y = 1; y <= years; y++) {
+        for (let m = 1; m <= 12; m++) {
+          balance = balance * (1 + monthlyRate) + monthlyContribution;
+          totalInvested += monthlyContribution;
+        }
+        timelinePoints.push({ year: y, balance: balance, invested: totalInvested });
+      }
+
+      // Format bottom metric calculations
+      const totalEarned = balance - totalInvested;
+      document.getElementById('proj-sum-invested').innerText = '$' + totalInvested.toLocaleString('en-US', {maximumFractionDigits: 0});
+      document.getElementById('proj-sum-interest').innerText = '$' + totalEarned.toLocaleString('en-US', {maximumFractionDigits: 0});
+
+      drawProjectionGraph(timelinePoints, years);
+    }
+
+    function drawProjectionGraph(points, maxYears) {
+      const svg = document.getElementById('projection-svg');
+      
+      const width = 600;
+      const height = 250;
+      const padLeft = 60;
+      const padRight = 20;
+      const padTop = 20;
+      const padBottom = 30;
+
+      const graphW = width - padLeft - padRight;
+      const graphH = height - padTop - padBottom;
+
+      const maxVal = points[points.length - 1].balance;
+      
+      // Draw gridlines
+      let gridLinesHtml = '';
+      // Horizontal balance indicators
+      for (let i = 0; i <= 4; i++) {
+        const valueRatio = i / 4;
+        const gridY = padTop + graphH * (1 - valueRatio);
+        const textVal = (maxVal * valueRatio).toLocaleString('en-US', { maximumFractionDigits: 0, notation: 'compact' });
+        
+        gridLinesHtml += `
+          <line x1="${padLeft}" y1="${gridY}" x2="${width - padRight}" y2="${gridY}" stroke="rgba(255,255,255,0.03)" stroke-width="1" />
+          <text x="${padLeft - 10}" y="${gridY + 4}" fill="var(--text-muted)" font-size="9" text-anchor="end" font-family="Outfit">${textVal}</text>
+        `;
+      }
+
+      // Render line paths
+      let investedPath = 'M ';
+      let balancePath = 'M ';
+      let balanceArea = 'M ';
+      
+      points.forEach((p, idx) => {
+        const xRatio = p.year / maxYears;
+        const x = padLeft + graphW * xRatio;
+        
+        const balanceY = padTop + graphH * (1 - (p.balance / maxVal));
+        const investedY = padTop + graphH * (1 - (p.invested / maxVal));
+
+        if (idx === 0) {
+          investedPath += `${x} ${investedY}`;
+          balancePath += `${x} ${balanceY}`;
+          balanceArea += `${x} ${padTop + graphH} L ${x} ${balanceY}`;
+        } else {
+          investedPath += ` L ${x} ${investedY}`;
+          balancePath += ` L ${x} ${balanceY}`;
+          balanceArea += ` L ${x} ${balanceY}`;
+        }
+
+        if (idx === points.length - 1) {
+          balanceArea += ` L ${x} ${padTop + graphH} Z`;
+        }
+      });
+
+      // Year milestones below
+      let yearTicksHtml = '';
+      const tickStep = maxYears > 15 ? 5 : 2;
+      for (let y = 0; y <= maxYears; y += tickStep) {
+        const x = padLeft + graphW * (y / maxYears);
+        yearTicksHtml += `
+          <line x1="${x}" y1="${padTop + graphH}" x2="${x}" y2="${padTop + graphH + 5}" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
+          <text x="${x}" y="${padTop + graphH + 20}" fill="var(--text-muted)" font-size="9" text-anchor="middle" font-family="Outfit">Yr ${y}</text>
+        `;
+      }
+
+      // Assemble SVG Canvas Elements
+      svg.innerHTML = `
+        <defs>
+          <linearGradient id="gradient-area" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.15" />
+            <stop offset="100%" stop-color="var(--primary)" stop-opacity="0" />
+          </linearGradient>
+        </defs>
+        
+        ${gridLinesHtml}
+        
+        <!-- Fill Area under Compounded Balance -->
+        <path d="${balanceArea}" fill="url(#gradient-area)" />
+        
+        <!-- Muted Principal Line -->
+        <path d="${investedPath}" fill="none" stroke="var(--secondary)" stroke-width="1.5" stroke-dasharray="3,3" style="transition: d 0.4s ease;" />
+        
+        <!-- Primary Growth Stroke Line -->
+        <path d="${balancePath}" fill="none" stroke="var(--primary)" stroke-width="2.5" style="transition: d 0.4s ease;" />
+        
+        ${yearTicksHtml}
+        
+        <!-- Interactive Mouse Hover Shield Panel -->
+        <rect id="hover-shield" x="${padLeft}" y="${padTop}" width="${graphW}" height="${graphH}" fill="transparent" style="cursor: crosshair;" />
+        <line id="hover-tracker-line" x1="0" y1="${padTop}" x2="0" y2="${padTop + graphH}" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" stroke-dasharray="2,2" style="display:none;" />
+        <circle id="hover-dot-balance" cx="0" cy="0" r="5" fill="var(--primary)" stroke="#000" stroke-width="1.5" style="display:none; box-shadow: 0 0 10px var(--primary);" />
+        <circle id="hover-dot-invested" cx="0" cy="0" r="4" fill="var(--secondary)" stroke="#000" stroke-width="1.5" style="display:none;" />
+      `;
+
+      // Attach mouse trackers directly to active overlay
+      setTimeout(() => {
+        const shield = document.getElementById('hover-shield');
+        if (shield) {
+          shield.addEventListener('mousemove', (e) => {
+            const rect = svg.getBoundingClientRect();
+            // Scaling conversion for dynamic scaling SVGs
+            const svgX = (e.clientX - rect.left) * (width / rect.width);
+            const relativeX = svgX - padLeft;
+            
+            let targetRatio = relativeX / graphW;
+            if (targetRatio < 0) targetRatio = 0;
+            if (targetRatio > 1) targetRatio = 1;
+            
+            const approxYear = Math.round(targetRatio * maxYears);
+            const matchPoint = points.find(p => p.year === approxYear);
+            
+            if (matchPoint) {
+              const markerX = padLeft + graphW * (approxYear / maxYears);
+              const markerBalanceY = padTop + graphH * (1 - (matchPoint.balance / maxVal));
+              const markerInvestedY = padTop + graphH * (1 - (matchPoint.invested / maxVal));
+              
+              // Move indicator graphics
+              const trackerLine = document.getElementById('hover-tracker-line');
+              const dotBal = document.getElementById('hover-dot-balance');
+              const dotInv = document.getElementById('hover-dot-invested');
+              const tooltip = document.getElementById('proj-chart-tooltip');
+              
+              trackerLine.setAttribute('x1', markerX);
+              trackerLine.setAttribute('x2', markerX);
+              trackerLine.style.display = 'block';
+              
+              dotBal.setAttribute('cx', markerX);
+              dotBal.setAttribute('cy', markerBalanceY);
+              dotBal.style.display = 'block';
+              
+              dotInv.setAttribute('cx', markerX);
+              dotInv.setAttribute('cy', markerInvestedY);
+              dotInv.style.display = 'block';
+
+              // Positioning and text update of tooltip
+              const containerRect = document.getElementById('projection-svg-box').getBoundingClientRect();
+              const tooltipX = (markerX / width) * containerRect.width;
+              const tooltipY = (markerBalanceY / height) * containerRect.height - 55;
+              
+              tooltip.style.left = `${tooltipX}px`;
+              tooltip.style.top = `${tooltipY}px`;
+              tooltip.style.opacity = '1';
+              tooltip.innerHTML = `
+                <div style="font-weight:700; color:#fff; font-family:'Outfit'">Year ${matchPoint.year}</div>
+                <div style="color:var(--primary)">Wealth: $${matchPoint.balance.toLocaleString('en-US', {maximumFractionDigits:0})}</div>
+                <div style="color:var(--secondary)">Invested: $${matchPoint.invested.toLocaleString('en-US', {maximumFractionDigits:0})}</div>
+              `;
+            }
+          });
+          
+          shield.addEventListener('mouseleave', () => {
+            document.getElementById('hover-tracker-line').style.display = 'none';
+            document.getElementById('hover-dot-balance').style.display = 'none';
+            document.getElementById('hover-dot-invested').style.display = 'none';
+            document.getElementById('proj-chart-tooltip').style.opacity = '0';
+          });
+        }
+      }, 100);
+    }
+
+    // ==========================================
+    // SECTOR FILTER CHIPS RENDERING
+    // ==========================================
+    function renderFilterChips() {
+      const container = document.getElementById('filter-chips');
+      const uniqueSectors = ['All', ...new Set(holdings.map(item => item.sector))];
+      
+      let html = '';
+      uniqueSectors.forEach(sector => {
+        const activeClass = sector === selectedSector ? 'active' : '';
+        html += `
+          <button class="filter-chip ${activeClass}" onclick="selectFilterSector('${sector}')">
+            ${sector}
+          </button>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function selectFilterSector(sector) {
+      selectedSector = sector;
+      currentPage = 1;
+      renderFilterChips();
+      handleFilterChange();
+    }
+
+    // ==========================================
+    // LEDGER TABLE OPERATIONS (FILTER, SORT, PAGE)
+    // ==========================================
+    function handleFilterChange() {
+      const searchVal = document.getElementById('table-search').value.toLowerCase();
+      
+      currentFilteredData = holdings.filter(item => {
+        const matchesSearch = item.ticker.toLowerCase().includes(searchVal) || 
+                              item.company.toLowerCase().includes(searchVal);
+        const matchesSector = selectedSector === 'All' || item.sector === selectedSector;
+        return matchesSearch && matchesSector;
+      });
+
+      // Recalculate sort state on current filter selection
+      applySortState();
+      
+      document.getElementById('ledger-count').innerText = `${currentFilteredData.length} Assets Found`;
+      currentPage = 1;
+      renderHoldingsTable();
+    }
+
+    function handleSort(column) {
+      if (sortColumn === column) {
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortColumn = column;
+        sortDirection = 'desc'; // Default desc on column switch
+      }
+
+      applySortState();
+      renderHoldingsTable();
+    }
+
+    function applySortState() {
+      currentFilteredData.sort((a, b) => {
+        let valA = a[sortColumn];
+        let valB = b[sortColumn];
+
+        // Specific mapping calculation for allocations
+        if (sortColumn === 'allocation') {
+          valA = a.market_value;
+          valB = b.market_value;
+        }
+
+        if (typeof valA === 'string') {
+          return sortDirection === 'asc' 
+            ? valA.localeCompare(valB) 
+            : valB.localeCompare(valA);
+        } else {
+          return sortDirection === 'asc' ? valA - valB : valB - valA;
+        }
+      });
+
+      // Update headers indicator visual
+      document.querySelectorAll('th span').forEach(el => el.innerText = '↕');
+      const activeHeader = document.getElementById(`sort-${sortColumn}`);
+      if (activeHeader) {
+        activeHeader.innerText = sortDirection === 'asc' ? '▲' : '▼';
+      }
+    }
+
+    function changePageSize(size) {
+      pageSize = size === 'all' ? currentFilteredData.length : parseInt(size);
+      currentPage = 1;
+      renderHoldingsTable();
+    }
+
+    function renderHoldingsTable() {
+      const tbody = document.getElementById('table-body');
+      
+      // Pagination Slice Logic
+      const startIdx = (currentPage - 1) * pageSize;
+      const endIdx = startIdx + pageSize;
+      const paginatedList = currentFilteredData.slice(startIdx, endIdx);
+
+      let html = '';
+      if (paginatedList.length === 0) {
+        html = `<tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 3rem;">No assets matching current query.</td></tr>`;
+      } else {
+        paginatedList.forEach(item => {
+          const allocPct = ((item.market_value / totalMarketValue) * 100);
+          const isUp = item.gain >= 0;
+          const statusClass = isUp ? 'up' : 'down';
+          const indicator = isUp ? '+' : '';
+
+          html += `
+            <tr onclick="viewAssetDetails('${item.ticker}')" id="row-${item.ticker}">
+              <td>
+                <div class="td-asset">
+                  <span class="td-ticker">${item.ticker}</span>
+                  <span class="td-company">${item.company}</span>
+                  <span class="sector-badge">${item.sector}</span>
+                </div>
+              </td>
+              <td class="numeric-cell bold-numeric">$${item.market_value.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+              <td class="numeric-cell">$${item.avg_cost.toLocaleString(undefined, {minimumFractionDigits:4})}</td>
+              <td class="numeric-cell">$${item.current_price.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+              <td class="numeric-cell" style="color: ${isUp ? 'var(--success)' : 'var(--danger)'}">
+                ${isUp ? '+$' : '-$'}${Math.abs(item.gain).toLocaleString(undefined, {minimumFractionDigits:2})}
+              </td>
+              <td>
+                <span class="pill-badge ${statusClass}">
+                  ${indicator}${item.gain_pct.toFixed(2)}%
+                </span>
+              </td>
+              <td>
+                <div class="allocation-bar-container">
+                  <div class="allocation-bar-track">
+                    <div class="allocation-bar-fill" style="width: ${allocPct}%;"></div>
+                  </div>
+                  <span class="allocation-text">${allocPct.toFixed(1)}%</span>
+                </div>
+              </td>
+            </tr>
+          `;
+        });
+      }
+
+      tbody.innerHTML = html;
+      renderPaginationControls();
+    }
+
+    function renderPaginationControls() {
+      const navContainer = document.getElementById('pagination-nav');
+      const totalPages = Math.ceil(currentFilteredData.length / pageSize);
+      
+      let html = '';
+      
+      if (totalPages > 1) {
+        // Prev button
+        html += `<button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="gotoPage(${currentPage - 1})">Prev</button>`;
+        
+        // Page buttons loop
+        for (let i = 1; i <= totalPages; i++) {
+          const activeClass = i === currentPage ? 'active' : '';
+          html += `<button class="page-btn ${activeClass}" onclick="gotoPage(${i})">${i}</button>`;
+        }
+
+        // Next button
+        html += `<button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="gotoPage(${currentPage + 1})">Next</button>`;
+      }
+      
+      navContainer.innerHTML = html;
+    }
+
+    function gotoPage(page) {
+      currentPage = page;
+      renderHoldingsTable();
+    }
+
+    // ==========================================
+    // SIDE PANEL DETAILS DRAWER LOGIC
+    // ==========================================
+    function viewAssetDetails(ticker) {
+      const item = holdings.find(h => h.ticker === ticker);
+      if (!item) return;
+
+      // Close other rows highlights and colorize chosen row
+      document.querySelectorAll('#table-body tr').forEach(r => r.classList.remove('highlighted'));
+      const activeRow = document.getElementById(`row-${ticker}`);
+      if (activeRow) activeRow.classList.add('highlighted');
+
+      const allocPct = ((item.market_value / totalMarketValue) * 100).toFixed(2);
+      const isUp = item.gain >= 0;
+      const statusClass = isUp ? 'up' : 'down';
+      
+      // Inject details into profile segment
+      document.getElementById('drawer-profile').innerHTML = `
+        <div class="drawer-ticker-row">
+          <div class="drawer-ticker">${item.ticker}</div>
+          <span class="pill-badge ${statusClass}" style="font-size:0.9rem;">
+            ${isUp ? '+' : ''}${item.gain_pct.toFixed(2)}%
+          </span>
+        </div>
+        <div class="drawer-company">${item.company}</div>
+        <div class="drawer-badge-grid">
+          <span class="drawer-badge colored">${item.sector}</span>
+          <span class="drawer-badge">${allocPct}% Position Size</span>
+        </div>
+      `;
+
+      // Stat grid elements
+      const costBasisAmount = item.shares * item.avg_cost;
+      document.getElementById('drawer-stats').innerHTML = `
+        <div class="drawer-stat-card">
+          <div class="drawer-stat-label">Shares Held</div>
+          <div class="drawer-stat-val">${item.shares.toLocaleString(undefined, {maximumFractionDigits: 6})}</div>
+        </div>
+        <div class="drawer-stat-card">
+          <div class="drawer-stat-label">Market Value</div>
+          <div class="drawer-stat-val" style="color: #fff">$${item.market_value.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
+        </div>
+        <div class="drawer-stat-card">
+          <div class="drawer-stat-label">Average Cost</div>
+          <div class="drawer-stat-val">$${item.avg_cost.toLocaleString(undefined, {minimumFractionDigits: 4})}</div>
+        </div>
+        <div class="drawer-stat-card">
+          <div class="drawer-stat-label">Current Quote</div>
+          <div class="drawer-stat-val">$${item.current_price.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
+        </div>
+        <div class="drawer-stat-card" style="grid-column: span 2; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div class="drawer-stat-label">Deployed Principal</div>
+            <div class="drawer-stat-val" style="font-size:1.15rem;">$${costBasisAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
+          </div>
+          <div style="text-align: right;">
+            <div class="drawer-stat-label">Net Gain / Loss</div>
+            <div class="drawer-stat-val" style="font-size:1.15rem; color: ${isUp ? 'var(--success)' : 'var(--danger)'}">
+              ${isUp ? '+$' : '-$'}${Math.abs(item.gain).toLocaleString(undefined, {minimumFractionDigits: 2})}
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Build range timeline widget
+      const maxRange = Math.max(item.avg_cost, item.current_price) * 1.35;
+      const avgPosPct = (item.avg_cost / maxRange) * 100;
+      const currPosPct = (item.current_price / maxRange) * 100;
+      
+      document.getElementById('drawer-range-widget').innerHTML = `
+        <div class="widget-title">Market Execution Map</div>
+        <div class="range-indicator-labels">
+          <span class="range-indicator-label">
+            <span class="legend-color-dot" style="background-color: var(--secondary)"></span>
+            Avg Entry: $${item.avg_cost.toLocaleString(undefined, {minimumFractionDigits: 2})}
+          </span>
+          <span class="range-indicator-label">
+            <span class="legend-color-dot" style="background-color: var(--primary)"></span>
+            Live Quote: $${item.current_price.toLocaleString(undefined, {minimumFractionDigits: 2})}
+          </span>
+        </div>
+        <div class="range-bar-track">
+          <span class="range-marker avg" style="left: ${avgPosPct}%;"></span>
+          <span class="range-marker curr" style="left: ${currPosPct}%;"></span>
+        </div>
+        <div class="range-legend">
+          <span>$0.00</span>
+          <span>Max Range Estimate: $${maxRange.toFixed(0)}</span>
+        </div>
+      `;
+
+      // Draw custom compounding model block inside details drawer
+      const simulatedHorizonGrowth = item.market_value * Math.pow(1.15, 5); // 15% growth model
+      document.getElementById('drawer-sim-box').innerHTML = `
+        <div class="widget-title" style="color: var(--primary)">5-Year Growth Outlook</div>
+        <p style="font-size:0.75rem; color: var(--text-secondary); line-height: 1.4; margin-bottom: 0.75rem;">
+          At a moderate compounding baseline rate of <strong>15% CAGR</strong>, this current asset position size is modeled to appreciate:
+        </p>
+        <div style="display:flex; justify-content:space-between; align-items:baseline;">
+          <span style="font-size: 0.65rem; text-transform:uppercase; color: var(--text-muted);">Future Valuation</span>
+          <span style="font-family: 'Outfit'; font-size:1.35rem; font-weight:700; color: #fff;">
+            $${simulatedHorizonGrowth.toLocaleString(undefined, {maximumFractionDigits: 0})}
+          </span>
+        </div>
+      `;
+
+      // Reveal Panel and Overlay
+      document.getElementById('drawer-overlay').classList.add('active');
+      document.getElementById('details-drawer').classList.add('active');
+    }
+
+    function closeDrawer() {
+      document.getElementById('drawer-overlay').classList.remove('active');
+      document.getElementById('details-drawer').classList.remove('active');
+      document.querySelectorAll('#table-body tr').forEach(r => r.classList.remove('highlighted'));
+    }
+  </script>
+</body>
+</html>

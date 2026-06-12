@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SK Hynix (000660) Audit // Interactive Financial Infographic</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+    :root {
+      --bg-slate: #0A0D14;
+      --card-bg: #111622;
+      --card-border: #1F293D;
+      --accent-copper: #D4AF37;
+      --accent-copper-glow: rgba(212, 175, 55, 0.4);
+      --accent-teal: #00F2FE;
+      --accent-teal-glow: rgba(0, 242, 254, 0.4);
+      --text-main: #E0E6ED;
+      --text-muted: #8E9AAF;
+      --text-bright: #FFFFFF;
+      --success: #39FF14;
+      --terminal-bg: #07090F;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-slate);
+      color: var(--text-main);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      padding: 2rem;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(0, 242, 254, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(212, 175, 55, 0.05) 0%, transparent 40%),
+        linear-gradient(rgba(255, 255, 255, 0.003) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.003) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+    }
+
+    header {
+      max-width: 1400px;
+      margin: 0 auto 3rem auto;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      position: relative;
+    }
+
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      width: 150px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent-teal), var(--accent-copper));
+      box-shadow: 0 0 10px var(--accent-teal-glow);
+    }
+
+    .brand-group h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      color: var(--text-bright);
+      text-shadow: 0 0 20px rgba(0, 242, 254, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-group h1 span {
+      background: linear-gradient(135deg, var(--accent-teal), var(--accent-copper));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-group p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-top: 0.25rem;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .meta-badge {
+      background: rgba(31, 41, 61, 0.6);
+      border: 1px solid var(--card-border);
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.85rem;
+      color: var(--accent-copper);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .meta-badge span {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--success);
+      box-shadow: 0 0 8px var(--success);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.4; }
+      50% { opacity: 1; }
+      100% { opacity: 0.4; }
+    }
+
+    .dashboard-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 2.5rem;
+    }
+
+    @media (max-width: 1024px) {
+      .dashboard-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Left Column: Historical Metrics & Glowing Cards */
+    .metrics-column {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-bright);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .section-title::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 18px;
+      background: var(--accent-teal);
+      border-radius: 2px;
+      box-shadow: 0 0 8px var(--accent-teal-glow);
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.75rem;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--card-border), transparent);
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(0, 242, 254, 0.25);
+      box-shadow: 0 8px 30px rgba(0, 242, 254, 0.05);
+    }
+
+    .card:hover::before {
+      background: linear-gradient(90deg, var(--accent-teal), var(--accent-copper));
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .card-title {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      font-family: 'Fira Code', monospace;
+    }
+
+    .card-value {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--text-bright);
+      line-height: 1;
+      display: flex;
+      align-items: baseline;
+      gap: 0.25rem;
+    }
+
+    .card-value span.unit {
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .card-footer {
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .trend-up {
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      background: rgba(31, 41, 61, 0.4);
+      border: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Right Column: AI Products & Live Forecaster */
+    .products-column {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+    }
+
+    .product-row {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      gap: 1.5rem;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      align-items: center;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .product-row:hover {
+      border-color: rgba(212, 175, 55, 0.25);
+      box-shadow: 0 8px 30px rgba(212, 175, 55, 0.04);
+      transform: scale(1.01);
+    }
+
+    .product-icon-container {
+      width: 80px;
+      height: 80px;
+      border-radius: 10px;
+      background: radial-gradient(circle at center, rgba(31, 41, 61, 0.6) 0%, rgba(17, 22, 34, 0.8) 100%);
+      border: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .product-details h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-bright);
+      margin-bottom: 0.35rem;
+    }
+
+    .product-details p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .product-details .tech-spec {
+      display: inline-block;
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+      font-family: 'Fira Code', monospace;
+      color: var(--accent-copper);
+      background: rgba(212, 175, 55, 0.08);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      border: 1px dashed rgba(212, 175, 55, 0.2);
+    }
+
+    /* Live Forecaster Section */
+    .forecaster-section {
+      background: radial-gradient(100% 100% at 0% 0%, #151C2C 0%, #111622 100%);
+      border: 1px solid rgba(0, 242, 254, 0.15);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+    }
+
+    .forecaster-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .forecaster-title {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--text-bright);
+      letter-spacing: -0.02em;
+    }
+
+    .forecaster-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .slider-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .slider-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      color: var(--text-main);
+      font-family: 'Fira Code', monospace;
+    }
+
+    .slider-value {
+      font-weight: 700;
+      color: var(--accent-teal);
+    }
+
+    .slider-input {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--card-border);
+      outline: none;
+      position: relative;
+    }
+
+    .slider-input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent-teal);
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--accent-teal-glow);
+      transition: transform 0.1s ease;
+    }
+
+    .slider-input::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    /* Live Output Results Grid */
+    .forecaster-outputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .output-card {
+      background: rgba(7, 9, 15, 0.7);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .output-card.highlight {
+      border-color: rgba(212, 175, 55, 0.2);
+    }
+
+    .output-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.25rem;
+    }
+
+    .output-val {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--accent-teal);
+      font-family: 'Fira Code', monospace;
+    }
+
+    .output-val.profit {
+      color: var(--accent-copper);
+    }
+
+    /* Active Feedback Console */
+    .system-console {
+      background-color: var(--terminal-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      height: 120px;
+      overflow-y: auto;
+      box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+    }
+
+    .console-line {
+      margin-bottom: 0.35rem;
+      line-height: 1.4;
+      white-space: pre-wrap;
+    }
+
+    .console-line .timestamp {
+      color: #586e75;
+    }
+
+    .console-line .info {
+      color: var(--accent-teal);
+    }
+
+    .console-line .success {
+      color: var(--success);
+    }
+
+    .console-line .warning {
+      color: #E24A8D;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand-group">
+      <h1>SK <span>hynix</span></h1>
+      <p>C-SUITE AUDIT EXECUTIVE PORTAL // Q1 2026</p>
+    </div>
+    <div class="meta-badge">
+      <span></span> LIVE MODEL SYNCED
+    </div>
+  </header>
+
+  <main class="dashboard-container">
+    
+    <!-- LEFT COLUMN: HISTORICAL METRICS -->
+    <div class="metrics-column">
+      
+      <div class="section-title">Verified Audited Financials</div>
+
+      <!-- Price Card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Share Price (KRW)</div>
+          <div class="card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-copper);">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+          </div>
+        </div>
+        <div class="card-value">
+          ₩2,291,000
+        </div>
+        <div class="card-footer">
+          <span class="trend-up">▲ 14.8%</span> relative to base-case consensus target
+        </div>
+      </div>
+
+      <!-- Revenue Card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Q1 2026 Total Revenue</div>
+          <div class="card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-teal);">
+              <line x1="18" y1="20" x2="18" y2="10"></line>
+              <line x1="12" y1="20" x2="12" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+          </div>
+        </div>
+        <div class="card-value">
+          52.58<span class="unit">T KRW</span>
+        </div>
+        <div class="card-footer">
+          <span class="trend-up">▲ Record High</span> driven by HBM3E high-yield premium
+        </div>
+      </div>
+
+      <!-- Margin Card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Audited Operating Margin</div>
+          <div class="card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-teal);">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" style="opacity: 0.3;"></path>
+              <path d="M12 6v6l4 2"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="card-value">
+          72.0<span class="unit">%</span>
+        </div>
+        <div class="card-footer">
+          <span class="trend-up">72% Net Run-Rate</span> peer group-leading profitability envelope
+        </div>
+      </div>
+
+      <!-- Cash Pile Card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Net Cash & Liquid Assets</div>
+          <div class="card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-copper);">
+              <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
+              <line x1="12" y1="4" x2="12" y2="20"></line>
+            </svg>
+          </div>
+        </div>
+        <div class="card-value">
+          35.0<span class="unit">T KRW</span>
+        </div>
+        <div class="card-footer">
+          Fully unencumbered reserve, ready for advanced HBM4 R&D
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN: AI PRODUCTS & LIVE FORECASTER -->
+    <div class="products-column">
+      
+      <div class="section-title">Flagship AI Memory Solutions</div>
+
+      <div class="products-grid">
+        
+        <!-- Product 1: iHBM Stacked Memory -->
+        <div class="product-row">
+          <div class="product-icon-container">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Background grid -->
+              <rect x="6" y="6" width="36" height="36" rx="4" fill="rgba(0, 242, 254, 0.05)" stroke="var(--accent-teal)" stroke-width="1.5" stroke-dasharray="2 2"/>
+              <!-- Stacks -->
+              <rect x="12" y="30" width="24" height="6" rx="1" fill="#1A2333" stroke="var(--text-muted)" stroke-width="1.5"/>
+              <rect x="12" y="22" width="24" height="6" rx="1" fill="#111622" stroke="var(--accent-copper)" stroke-width="1.5"/>
+              <rect x="12" y="14" width="24" height="6" rx="1" fill="#0A0D14" stroke="var(--accent-teal)" stroke-width="1.5"/>
+              <!-- Thermal cooling indicator -->
+              <path d="M16 10 C 20 8, 20 12, 24 10 C 28 8, 28 12, 32 10" stroke="var(--accent-teal)" stroke-width="1.5" stroke-linecap="round"/>
+              <!-- High-speed interconnect points -->
+              <circle cx="15" cy="20" r="1" fill="var(--accent-copper)"/>
+              <circle cx="33" cy="20" r="1" fill="var(--accent-copper)"/>
+              <circle cx="15" cy="28" r="1" fill="var(--accent-teal)"/>
+              <circle cx="33" cy="28" r="1" fill="var(--accent-teal)"/>
+            </svg>
+          </div>
+          <div class="product-details">
+            <h3>iHBM Stacked Memory</h3>
+            <p>Advanced high-capacity memory utilizing cutting-edge Mass Reflow Molded Underfill (MR-MUF) tech for thermal superiority.</p>
+            <div class="tech-spec">THERMAL DISSIPATION: +35% EFFICIENCY vs D-RAM</div>
+          </div>
+        </div>
+
+        <!-- Product 2: Enterprise High-Layer SSDs -->
+        <div class="product-row">
+          <div class="product-icon-container">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="8" y="10" width="32" height="28" rx="2" fill="none" stroke="var(--accent-copper)" stroke-width="1.5"/>
+              <line x1="8" y1="20" x2="40" y2="20" stroke="var(--card-border)" stroke-width="1.5"/>
+              <line x1="8" y1="30" x2="40" y2="30" stroke="var(--card-border)" stroke-width="1.5"/>
+              <!-- Flash arrays -->
+              <rect x="12" y="13" width="6" height="4" fill="var(--accent-copper)" opacity="0.8"/>
+              <rect x="21" y="13" width="6" height="4" fill="var(--accent-copper)" opacity="0.8"/>
+              <rect x="30" y="13" width="6" height="4" fill="var(--accent-copper)" opacity="0.8"/>
+              <!-- Glowing read light -->
+              <circle cx="34" cy="35" r="2" fill="var(--success)" stroke="var(--success)" stroke-width="2"/>
+              <path d="M12 25 H28" stroke="var(--accent-teal)" stroke-width="1.5" stroke-linecap="round"/>
+              <circle cx="12" cy="25" r="1" fill="var(--accent-teal)"/>
+            </svg>
+          </div>
+          <div class="product-details">
+            <h3>Enterprise High-Layer SSDs</h3>
+            <p>128 to 232-Layer vertical QLC architecture designed to support massive datasets for complex neural model training runs.</p>
+            <div class="tech-spec">DENSITY RATIO: 1.6TB PER SQUARE MM</div>
+          </div>
+        </div>
+
+        <!-- Product 3: Custom Foundry HBM4 Logic Dies -->
+        <div class="product-row">
+          <div class="product-icon-container">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="8" y="8" width="32" height="32" rx="4" fill="none" stroke="var(--accent-teal)" stroke-width="2"/>
+              <!-- Core Logic pattern -->
+              <path d="M16 16 H32 V32 H16 Z" stroke="var(--accent-copper)" stroke-width="1.5" stroke-dasharray="3 1"/>
+              <!-- Neural circuitry trace -->
+              <path d="M8 24 H16 M32 24 H40 M24 8 V16 M24 32 V40" stroke="var(--text-muted)" stroke-width="1.5"/>
+              <circle cx="24" cy="24" r="3" fill="var(--accent-teal)"/>
+              <path d="M16 20 L20 24 L16 28" stroke="var(--accent-copper)" stroke-width="1.5" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="product-details">
+            <h3>Custom Foundry HBM4 Logic Dies</h3>
+            <p>Bespoke logic architectures built on specialized sub-nanometer base processes in direct partnership with leading foundries.</p>
+            <div class="tech-spec">INTERCONNECT DENSITY: >2.5x INCREMENT vs HBM3E</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- LIVE FORECASTER SECTION -->
+      <div class="forecaster-section">
+        
+        <div class="forecaster-header">
+          <div class="forecaster-title">Projected Q2 2026 Dynamic Forecaster</div>
+          <div class="meta-badge" style="border-color: rgba(0, 242, 254, 0.3);">
+            DYNAMICS: STABLE
+          </div>
+        </div>
+
+        <div class="forecaster-controls">
+          <!-- Slider 1: HBM Market Share -->
+          <div class="slider-group">
+            <div class="slider-label">
+              <span>HBM Global Market Share</span>
+              <span class="slider-value" id="market-share-val">55.0%</span>
+            </div>
+            <input type="range" min="30" max="85" value="55" class="slider-input" id="market-share-slider">
+          </div>
+          
+          <!-- Slider 2: Average Selling Price Premium -->
+          <div class="slider-group">
+            <div class="slider-label">
+              <span>ASP Premium Margin Factor</span>
+              <span class="slider-value" id="asp-premium-val">1.2x</span>
+            </div>
+            <input type="range" min="10" max="20" value="12" class="slider-input" id="asp-premium-slider">
+          </div>
+        </div>
+
+        <!-- Dynamic Outputs -->
+        <div class="forecaster-outputs">
+          <div class="output-card highlight">
+            <div class="output-label">Projected Q2 Revenue</div>
+            <div class="output-val" id="projected-revenue">58.45T <span style="font-size:0.9rem; color:var(--text-muted);">KRW</span></div>
+          </div>
+          <div class="output-card">
+            <div class="output-label">Projected Op. Margin</div>
+            <div class="output-val profit" id="projected-margin">74.2%</div>
+          </div>
+        </div>
+
+        <!-- Terminal Console -->
+        <div class="system-console" id="terminal-console">
+          <div class="console-line"><span class="timestamp">[12:17:34]</span> <span class="info">SYSTEM:</span> Initializing SK Hynix Q2 Forecast Engine v2.04...</div>
+          <div class="console-line"><span class="timestamp">[12:17:35]</span> <span class="success">SUCCESS:</span> Calibration matrix online. Historical baseline of Q1 2026 loaded.</div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    // Live Forecaster Calculations
+    const marketShareSlider = document.getElementById('market-share-slider');
+    const marketShareVal = document.getElementById('market-share-val');
+    
+    const aspPremiumSlider = document.getElementById('asp-premium-slider');
+    const aspPremiumVal = document.getElementById('asp-premium-val');
+
+    const projectedRevenueEl = document.getElementById('projected-revenue');
+    const projectedMarginEl = document.getElementById('projected-margin');
+    const terminalConsole = document.getElementById('terminal-console');
+
+    // Constants
+    const BASE_DRAM_NAND_REVENUE = 25.5; // T KRW
+    const TOTAL_HBM_TAM = 60.0; // T KRW
+
+    function logConsole(message, type = 'info') {
+      const time = new Date();
+      const timeStr = time.toTimeString().split(' ')[0];
+      const line = document.createElement('div');
+      line.className = 'console-line';
+      
+      let typeClass = 'info';
+      if (type === 'success') typeClass = 'success';
+      if (type === 'warning') typeClass = 'warning';
+      
+      line.innerHTML = `<span class="timestamp">[${timeStr}]</span> <span class="${typeClass}">${type.toUpperCase()}:</span> ${message}`;
+      terminalConsole.appendChild(line);
+      terminalConsole.scrollTop = terminalConsole.scrollHeight;
+    }
+
+    function calculateForecast() {
+      const share = parseFloat(marketShareSlider.value) / 100;
+      const premium = parseFloat(aspPremiumSlider.value) / 10;
+
+      marketShareVal.innerText = `${marketShareSlider.value}.0%`;
+      aspPremiumVal.innerText = `${premium.toFixed(1)}x`;
+
+      // HBM revenue = Share * TAM * Premium modifier
+      const hbmRevenue = share * TOTAL_HBM_TAM * (premium * 0.85);
+      const totalRevenue = BASE_DRAM_NAND_REVENUE + hbmRevenue;
+
+      // Operating margin dynamic curve: as share and premium increase, margin scales from 62% up to 81.5%
+      const baseMargin = 0.55;
+      const shareEffect = share * 0.25;
+      const premiumEffect = (premium - 1.0) * 0.12;
+      const totalMargin = Math.min(0.85, baseMargin + shareEffect + premiumEffect) * 100;
+
+      projectedRevenueEl.innerHTML = `${totalRevenue.toFixed(2)}T <span style="font-size:0.9rem; color:var(--text-muted);">KRW</span>`;
+      projectedMarginEl.innerText = `${totalMargin.toFixed(1)}%`;
+
+      // Log specific feedback based on ranges
+      if (share > 0.70) {
+        logConsole(`SK Hynix commands over 70% HBM supply. Advanced MR-MUF packaging bottlenecking competitors. Margins peaking.`, 'success');
+      } else if (share < 0.45) {
+        logConsole(`HBM market share dropped to ${marketShareSlider.value}%. Competitor capacity ramp-ups impacting pricing power.`, 'warning');
+      } else {
+        logConsole(`Recalculating forecast for HBM share of ${marketShareSlider.value}% and premium of ${premium.toFixed(1)}x. Yield curves healthy.`, 'info');
+      }
+    }
+
+    marketShareSlider.addEventListener('input', calculateForecast);
+    aspPremiumSlider.addEventListener('input', calculateForecast);
+
+    // Run first calculation
+    calculateForecast();
+  </script>
+</body>
+</html>
