@@ -56,6 +56,91 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": str(e)}).encode())
             return
+        elif parsed_url.path == '/api/transactions':
+            db_path = os.path.join(DIRECTORY, 'portfolio.db')
+            try:
+                conn = sqlite3.connect(db_path)
+                conn.row_factory = sqlite3.Row
+                cursor = conn.cursor()
+                query = '''
+                    SELECT 
+                        t.id, t.type, t.shares, t.price, t.currency, t.transaction_date as transactionDate,
+                        a.ticker, a.company_name as companyName, p.name as portfolio
+                    FROM transactions t
+                    JOIN assets a ON t.asset_id = a.id
+                    JOIN portfolios p ON a.portfolio_id = p.id
+                    ORDER BY t.transaction_date DESC
+                '''
+                cursor.execute(query)
+                rows = cursor.fetchall()
+                txs = [dict(r) for r in rows]
+                conn.close()
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps(txs).encode())
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode())
+            return
+        elif parsed_url.path == '/api/stock/chart':
+            query_params = urllib.parse.parse_qs(parsed_url.query)
+            ticker = query_params.get('ticker', [None])[0]
+            chart_range = query_params.get('range', ['1mo'])[0]
+            
+            if not ticker:
+                self.send_response(400)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": "Missing ticker parameter"}).encode())
+                return
+                
+            ticker = ticker.upper()
+            interval = '1d'
+            if chart_range == '1d':
+                interval = '5m'
+                
+            url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?range={chart_range}&interval={interval}"
+            req = urllib.request.Request(
+                url, 
+                headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+            )
+            try:
+                with urllib.request.urlopen(req) as response:
+                    data = json.loads(response.read().decode())
+                    if not data.get('chart', {}).get('result'):
+                        raise ValueError("No stock chart data found in Yahoo Finance response")
+                    
+                    result = data['chart']['result'][0]
+                    timestamps = result.get('timestamp', [])
+                    quote = result.get('indicators', {}).get('quote', [{}])[0]
+                    
+                    chart_data = {
+                        "ticker": ticker,
+                        "timestamps": timestamps,
+                        "close": quote.get('close', []),
+                        "open": quote.get('open', []),
+                        "high": quote.get('high', []),
+                        "low": quote.get('low', []),
+                        "volume": quote.get('volume', [])
+                    }
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'application/json')
+                    self.send_header('Access-Control-Allow-Origin', '*')
+                    self.end_headers()
+                    self.wfile.write(json.dumps(chart_data).encode())
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode())
+            return
         elif parsed_url.path == '/api/reports':
             db_path = os.path.join(DIRECTORY, 'portfolio.db')
             try:

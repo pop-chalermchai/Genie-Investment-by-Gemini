@@ -67,6 +67,67 @@ def fetch_all_as_dict(cursor, is_postgres):
     else:
         return [dict(r) for r in cursor.fetchall()]
 
+@app.route('/api/transactions', methods=['GET'])
+def get_transactions():
+    try:
+        conn, is_postgres = get_db_connection()
+        cursor = conn.cursor()
+        query = '''
+            SELECT 
+                t.id, t.type, t.shares, t.price, t.currency, t.transaction_date as "transactionDate",
+                a.ticker, a.company_name as "companyName", p.name as portfolio
+            FROM transactions t
+            JOIN assets a ON t.asset_id = a.id
+            JOIN portfolios p ON a.portfolio_id = p.id
+            ORDER BY t.transaction_date DESC
+        '''
+        execute_sql(cursor, is_postgres, query)
+        transactions = fetch_all_as_dict(cursor, is_postgres)
+        conn.close()
+        return jsonify(transactions)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/stock/chart', methods=['GET'])
+def get_stock_chart():
+    ticker = request.args.get('ticker')
+    chart_range = request.args.get('range', '1mo')
+    interval = '1d'
+    if chart_range == '1d':
+        interval = '5m'
+    
+    if not ticker:
+        return jsonify({"error": "Missing ticker parameter"}), 400
+        
+    ticker = ticker.upper()
+    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?range={chart_range}&interval={interval}"
+    req = urllib.request.Request(
+        url, 
+        headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+    )
+    try:
+        with urllib.request.urlopen(req) as response:
+            data = json.loads(response.read().decode())
+            if not data.get('chart', {}).get('result'):
+                raise ValueError("No stock chart data found in Yahoo Finance response")
+            
+            result = data['chart']['result'][0]
+            timestamps = result.get('timestamp', [])
+            quote = result.get('indicators', {}).get('quote', [{}])[0]
+            
+            chart_data = {
+                "ticker": ticker,
+                "timestamps": timestamps,
+                "close": quote.get('close', []),
+                "open": quote.get('open', []),
+                "high": quote.get('high', []),
+                "low": quote.get('low', []),
+                "volume": quote.get('volume', [])
+            }
+            return jsonify(chart_data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/holdings', methods=['GET'])
 def get_holdings():
     try:

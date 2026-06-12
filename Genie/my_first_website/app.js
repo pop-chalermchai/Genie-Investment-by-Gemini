@@ -169,7 +169,7 @@ function switchTab(tabName) {
     activeTab = tabName;
     
     // Toggle navigation classes
-    const tabs = ["dashboard", "team", "research"];
+    const tabs = ["dashboard", "team", "research", "transactions"];
     tabs.forEach(t => {
         const tabEl = document.getElementById(`tab-${t}`);
         const contentEl = document.getElementById(`section-${t}`);
@@ -186,6 +186,10 @@ function switchTab(tabName) {
     // Resize chart to prevent visual glitches when switching tabs
     if (tabName === "dashboard" && allocationChart) {
         allocationChart.resize();
+    }
+
+    if (tabName === "transactions") {
+        loadTransactions();
     }
 }
 
@@ -277,6 +281,9 @@ function updateDashboard() {
 
         // Generate HTML row
         const row = document.createElement("tr");
+        row.style.cursor = "pointer";
+        row.title = "Click to view detailed chart & stats";
+        row.onclick = () => openStockDetail(pos.ticker);
         row.innerHTML = `
             <td><span class="ticker-badge">${pos.ticker}</span></td>
             <td><strong>${pos.companyName}</strong><br><span style="font-size: 0.72rem; color: var(--text-secondary);">${pos.sector}</span></td>
@@ -808,5 +815,290 @@ function handleAddPortfolio(event) {
     .catch(err => {
         console.error("Error:", err);
         alert("Failed to add portfolio");
+    });
+}
+
+// ==========================================================================
+// FEATURE 1: TRANSACTIONS (ACTIVITY LOG)
+// ==========================================================================
+let transactionsList = [];
+
+function loadTransactions() {
+    const tbody = document.getElementById("transactions-table-body");
+    tbody.innerHTML = `<tr><td colspan="8" class="text-center" style="color: var(--text-secondary); text-align: center; padding: 20px;">🔄 Loading transaction history...</td></tr>`;
+
+    fetch('/api/transactions')
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) throw new Error(data.error);
+            transactionsList = data;
+            renderTransactions();
+        })
+        .catch(err => {
+            console.error("Error loading transactions:", err);
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center" style="color: #EF4444; text-align: center; padding: 20px;">❌ Failed to load transactions: ${err.message}</td></tr>`;
+        });
+}
+
+function renderTransactions() {
+    const tbody = document.getElementById("transactions-table-body");
+    tbody.innerHTML = "";
+    
+    const filterText = document.getElementById("tx-search-input").value.toUpperCase();
+    
+    const filtered = transactionsList.filter(t => {
+        return !filterText || t.ticker.toUpperCase().includes(filterText) || t.companyName.toUpperCase().includes(filterText);
+    });
+    
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center" style="color: var(--text-secondary); text-align: center; padding: 20px;">No transactions found.</td></tr>`;
+        return;
+    }
+    
+    filtered.forEach(t => {
+        const tr = document.createElement("tr");
+        
+        let dateStr = t.transactionDate || "";
+        if (dateStr.includes("T")) {
+            dateStr = dateStr.replace("T", " ").substring(0, 16);
+        } else if (dateStr.includes(" ")) {
+            dateStr = dateStr.substring(0, 16);
+        }
+        
+        const typeBadge = t.type === "BUY" 
+            ? `<span class="badge badge-success" style="background: rgba(16, 185, 129, 0.1); color: #10B981; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">BUY</span>`
+            : `<span class="badge badge-danger" style="background: rgba(239, 68, 68, 0.1); color: #EF4444; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">SELL</span>`;
+            
+        let price = parseFloat(t.price);
+        let shares = parseFloat(t.shares);
+        
+        let displayPrice = price;
+        let displayCurrencySym = t.currency === "THB" ? "฿" : "$";
+        
+        if (displayCurrency === "THB" && t.currency === "USD") {
+            displayPrice = price * exchangeRateUSDTHB;
+            displayCurrencySym = "฿";
+        } else if (displayCurrency === "USD" && t.currency === "THB") {
+            displayPrice = price / exchangeRateUSDTHB;
+            displayCurrencySym = "$";
+        }
+        
+        const formattedPrice = displayCurrencySym + displayPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const formattedQty = Math.abs(shares).toLocaleString(undefined, { maximumFractionDigits: 4 });
+        
+        tr.innerHTML = `
+            <td style="color: var(--text-secondary); font-family: var(--font-mono); font-size: 0.85rem;">${dateStr}</td>
+            <td style="font-weight: 700; color: var(--accent-neon);">${t.ticker}</td>
+            <td style="color: var(--text-primary);">${t.companyName}</td>
+            <td>${typeBadge}</td>
+            <td class="text-right" style="font-family: var(--font-mono); font-weight: 500; color: var(--text-primary); text-align: right;">${formattedQty}</td>
+            <td class="text-right" style="font-family: var(--font-mono); color: var(--text-secondary); text-align: right;">${formattedPrice}</td>
+            <td style="color: var(--text-secondary); font-size: 0.85rem;">${t.currency}</td>
+            <td><span style="font-size: 0.8rem; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 3px; color: var(--text-secondary);">${t.portfolio}</span></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function filterTransactions() {
+    renderTransactions();
+}
+
+// ==========================================================================
+// FEATURE 4: DETAILED SINGLE-STOCK VIEW
+// ==========================================================================
+let activeChartTicker = null;
+let activeChartRange = "1mo";
+let stockDetailChartInstance = null;
+
+async function openStockDetail(ticker) {
+    activeChartTicker = ticker;
+    activeChartRange = "1mo";
+    
+    // Show modal
+    const modal = document.getElementById("stock-detail-modal");
+    modal.classList.add("active");
+    
+    // Clear old chart
+    if (stockDetailChartInstance) {
+        stockDetailChartInstance.destroy();
+        stockDetailChartInstance = null;
+    }
+    
+    // Load metadata stats
+    document.getElementById("modal-stock-ticker").innerText = ticker;
+    document.getElementById("modal-stock-name").innerText = "Loading...";
+    document.getElementById("modal-stock-sector").innerText = "";
+    document.getElementById("modal-stock-price").innerText = "$0.00";
+    document.getElementById("modal-stock-prev-close").innerText = "$0.00";
+    document.getElementById("modal-stock-52w").innerText = "$0.00 - $0.00";
+    document.getElementById("modal-stock-day").innerText = "$0.00 - $0.00";
+    
+    updateRangeButtonStyles();
+
+    try {
+        const response = await fetch(`/api/stock?ticker=${ticker}`);
+        if (!response.ok) throw new Error("Failed to load stock data");
+        const data = await response.json();
+        
+        const sym = data.currency === "THB" ? "฿" : "$";
+        
+        document.getElementById("modal-stock-name").innerText = data.longName || data.ticker;
+        
+        // Find sector from existing holdings if not returned
+        const existing = holdings.find(h => h.ticker === ticker);
+        document.getElementById("modal-stock-sector").innerText = existing ? existing.sector : "Technology";
+        
+        document.getElementById("modal-stock-price").innerText = sym + (data.price ? data.price.toFixed(2) : "0.00");
+        document.getElementById("modal-stock-prev-close").innerText = sym + (data.previousClose ? data.previousClose.toFixed(2) : "0.00");
+        
+        if (data.fiftyTwoWeekLow && data.fiftyTwoWeekHigh) {
+            document.getElementById("modal-stock-52w").innerText = `${sym}${data.fiftyTwoWeekLow.toFixed(2)} - ${sym}${data.fiftyTwoWeekHigh.toFixed(2)}`;
+        } else {
+            document.getElementById("modal-stock-52w").innerText = "N/A";
+        }
+        
+        if (data.dayLow && data.dayHigh) {
+            document.getElementById("modal-stock-day").innerText = `${sym}${data.dayLow.toFixed(2)} - ${sym}${data.dayHigh.toFixed(2)}`;
+        } else {
+            document.getElementById("modal-stock-day").innerText = "N/A";
+        }
+    } catch (err) {
+        console.error("Error fetching stock metadata:", err);
+    }
+    
+    // Load chart data
+    fetchStockChartData();
+}
+
+function closeStockDetailModal() {
+    document.getElementById("stock-detail-modal").classList.remove("active");
+    if (stockDetailChartInstance) {
+        stockDetailChartInstance.destroy();
+        stockDetailChartInstance = null;
+    }
+}
+
+async function fetchStockChartData() {
+    const canvas = document.getElementById("stockDetailChart");
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext("2d");
+    
+    try {
+        const response = await fetch(`/api/stock/chart?ticker=${activeChartTicker}&range=${activeChartRange}`);
+        if (!response.ok) throw new Error("Chart API error");
+        const data = await response.json();
+        
+        if (stockDetailChartInstance) {
+            stockDetailChartInstance.destroy();
+        }
+        
+        // Prepare chart labels (dates)
+        const labels = data.timestamps.map(ts => {
+            const date = new Date(ts * 1000);
+            if (activeChartRange === "1d") {
+                return date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+            }
+            return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        });
+        
+        // Filter out null values from prices
+        const prices = data.close.map((p, i) => p !== null ? p : (data.close[i-1] || data.close[i+1] || 0));
+        
+        // Decide glowing chart line color based on performance
+        const firstPrice = prices[0] || 0;
+        const lastPrice = prices[prices.length - 1] || 0;
+        const isUp = lastPrice >= firstPrice;
+        
+        const strokeColor = isUp ? "#10B981" : "#EF4444"; // Green vs Red
+        const glowColor = isUp ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)";
+        
+        const gradient = ctx.createLinearGradient(0, 0, 0, 250);
+        gradient.addColorStop(0, glowColor);
+        gradient.addColorStop(1, "rgba(3, 7, 18, 0)");
+        
+        stockDetailChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: activeChartTicker,
+                    data: prices,
+                    borderColor: strokeColor,
+                    borderWidth: 2,
+                    backgroundColor: gradient,
+                    fill: true,
+                    tension: 0.2,
+                    pointRadius: prices.length > 50 ? 0 : 2,
+                    pointHoverRadius: 5,
+                    pointBackgroundColor: strokeColor,
+                    pointBorderColor: "#fff",
+                    shadowColor: strokeColor,
+                    shadowBlur: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                legend: { display: false },
+                scales: {
+                    xAxes: [{
+                        gridLines: { color: "rgba(255, 255, 255, 0.03)" },
+                        ticks: { fontColor: "rgba(255, 255, 255, 0.4)", fontSize: 10, maxTicksLimit: 8 }
+                    }],
+                    yAxes: [{
+                        gridLines: { color: "rgba(255, 255, 255, 0.03)" },
+                        ticks: { 
+                            fontColor: "rgba(255, 255, 255, 0.4)", 
+                            fontSize: 10,
+                            callback: function(value) {
+                                return value.toLocaleString();
+                            }
+                        }
+                    }]
+                },
+                tooltips: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: "rgba(3, 7, 18, 0.9)",
+                    titleFontColor: strokeColor,
+                    bodyFontColor: "#fff",
+                    borderColor: "rgba(255, 255, 255, 0.1)",
+                    borderWidth: 1,
+                    displayColors: false,
+                    callbacks: {
+                        label: function(tooltipItem) {
+                            return `Price: ` + parseFloat(tooltipItem.yLabel).toFixed(2);
+                        }
+                    }
+                }
+            }
+        });
+    } catch (err) {
+        console.error("Error loading stock chart:", err);
+    }
+}
+
+function changeStockChartRange(range) {
+    activeChartRange = range;
+    updateRangeButtonStyles();
+    fetchStockChartData();
+}
+
+function updateRangeButtonStyles() {
+    const ranges = ['1d', '1mo', '3mo', '1y'];
+    ranges.forEach(r => {
+        const btn = document.getElementById(`btn-range-${r}`);
+        if (!btn) return;
+        if (r === activeChartRange) {
+            btn.style.border = "1px solid var(--accent-neon)";
+            btn.style.background = "rgba(0, 240, 255, 0.05)";
+            btn.style.color = "var(--accent-neon)";
+        } else {
+            btn.style.border = "1px solid rgba(255, 255, 255, 0.1)";
+            btn.style.background = "transparent";
+            btn.style.color = "var(--text-secondary)";
+        }
     });
 }
