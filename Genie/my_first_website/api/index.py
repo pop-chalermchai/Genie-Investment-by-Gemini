@@ -4,38 +4,89 @@ import os
 import urllib.request
 import urllib.parse
 import json
+import ssl
+import pg8000
 
 app = Flask(__name__)
 
-# Resolve path to portfolio.db (at the root of my_first_website)
+# Config
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB_PATH = os.path.join(BASE_DIR, 'portfolio.db')
+DATABASE_URL = os.environ.get('DATABASE_URL')
 
 def get_db_connection():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+    """
+    Returns (conn, is_postgres)
+    """
+    if DATABASE_URL:
+        # Connect to Supabase / Postgres
+        db_url = DATABASE_URL
+        if db_url.startswith("postgres://"):
+            db_url = db_url.replace("postgres://", "postgresql://", 1)
+            
+        url = urllib.parse.urlparse(db_url)
+        username = url.username
+        password = url.password
+        database = url.path[1:]
+        hostname = url.hostname
+        port = url.port or 5432
+        
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+        
+        conn = pg8000.connect(
+            user=username,
+            password=password,
+            host=hostname,
+            port=port,
+            database=database,
+            ssl_context=ssl_context
+        )
+        return conn, True
+    else:
+        # Fallback to local SQLite
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        return conn, False
+
+def execute_sql(cursor, is_postgres, query, params=None):
+    if params is None:
+        params = ()
+    if is_postgres:
+        # Convert SQLite ? to Postgres %s placeholders
+        query = query.replace('?', '%s')
+    cursor.execute(query, params)
+
+def fetch_all_as_dict(cursor, is_postgres):
+    if is_postgres:
+        if not cursor.description:
+            return []
+        columns = [col[0] for col in cursor.description]
+        return [dict(zip(columns, row)) for row in cursor.fetchall()]
+    else:
+        return [dict(r) for r in cursor.fetchall()]
 
 @app.route('/api/holdings', methods=['GET'])
 def get_holdings():
     try:
-        conn = get_db_connection()
+        conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
+        # Cleaned up GROUP BY to satisfy Postgres strict requirements
         query = '''
             SELECT 
-                a.ticker, a.company_name as companyName, a.sector, 
+                a.ticker, a.company_name as "companyName", a.sector, 
                 p.name as portfolio, 
                 t.currency, SUM(t.shares) as shares, 
-                SUM(CASE WHEN t.type = 'BUY' THEN t.shares * t.price ELSE 0 END) / NULLIF(SUM(CASE WHEN t.type = 'BUY' THEN t.shares ELSE 0 END), 0) as avgCost
+                SUM(CASE WHEN t.type = 'BUY' THEN t.shares * t.price ELSE 0 END) / NULLIF(SUM(CASE WHEN t.type = 'BUY' THEN t.shares ELSE 0 END), 0) as "avgCost"
             FROM assets a
             JOIN portfolios p ON a.portfolio_id = p.id
             JOIN transactions t ON t.asset_id = a.id
-            GROUP BY a.id, p.id
+            GROUP BY a.ticker, a.company_name, a.sector, p.name, t.currency
             HAVING SUM(t.shares) > 0
         '''
-        cursor.execute(query)
-        rows = cursor.fetchall()
-        holdings = [dict(r) for r in rows]
+        execute_sql(cursor, is_postgres, query)
+        holdings = fetch_all_as_dict(cursor, is_postgres)
         conn.close()
         return jsonify(holdings)
     except Exception as e:
@@ -44,10 +95,10 @@ def get_holdings():
 @app.route('/api/reports', methods=['GET'])
 def get_reports():
     try:
-        conn = get_db_connection()
+        conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute('SELECT * FROM research_reports')
-        rows = cursor.fetchall()
+        execute_sql(cursor, is_postgres, 'SELECT * FROM research_reports')
+        rows = fetch_all_as_dict(cursor, is_postgres)
         reports = {}
         for r in rows:
             reports[r['report_key']] = {
@@ -113,20 +164,33 @@ def add_portfolio():
         if not portfolio_name:
             raise ValueError("Portfolio name is required")
         
-        conn = get_db_connection()
+        conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
         
         # Get category id
-        cursor.execute("SELECT id FROM categories WHERE name=?", (category_name,))
-        cat_row = cursor.fetchone()
-        if cat_row:
-            cat_id = cat_row[0]
-        else:
-            cursor.execute("INSERT INTO categories (name) VALUES (?)", (category_name,))
-            cat_id = cursor.lastrowid
+        execute_sql(cursor, is_postgres, "SELECT id FROM categories WHERE name=?", (category_name,))
+        cat_rows = fetch_all_as_dict(cursor, is_postgres)
         
-        cursor.execute("INSERT INTO portfolios (name, category_id) VALUES (?, ?)", (portfolio_name, cat_id))
-        conn.commit()
+        if cat_rows:
+            cat_id = cat_rows[0]['id']
+        else:
+            execute_sql(cursor, is_postgres, "INSERT INTO categories (name) VALUES (?)", (category_name,))
+            if is_postgres:
+                # In pg8000, we retrieve last inserted ID differently if needed,
+                # but standard returning or querying max ID can be done, or we can use cursor.lastrowid fallback.
+                # Actually, pg8000 doesn't populate cursor.lastrowid by default.
+                # So we can use INSERT INTO ... RETURNING id
+                execute_sql(cursor, is_postgres, "SELECT MAX(id) FROM categories")
+                cat_id = cursor.fetchone()[0]
+            else:
+                cat_id = cursor.lastrowid
+        
+        execute_sql(cursor, is_postgres, "INSERT INTO portfolios (name, category_id) VALUES (?, ?)", (portfolio_name, cat_id))
+        
+        if is_postgres:
+            conn.commit()
+        else:
+            conn.commit()
         conn.close()
         return jsonify({"success": True})
     except Exception as e:
@@ -151,26 +215,30 @@ def ingest_transaction():
         if tx_type == 'SELL':
             shares = -abs(shares)
         
-        conn = get_db_connection()
+        conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
         
-        cursor.execute("SELECT id FROM portfolios WHERE name=?", (portfolio_name,))
-        p_row = cursor.fetchone()
-        if not p_row:
+        execute_sql(cursor, is_postgres, "SELECT id FROM portfolios WHERE name=?", (portfolio_name,))
+        p_rows = fetch_all_as_dict(cursor, is_postgres)
+        if not p_rows:
             raise ValueError(f"Portfolio '{portfolio_name}' does not exist")
-        p_id = p_row[0]
+        p_id = p_rows[0]['id']
         
-        cursor.execute("SELECT id FROM assets WHERE ticker=? AND portfolio_id=?", (ticker, p_id))
-        a_row = cursor.fetchone()
+        execute_sql(cursor, is_postgres, "SELECT id FROM assets WHERE ticker=? AND portfolio_id=?", (ticker, p_id))
+        a_rows = fetch_all_as_dict(cursor, is_postgres)
         
-        if a_row:
-            asset_id = a_row[0]
+        if a_rows:
+            asset_id = a_rows[0]['id']
         else:
-            cursor.execute("INSERT INTO assets (ticker, company_name, sector, portfolio_id) VALUES (?, ?, ?, ?)",
+            execute_sql(cursor, is_postgres, "INSERT INTO assets (ticker, company_name, sector, portfolio_id) VALUES (?, ?, ?, ?)",
                            (ticker, company_name, sector, p_id))
-            asset_id = cursor.lastrowid
+            if is_postgres:
+                execute_sql(cursor, is_postgres, "SELECT MAX(id) FROM assets")
+                asset_id = cursor.fetchone()[0]
+            else:
+                asset_id = cursor.lastrowid
         
-        cursor.execute("INSERT INTO transactions (asset_id, type, shares, price, currency) VALUES (?, ?, ?, ?, ?)",
+        execute_sql(cursor, is_postgres, "INSERT INTO transactions (asset_id, type, shares, price, currency) VALUES (?, ?, ?, ?, ?)",
                        (asset_id, tx_type, shares, price, currency))
         
         conn.commit()
@@ -186,24 +254,24 @@ def delete_portfolio():
         return jsonify({"error": "Portfolio name required"}), 400
         
     try:
-        conn = get_db_connection()
+        conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
         
         # Find portfolio ID
-        cursor.execute("SELECT id FROM portfolios WHERE name=?", (p_name,))
-        p_row = cursor.fetchone()
-        if not p_row:
+        execute_sql(cursor, is_postgres, "SELECT id FROM portfolios WHERE name=?", (p_name,))
+        p_rows = fetch_all_as_dict(cursor, is_postgres)
+        if not p_rows:
             raise ValueError(f"Portfolio '{p_name}' not found")
-        p_id = p_row[0]
+        p_id = p_rows[0]['id']
         
         # Delete transactions related to assets in this portfolio
-        cursor.execute("DELETE FROM transactions WHERE asset_id IN (SELECT id FROM assets WHERE portfolio_id=?)", (p_id,))
+        execute_sql(cursor, is_postgres, "DELETE FROM transactions WHERE asset_id IN (SELECT id FROM assets WHERE portfolio_id=?)", (p_id,))
         
         # Delete assets in this portfolio
-        cursor.execute("DELETE FROM assets WHERE portfolio_id=?", (p_id,))
+        execute_sql(cursor, is_postgres, "DELETE FROM assets WHERE portfolio_id=?", (p_id,))
         
         # Delete portfolio
-        cursor.execute("DELETE FROM portfolios WHERE id=?", (p_id,))
+        execute_sql(cursor, is_postgres, "DELETE FROM portfolios WHERE id=?", (p_id,))
         
         conn.commit()
         conn.close()
