@@ -71,6 +71,9 @@
 5. **การบันทึกประวัติ (Change Log):** เขียนรายงานสรุปการอัปเดตพอร์ตประจำงวด (ระบุวันที่ของข้อมูลที่เป็นแหล่งอ้างอิงให้ชัดเจน) ลงใน [daily_log.md](file:///Users/popular/Desktop/Genie/notes/daily_log.md) เสมอ
 6. **การรายงานผล (Final Feedback):** สรุปการจับคู่สินทรัพย์และยอดพอร์ตรวมรายงานผลคืนให้คุณ Pop ทราบหลังการอัปเดตเสร็จสิ้น
 
+## ⚙️ 7. กฎและขั้นตอนการพัฒนาเว็บไซต์ (Web Development Protocol - SOP)
+* เพื่อความปลอดภัยของระบบและการรักษาสถานะเว็บจริงบน Vercel ให้คงอยู่ได้อย่างต่อเนื่อง ทีมพัฒนาจะยึดหลัก **Local-First Development Workflow** ตามรายละเอียดในคู่มือระบบปฏิบัติงานมาตรฐาน [SOP_Web_Development.md](file:///Users/popular/Desktop/Genie/team_members/SOP_Web_Development.md) เสมอ
+
 ---
 
 > [!TIP]
