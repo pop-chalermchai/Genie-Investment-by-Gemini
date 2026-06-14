@@ -159,13 +159,23 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         
         renderReport();
+
+        // Detect initial tab from URL path
+        const path = window.location.pathname.substring(1);
+        const validTabs = ["dashboard", "team", "research", "transactions"];
+        if (validTabs.includes(path)) {
+            switchTab(path, false);
+        } else {
+            switchTab("dashboard", false);
+        }
+        
         fetchLivePrices();
     })
     .catch(err => console.error("Error fetching data:", err));
 });
 
 // TAB SWITCHER
-function switchTab(tabName) {
+function switchTab(tabName, pushState = true) {
     activeTab = tabName;
     
     // Toggle navigation classes
@@ -183,6 +193,12 @@ function switchTab(tabName) {
         }
     });
 
+    // Update URL without page reload
+    if (pushState) {
+        const path = tabName === "dashboard" ? "/" : "/" + tabName;
+        history.pushState({ tab: tabName }, "", path);
+    }
+
     // Resize chart to prevent visual glitches when switching tabs
     if (tabName === "dashboard" && allocationChart) {
         allocationChart.resize();
@@ -192,6 +208,12 @@ function switchTab(tabName) {
         loadTransactions();
     }
 }
+
+// Handle browser back/forward buttons
+window.addEventListener("popstate", (event) => {
+    const tabName = (event.state && event.state.tab) || "dashboard";
+    switchTab(tabName, false);
+});
 
 // ==========================================================================
 // DASHBOARD VIEW LOGIC & MATH ENGINE

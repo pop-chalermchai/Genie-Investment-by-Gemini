@@ -229,6 +229,11 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": str(e)}).encode())
         else:
+            # For Path Routing support:
+            # If the path is one of our frontend routes, serve index.html
+            clean_path = parsed_url.path.strip('/')
+            if clean_path in ('', 'dashboard', 'team', 'research', 'transactions'):
+                self.path = '/index.html'
             # Delegate to SimpleHTTPRequestHandler to serve static files
             super().do_GET()
 
