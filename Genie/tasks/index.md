@@ -11,9 +11,11 @@
 - [ ] **Watchlist / Radar Board:** Track tickers you don't own yet and integrate with Reverse DCF alerts.
 - [ ] **Dividend Tracking & Yield Metrics:** Track passive income generation and estimated annual dividends.
 - [ ] **Earnings & Catalyst Calendar:** Widget showing upcoming earnings dates and catalysts.
-- [ ] **Export/Import Data:** Capability to export to CSV for taxes, or import trades from brokers.
+- [ ] **User Authentication & Multi-Tenant Database Isolation:** Implement user log-in system and secure row-level data isolation using Supabase RLS (Row-Level Security) to allow multiple users to use the website without data overlap.
 
 ## Completed
+- [x] **Firefly Aerospace (FLY) Research:** Valerie, Christian, Serene, and Mateo successfully analyzed, audited, localized, and rendered the infographic cover art for FLY. The reports are committed to the portfolio database!
+- [x] **Import Transactions via Excel:** Standard Excel template download and drag-and-drop parser/uploader integrated with backend bulk ingest.
 - [x] **Transaction History / Activity Log:** Add a tab to view historical buys/sells chronologically.
 - [x] **Detailed Single-Stock View:** Clickable tickers opening a modal with live candlestick charts and metrics.
 - [x] Build and launch Pop's first interactive portfolio dashboard and research website: [my_first_website/index.html](file:///Users/popular/Desktop/Genie/my_first_website/index.html)

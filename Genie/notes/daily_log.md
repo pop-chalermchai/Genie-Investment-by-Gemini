@@ -1,5 +1,13 @@
 # Daily Log
 
+## 2026-06-15
+- Completed end-to-end equity research pipeline for Firefly Aerospace, Inc. (FLY) under ticker `FLY` based on June 12, 2026 closing market price of $31.87.
+- Valerie generated the English fundamental analysis and Reverse DCF models.
+- Christian audited the calculations, correcting a rounding variance in the Conservative Risk-Adjusted Revenue ($7,974.30M) and table formatting in the snapshot.
+- Serene localized both the overview and DCF reports into formal Thai.
+- Mateo designed a high-impact spaceflight-themed infographic cover art saved at `research/FLY/fly_report_cover_art.png`.
+- Created and executed `my_first_website/insert_fly.py` to inject the English and Thai reports into the `research_reports` database.
+
 ## 2026-06-07
 - Organized workspace files by moving all subagent skill files into the dedicated `Team_members/` directory.
 - Copied Christian's skill profile from the Downloads folder into the consolidated `Team_members/` folder.

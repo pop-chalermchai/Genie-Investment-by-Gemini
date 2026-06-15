@@ -1466,3 +1466,25 @@ select.type-sell {
     color: var(--accent-neon);
     border-bottom: 2px solid var(--accent-neon);
 }
+
+/* Excel Import Drag & Drop Zone */
+.upload-drop-zone {
+    margin-top: 20px;
+    border: 2px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background: rgba(3, 7, 18, 0.3);
+    text-align: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.upload-drop-zone:hover {
+    border-color: rgba(255, 255, 255, 0.25);
+    background: rgba(3, 7, 18, 0.45);
+}
+
+.upload-drop-zone.drop-zone--over {
+    border-color: var(--accent-neon) !important;
+    background: rgba(0, 240, 255, 0.05) !important;
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+}

@@ -9,9 +9,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Chart.js CDN for stunning visualizations -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js?v=2"></script>
+    <!-- Local Chart.js for stunning visualizations -->
+    <script src="chart.js"></script>
     <link rel="stylesheet" href="styles.css?v=2">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧞‍♂️</text></svg>">
 </head>
 <body>
     <div class="glow-container">
@@ -592,6 +593,63 @@
 
             <!-- SECTION 4: TRANSACTIONS (ACTIVITY LOG) -->
             <section id="section-transactions" class="tab-content">
+                <!-- EXCEL IMPORT & TEMPLATE DOWNLOAD PANEL -->
+                <div class="glass-panel" style="padding: 25px; margin-bottom: 25px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                        <div>
+                            <h2 style="color: var(--text-primary); font-size: 1.1rem; font-weight: 600; margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 0.5px;">Import Transactions via Excel / CSV</h2>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0;">Upload your stock transactions using our standard template. Copy the CSV template below to get started.</p>
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button onclick="copyTemplateAsCSV()" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.85rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: var(--text-primary); font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px;">
+                                📋 Copy CSV Template
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="upload-drop-zone" id="upload-drop-zone">
+                        <label for="excel-file-input" style="cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; height: 100%; padding: 25px 0;">
+                            <span style="font-size: 2.2rem;">📊</span>
+                            <span style="color: var(--text-primary); font-weight: 600; font-size: 0.95rem;">Drag & drop your Excel or CSV file here, or <span style="color: var(--accent-neon); text-decoration: underline;">browse</span></span>
+                            <span style="color: var(--text-secondary); font-size: 0.8rem;">Supports Excel and CSV files (.xlsx, .xls, .csv)</span>
+                        </label>
+                        <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" style="display: none;" onchange="handleExcelUpload(event)">
+                    </div>
+
+                    <!-- PREVIEW CONTAINER (HIDDEN BY DEFAULT) -->
+                    <div id="excel-preview-container" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.08);">
+                        <h3 style="color: var(--text-primary); font-size: 0.95rem; font-weight: 600; margin-top: 0; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                            👀 Previewing <span id="preview-count" style="color: var(--accent-neon);">0</span> Transactions
+                        </h3>
+                        <div class="positions-container" style="max-height: 250px; overflow-y: auto; border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 6px; background: rgba(3, 7, 18, 0.2); margin-bottom: 15px;">
+                            <table class="positions-table" style="font-size: 0.85rem; width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Ticker</th>
+                                        <th>Company Name</th>
+                                        <th>Type</th>
+                                        <th class="text-right">Shares</th>
+                                        <th class="text-right">Price</th>
+                                        <th>Currency</th>
+                                        <th>Portfolio</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="excel-preview-body">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                            <button onclick="cancelExcelUpload()" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.85rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: var(--text-secondary); cursor: pointer;">Cancel</button>
+                            <button onclick="confirmExcelUpload()" class="btn btn-primary" id="btn-confirm-upload" style="padding: 8px 16px; font-size: 0.85rem; border-radius: 6px; border: none; background: linear-gradient(90deg, var(--accent-neon) 0%, #0088FF 100%); color: #030712; font-weight: 700; cursor: pointer;">
+                                Confirm & Import
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TRANSACTION LOG HISTORY -->
                 <div class="glass-panel" style="padding: 25px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                         <h2 style="color: var(--text-primary); font-size: 1.1rem; font-weight: 600; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">Transaction History</h2>
@@ -716,7 +774,8 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="app.js?v=6"></script>
+    <script src="xlsx.full.min.js"></script>
+    <script src="marked.min.js"></script>
+    <script src="app.js?v=9"></script>
 </body>
 </html>

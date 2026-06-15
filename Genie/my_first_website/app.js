@@ -170,6 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         
         fetchLivePrices();
+        setupDragAndDrop();
     })
     .catch(err => console.error("Error fetching data:", err));
 });
@@ -1122,5 +1123,330 @@ function updateRangeButtonStyles() {
             btn.style.background = "transparent";
             btn.style.color = "var(--text-secondary)";
         }
+    });
+}
+
+// ==========================================================================
+// EXCEL TRANSACTION IMPORT & TEMPLATE DOWNLOAD
+// ==========================================================================
+let parsedExcelTransactions = [];
+
+function copyTemplateAsCSV() {
+    const csvContent = 
+`Date,Ticker,Company Name,Sector,Sub-Portfolio,Type,Shares,Price,Currency
+2026-06-14 10:00:00,AAPL,Apple Inc.,Technology,Dime,BUY,10,180.5,USD
+2026-06-14 14:30:00,TSLA,Tesla Inc.,Consumer Cyclical,WeBull,SELL,5,175.0,USD
+2026-06-14 16:00:00,7-11,CP All,Consumer Defensive,Tax Saving Fund,BUY,100,58.25,THB`;
+
+    navigator.clipboard.writeText(csvContent).then(() => {
+        alert("Standard CSV template copied to clipboard!\nYou can paste it into Excel or any text editor, then save it as an Excel (.xlsx) or CSV file.");
+    }).catch(err => {
+        console.error("Failed to copy template: ", err);
+        // Fallback using prompt
+        window.prompt("Could not copy automatically. Please copy the CSV text below manually:", csvContent);
+    });
+}
+
+function setupDragAndDrop() {
+    const dropZone = document.getElementById("upload-drop-zone");
+    if (!dropZone) return;
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.add('drop-zone--over'), false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.remove('drop-zone--over'), false);
+    });
+
+    dropZone.addEventListener('drop', handleDrop, false);
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files.length > 0) {
+            const input = document.getElementById("excel-file-input");
+            if (input) {
+                input.files = files;
+                handleExcelUpload({ target: input });
+            }
+        }
+    }
+}
+
+function handleExcelUpload(event) {
+    if (typeof XLSX === 'undefined') {
+        alert("Error: SheetJS library (XLSX) is not loaded.\nPlease check your internet connection or check the browser console for network errors.");
+        return;
+    }
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            
+            const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+            if (rows.length <= 1) {
+                alert("The Excel file is empty or missing data rows.");
+                cancelExcelUpload();
+                return;
+            }
+            
+            const headers = rows[0].map(h => String(h).trim().toLowerCase());
+            
+            const colIndices = {
+                date: headers.indexOf("date"),
+                ticker: headers.indexOf("ticker"),
+                companyName: headers.indexOf("company name"),
+                sector: headers.indexOf("sector"),
+                portfolio: headers.indexOf("sub-portfolio"),
+                type: headers.indexOf("type"),
+                shares: headers.indexOf("shares"),
+                price: headers.indexOf("price"),
+                currency: headers.indexOf("currency")
+            };
+            
+            const requiredCols = ["ticker", "portfolio", "type", "shares", "price"];
+            for (const col of requiredCols) {
+                if (colIndices[col] === -1) {
+                    alert(`Missing required column in Excel: "${col}"`);
+                    cancelExcelUpload();
+                    return;
+                }
+            }
+            
+            parsedExcelTransactions = [];
+            let errorCount = 0;
+            let errorMsg = "";
+            
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                if (!row || row.length === 0 || row.every(cell => cell === null || cell === undefined || cell === "")) {
+                    continue;
+                }
+                
+                const getCell = (colKey) => {
+                    const idx = colIndices[colKey];
+                    return idx !== -1 && row[idx] !== undefined && row[idx] !== null ? String(row[idx]).trim() : "";
+                };
+                
+                const ticker = getCell("ticker").toUpperCase();
+                const portfolio = getCell("portfolio");
+                const type = getCell("type").toUpperCase();
+                const sharesVal = parseFloat(getCell("shares"));
+                const priceVal = parseFloat(getCell("price"));
+                
+                let date = getCell("date");
+                let companyName = getCell("companyName");
+                let sector = getCell("sector");
+                let currency = getCell("currency").toUpperCase();
+                
+                if (!ticker) {
+                    errorCount++;
+                    errorMsg += `Row ${i+1}: Ticker is empty\n`;
+                    continue;
+                }
+                if (!portfolio) {
+                    errorCount++;
+                    errorMsg += `Row ${i+1} (${ticker}): Sub-Portfolio is empty\n`;
+                    continue;
+                }
+                
+                const validPortfolios = ["Dime", "WeBull", "Tax Saving Fund", "Provident Fund"];
+                const matchingPortfolio = validPortfolios.find(p => p.toLowerCase() === portfolio.toLowerCase());
+                if (!matchingPortfolio) {
+                    errorCount++;
+                    errorMsg += `Row ${i+1} (${ticker}): Portfolio must be one of [Dime, WeBull, Tax Saving Fund, Provident Fund]\n`;
+                    continue;
+                }
+                
+                if (type !== "BUY" && type !== "SELL") {
+                    errorCount++;
+                    errorMsg += `Row ${i+1} (${ticker}): Type must be BUY or SELL\n`;
+                    continue;
+                }
+                
+                if (isNaN(sharesVal) || sharesVal <= 0) {
+                    errorCount++;
+                    errorMsg += `Row ${i+1} (${ticker}): Shares must be a positive number\n`;
+                    continue;
+                }
+                
+                if (isNaN(priceVal) || priceVal <= 0) {
+                    errorCount++;
+                    errorMsg += `Row ${i+1} (${ticker}): Price must be a positive number\n`;
+                    continue;
+                }
+                
+                if (!companyName) companyName = ticker;
+                if (!sector) sector = "Technology";
+                if (!currency) currency = "USD";
+                if (currency !== "USD" && currency !== "THB") currency = "USD";
+                
+                if (date) {
+                    if (!isNaN(date) && parseFloat(date) > 20000 && parseFloat(date) < 60000) {
+                        const serial = parseFloat(date);
+                        const utc_days  = Math.floor(serial - 25569);
+                        const utc_value = utc_days * 86400;                                        
+                        const date_info = new Date(utc_value * 1000);
+                        const fractional_day = serial - Math.floor(serial) + 0.0000001;
+                        let total_seconds = Math.floor(86400 * fractional_day);
+                        const seconds = total_seconds % 60;
+                        total_seconds -= seconds;
+                        const minutes = Math.floor(total_seconds / 60) % 60;
+                        const hours = Math.floor(total_seconds / 3600);
+                        date_info.setHours(hours, minutes, seconds);
+                        
+                        const pad = (n) => String(n).padStart(2, '0');
+                        date = `${date_info.getFullYear()}-${pad(date_info.getMonth()+1)}-${pad(date_info.getDate())} ${pad(date_info.getHours())}:${pad(date_info.getMinutes())}:${pad(date_info.getSeconds())}`;
+                    } else {
+                        const parsedDate = new Date(date);
+                        if (!isNaN(parsedDate.getTime())) {
+                            const pad = (n) => String(n).padStart(2, '0');
+                            date = `${parsedDate.getFullYear()}-${pad(parsedDate.getMonth()+1)}-${pad(parsedDate.getDate())} ${pad(parsedDate.getHours())}:${pad(parsedDate.getMinutes())}:${pad(parsedDate.getSeconds())}`;
+                        } else {
+                            date = "";
+                        }
+                    }
+                }
+                
+                parsedExcelTransactions.push({
+                    date,
+                    ticker,
+                    companyName,
+                    sector,
+                    portfolio: matchingPortfolio,
+                    type,
+                    shares: sharesVal,
+                    avgCost: priceVal,
+                    currency
+                });
+            }
+            
+            if (errorCount > 0) {
+                alert(`Found ${errorCount} formatting errors:\n\n${errorMsg.substring(0, 500)}${errorMsg.length > 500 ? '...' : ''}\nPlease fix the Excel file and try again.`);
+                cancelExcelUpload();
+                return;
+            }
+            
+            if (parsedExcelTransactions.length === 0) {
+                alert("No valid transaction rows found in the sheet.");
+                cancelExcelUpload();
+                return;
+            }
+            
+            renderExcelPreview();
+            
+        } catch (err) {
+            console.error("Error reading excel file:", err);
+            alert("Error reading Excel file. Please ensure it is a valid .xlsx or .xls file.");
+            cancelExcelUpload();
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function renderExcelPreview() {
+    const previewContainer = document.getElementById("excel-preview-container");
+    const previewCount = document.getElementById("preview-count");
+    const previewBody = document.getElementById("excel-preview-body");
+    
+    if (!previewContainer || !previewCount || !previewBody) return;
+    
+    previewCount.innerText = parsedExcelTransactions.length;
+    previewBody.innerHTML = "";
+    
+    parsedExcelTransactions.forEach(tx => {
+        const row = document.createElement("tr");
+        
+        const typeStyle = tx.type === "BUY" ? "color: #10B981; font-weight: 600;" : "color: #EF4444; font-weight: 600;";
+        const currencySymbol = tx.currency === "USD" ? "$" : "฿";
+        
+        row.innerHTML = `
+            <td style="color: var(--text-secondary);">${tx.date || "<i>(Now)</i>"}</td>
+            <td style="font-weight: 700; color: var(--text-primary);">${tx.ticker}</td>
+            <td>${tx.companyName}</td>
+            <td style="${typeStyle}">${tx.type}</td>
+            <td class="text-right">${tx.shares.toLocaleString()}</td>
+            <td class="text-right">${currencySymbol}${tx.avgCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}</td>
+            <td>${tx.currency}</td>
+            <td><span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-primary); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">${tx.portfolio}</span></td>
+        `;
+        previewBody.appendChild(row);
+    });
+    
+    previewContainer.style.display = "block";
+}
+
+function cancelExcelUpload() {
+    const input = document.getElementById("excel-file-input");
+    if (input) input.value = "";
+    
+    const previewContainer = document.getElementById("excel-preview-container");
+    if (previewContainer) previewContainer.style.display = "none";
+    
+    parsedExcelTransactions = [];
+}
+
+function confirmExcelUpload() {
+    if (parsedExcelTransactions.length === 0) return;
+    
+    const btn = document.getElementById("btn-confirm-upload");
+    const originalText = btn.innerText;
+    btn.disabled = true;
+    btn.innerText = "⏳ Ingesting...";
+    
+    fetch('/api/bulk-ingest', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            transactions: parsedExcelTransactions
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`Successfully imported ${data.count} transactions!`);
+            cancelExcelUpload();
+            
+            // Re-fetch transactions & holdings
+            loadTransactions();
+            
+            fetch('/api/holdings')
+                .then(r => r.json())
+                .then(hData => {
+                    holdings = hData.map(h => ({...h, currentPrice: h.avgCost}));
+                    updateDashboard();
+                    fetchLivePrices(); // Update to live price
+                });
+        } else {
+            alert("Import error: " + data.error);
+        }
+    })
+    .catch(err => {
+        console.error("Error confirm upload:", err);
+        alert("Failed to import transactions.");
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerText = originalText;
     });
 }

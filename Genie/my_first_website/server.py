@@ -293,6 +293,7 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 shares = float(data.get('shares', 0))
                 price = float(data.get('avgCost', 0))
                 currency = data.get('currency', 'USD')
+                tx_date = data.get('date')
                 
                 if not all([ticker, company_name, portfolio_name, shares > 0, price > 0]):
                     raise ValueError("Missing required fields or invalid amounts")
@@ -320,8 +321,12 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                                    (ticker, company_name, sector, p_id))
                     asset_id = cursor.lastrowid
                 
-                cursor.execute("INSERT INTO transactions (asset_id, type, shares, price, currency) VALUES (?, ?, ?, ?, ?)",
-                               (asset_id, type, shares, price, currency))
+                if tx_date:
+                    cursor.execute("INSERT INTO transactions (asset_id, type, shares, price, currency, transaction_date) VALUES (?, ?, ?, ?, ?, ?)",
+                                   (asset_id, type, shares, price, currency, tx_date))
+                else:
+                    cursor.execute("INSERT INTO transactions (asset_id, type, shares, price, currency) VALUES (?, ?, ?, ?, ?)",
+                                   (asset_id, type, shares, price, currency))
                 
                 conn.commit()
                 conn.close()
@@ -337,9 +342,74 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": str(e)}).encode())
-        else:
-            self.send_response(404)
-            self.end_headers()
+        elif parsed_url.path == '/api/bulk-ingest':
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            
+            try:
+                data = json.loads(post_data.decode('utf-8'))
+                tx_list = data.get('transactions', [])
+                if not tx_list:
+                    raise ValueError("No transactions provided")
+                
+                db_path = os.path.join(DIRECTORY, 'portfolio.db')
+                conn = sqlite3.connect(db_path)
+                cursor = conn.cursor()
+                
+                for tx in tx_list:
+                    tx_type = tx.get('type', 'BUY').upper()
+                    ticker = tx.get('ticker')
+                    company_name = tx.get('companyName')
+                    sector = tx.get('sector', 'Technology')
+                    portfolio_name = tx.get('portfolio')
+                    shares = float(tx.get('shares', 0))
+                    price = float(tx.get('avgCost', 0))
+                    currency = tx.get('currency', 'USD')
+                    tx_date = tx.get('date')
+                    
+                    if not all([ticker, company_name, portfolio_name, shares > 0, price > 0]):
+                        raise ValueError(f"Missing required fields or invalid amounts for ticker {ticker}")
+                        
+                    if tx_type == 'SELL':
+                        shares = -abs(shares)
+                        
+                    cursor.execute("SELECT id FROM portfolios WHERE name=?", (portfolio_name,))
+                    p_row = cursor.fetchone()
+                    if not p_row:
+                        raise ValueError(f"Portfolio '{portfolio_name}' does not exist")
+                    p_id = p_row[0]
+                    
+                    cursor.execute("SELECT id FROM assets WHERE ticker=? AND portfolio_id=?", (ticker, p_id))
+                    a_row = cursor.fetchone()
+                    
+                    if a_row:
+                        asset_id = a_row[0]
+                    else:
+                        cursor.execute("INSERT INTO assets (ticker, company_name, sector, portfolio_id) VALUES (?, ?, ?, ?)",
+                                       (ticker, company_name, sector, p_id))
+                        asset_id = cursor.lastrowid
+                    
+                    if tx_date:
+                        cursor.execute("INSERT INTO transactions (asset_id, type, shares, price, currency, transaction_date) VALUES (?, ?, ?, ?, ?, ?)",
+                                       (asset_id, tx_type, shares, price, currency, tx_date))
+                    else:
+                        cursor.execute("INSERT INTO transactions (asset_id, type, shares, price, currency) VALUES (?, ?, ?, ?, ?)",
+                                       (asset_id, tx_type, shares, price, currency))
+                
+                conn.commit()
+                conn.close()
+                
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": True, "count": len(tx_list)}).encode())
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode())
 
     def do_DELETE(self):
         parsed_url = urlparse(self.path)
@@ -396,6 +466,6 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
 
 
 if __name__ == '__main__':
-    print(f"Starting server on http://localhost:{PORT} serving {DIRECTORY}...")
-    server = http.server.HTTPServer(('localhost', PORT), MyHandler)
+    print(f"Starting server on http://127.0.0.1:{PORT} serving {DIRECTORY}...")
+    server = http.server.HTTPServer(('127.0.0.1', PORT), MyHandler)
     server.serve_forever()

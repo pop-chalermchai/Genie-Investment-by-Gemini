@@ -269,6 +269,7 @@ def ingest_transaction():
         shares = float(data.get('shares', 0))
         price = float(data.get('avgCost', 0))
         currency = data.get('currency', 'USD')
+        tx_date = data.get('date')
         
         if not all([ticker, company_name, portfolio_name, shares > 0, price > 0]):
             raise ValueError("Missing required fields or invalid amounts")
@@ -299,12 +300,77 @@ def ingest_transaction():
             else:
                 asset_id = cursor.lastrowid
         
-        execute_sql(cursor, is_postgres, "INSERT INTO transactions (asset_id, type, shares, price, currency) VALUES (?, ?, ?, ?, ?)",
-                       (asset_id, tx_type, shares, price, currency))
+        if tx_date:
+            execute_sql(cursor, is_postgres, "INSERT INTO transactions (asset_id, type, shares, price, currency, transaction_date) VALUES (?, ?, ?, ?, ?, ?)",
+                           (asset_id, tx_type, shares, price, currency, tx_date))
+        else:
+            execute_sql(cursor, is_postgres, "INSERT INTO transactions (asset_id, type, shares, price, currency) VALUES (?, ?, ?, ?, ?)",
+                           (asset_id, tx_type, shares, price, currency))
         
         conn.commit()
         conn.close()
         return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/bulk-ingest', methods=['POST'])
+def bulk_ingest():
+    try:
+        data = request.get_json(force=True)
+        tx_list = data.get('transactions', [])
+        if not tx_list:
+            raise ValueError("No transactions provided")
+            
+        conn, is_postgres = get_db_connection()
+        cursor = conn.cursor()
+        
+        for tx in tx_list:
+            tx_type = tx.get('type', 'BUY').upper()
+            ticker = tx.get('ticker')
+            company_name = tx.get('companyName')
+            sector = tx.get('sector', 'Technology')
+            portfolio_name = tx.get('portfolio')
+            shares = float(tx.get('shares', 0))
+            price = float(tx.get('avgCost', 0))
+            currency = tx.get('currency', 'USD')
+            tx_date = tx.get('date')
+            
+            if not all([ticker, company_name, portfolio_name, shares > 0, price > 0]):
+                raise ValueError(f"Missing required fields or invalid amounts for ticker {ticker}")
+                
+            if tx_type == 'SELL':
+                shares = -abs(shares)
+                
+            execute_sql(cursor, is_postgres, "SELECT id FROM portfolios WHERE name=?", (portfolio_name,))
+            p_rows = fetch_all_as_dict(cursor, is_postgres)
+            if not p_rows:
+                raise ValueError(f"Portfolio '{portfolio_name}' does not exist")
+            p_id = p_rows[0]['id']
+            
+            execute_sql(cursor, is_postgres, "SELECT id FROM assets WHERE ticker=? AND portfolio_id=?", (ticker, p_id))
+            a_rows = fetch_all_as_dict(cursor, is_postgres)
+            
+            if a_rows:
+                asset_id = a_rows[0]['id']
+            else:
+                execute_sql(cursor, is_postgres, "INSERT INTO assets (ticker, company_name, sector, portfolio_id) VALUES (?, ?, ?, ?)",
+                               (ticker, company_name, sector, p_id))
+                if is_postgres:
+                    execute_sql(cursor, is_postgres, "SELECT MAX(id) FROM assets")
+                    asset_id = cursor.fetchone()[0]
+                else:
+                    asset_id = cursor.lastrowid
+            
+            if tx_date:
+                execute_sql(cursor, is_postgres, "INSERT INTO transactions (asset_id, type, shares, price, currency, transaction_date) VALUES (?, ?, ?, ?, ?, ?)",
+                               (asset_id, tx_type, shares, price, currency, tx_date))
+            else:
+                execute_sql(cursor, is_postgres, "INSERT INTO transactions (asset_id, type, shares, price, currency) VALUES (?, ?, ?, ?, ?)",
+                               (asset_id, tx_type, shares, price, currency))
+                               
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True, "count": len(tx_list)})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
