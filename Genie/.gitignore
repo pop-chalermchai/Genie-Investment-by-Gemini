@@ -16,3 +16,11 @@ env/
 
 # Database files (uncomment if you don't want to track database states)
 # *.db
+
+# Local env files
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
