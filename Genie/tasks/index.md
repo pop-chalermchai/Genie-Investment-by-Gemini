@@ -14,6 +14,7 @@
 - [ ] **User Authentication & Multi-Tenant Database Isolation:** Implement user log-in system and secure row-level data isolation using Supabase RLS (Row-Level Security) to allow multiple users to use the website without data overlap.
 
 ## Completed
+- [x] **NVIDIA (NVDA) Research:** Valerie, Christian, Serene, and Mateo successfully analyzed, audited, localized, and generated the infographic cover art for NVDA. The reports are successfully deployed to the Supabase database!
 - [x] **Firefly Aerospace (FLY) Research:** Valerie, Christian, Serene, and Mateo successfully analyzed, audited, localized, and rendered the infographic cover art for FLY. The reports are committed to the portfolio database!
 - [x] **Import Transactions via Excel:** Standard Excel template download and drag-and-drop parser/uploader integrated with backend bulk ingest.
 - [x] **Transaction History / Activity Log:** Add a tab to view historical buys/sells chronologically.
