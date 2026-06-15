@@ -16,7 +16,7 @@
 | **Net Debt / EBITDA** | -0.01x | **Free Cash Flow (FCF) Yield** | 0.55% |
 
 #### 🔍 Valuation & The Mandatory Reverse DCF Audit
-To reverse-engineer the expectations embedded in the current market price of ~$971.00 ($1.10 Trillion market capitalization), we execute our mandatory Reverse DCF protocol to solve for the implied 10-year annual Free Cash Flow (FCF) growth rate ($g_{implied}$):
+To reverse-engineer the expectations embedded in the current market price of \~$971.00 ($1.10 Trillion market capitalization), we execute our mandatory Reverse DCF protocol to solve for the implied 10-year annual Free Cash Flow (FCF) growth rate ($g_{implied}$):
 *   **Model Assumptions:**
     *   **Target Equity Value:** $1.10 Trillion ($1,100.0 Billion)
     *   **Weighted Average Cost of Capital (WACC):** 10.5% (reflecting cost of equity, debt weights, and semiconductor memory risk premium)
@@ -32,7 +32,7 @@ To reverse-engineer the expectations embedded in the current market price of ~$9
 
 ### 🎯 2. Investment Thesis
 
-At a current stock price of ~$971.00 ($1.10 Trillion market capitalization), Micron is priced to absolute perfection. We recommend an **AVOID / WAIT & WATCH** stance as the market has fully priced in its HBM technological moat and Edge AI tailwinds, leaving no margin of safety and a skewed risk-reward profile.
+At a current stock price of \~$971.00 ($1.10 Trillion market capitalization), Micron is priced to absolute perfection. We recommend an **AVOID / WAIT & WATCH** stance as the market has fully priced in its HBM technological moat and Edge AI tailwinds, leaving no margin of safety and a skewed risk-reward profile.
 
 *   **The Valuation Wall:** 
     *   The market is valuing Micron as a permanent secular growth franchise, completely disregarding its underlying cyclicality. To justify the $971.00 price point, Micron must compound its free cash flow at an annual rate of 31.82% to 39.28% for the next 10 years. This growth rate is historically unprecedented for capital-intensive, cyclical hardware manufacturers. Even high-margin software monopolies struggle to sustain such growth rates over a decade.
@@ -79,13 +79,13 @@ At a current stock price of ~$971.00 ($1.10 Trillion market capitalization), Mic
 
 To satisfy our risk-mitigated investment criteria, we require a minimum **3-to-1 Upside-to-Downside payoff ratio** over a 3-year investment horizon from our entry point:
 
-*   **Bull Case Price Target (Market Cap ~$1.71 Trillion): $1,500.00 per share**  
+*   **Bull Case Price Target (Market Cap \~$1.71 Trillion): $1,500.00 per share**  
     *   *Assumptions:* Micron captures 30% of global HBM4 share, yields remain at 90%+, and FCF hits an unprecedented peak of $50.0 Billion. Multiple remains elevated at 30x P/FCF.
     *   *Result:* **+$529.00 per share (+54.5% upside)**.
-*   **Base Case Price Target (Market Cap ~$855 Billion): $750.00 per share**  
-    *   *Assumptions:* Micron maintains a ~22% HBM share, margins normalize to 45% as supply catches up, and FCF settles at a mid-cycle $35.0 Billion base. P/FCF multiple contracts to 22x.
+*   **Base Case Price Target (Market Cap \~$855 Billion): $750.00 per share**  
+    *   *Assumptions:* Micron maintains a \~22% HBM share, margins normalize to 45% as supply catches up, and FCF settles at a mid-cycle $35.0 Billion base. P/FCF multiple contracts to 22x.
     *   *Result:* **-$221.00 per share (-22.8% return)**.
-*   **Bear Case Price Target / Cyclical Floor (Market Cap ~$400 Billion): $350.00 per share**  
+*   **Bear Case Price Target / Cyclical Floor (Market Cap \~$400 Billion): $350.00 per share**  
     *   *Assumptions:* Severe pricing war breaks out by late 2026. HBM4 transition is delayed, resulting in loss of market share. FCF falls to a cyclical trough of $12.0 Billion. Price finds support at a conservative 1.8x P/B ratio on asset-heavy book value floor.
     *   *Result:* **-$621.00 per share (-64.0% downside)**.
 

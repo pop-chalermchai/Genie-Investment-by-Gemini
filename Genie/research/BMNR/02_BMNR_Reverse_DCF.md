@@ -81,9 +81,9 @@ Classify: **Difficult (15–30%)**
 Revenue per Employee = $4.675B ÷ 50 (estimated future headcount) = $93.5M
 
 Compare with:
-• Elite SaaS: ~$1M
-• Semiconductor Leaders: ~$2M
-• Infrastructure Leaders: ~$1.5M
+• Elite SaaS: \~$1M
+• Semiconductor Leaders: \~$2M
+• Infrastructure Leaders: \~$1.5M
 
 Assess: **Unrealistic**
 *While crypto treasury businesses run incredibly lean, projecting nearly $100M in revenue per employee suggests the company is being valued more like a levered investment vehicle than an operating entity.*
@@ -92,7 +92,7 @@ Assess: **Unrealistic**
 
 ## Section 7 — Rule of 40 Assessment
 Rule of 40 = Revenue Growth + FCF Margin
-• Revenue Growth (implied 5-yr CAGR to reach $4.67B): ~75%
+• Revenue Growth (implied 5-yr CAGR to reach $4.67B): \~75%
 • FCF Margin: 20%
 • Total Score: **95**
 
@@ -106,8 +106,8 @@ Highly unsustainable over a 5–10 year horizon. The capital intensity required 
 ---
 
 ## Section 8 — Dilution & SBC Analysis
-• **SBC % Revenue:** ~15% (Estimated)
-• **Dilution Rate:** ~10% (Estimated, historically high in sector)
+• **SBC % Revenue:** \~15% (Estimated)
+• **Dilution Rate:** \~10% (Estimated, historically high in sector)
 
 Classify: **High**
 

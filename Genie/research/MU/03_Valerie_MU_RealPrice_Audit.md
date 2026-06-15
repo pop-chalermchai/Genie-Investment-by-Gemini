@@ -8,9 +8,9 @@
 
 ## Thesis Overview & Rating
 *   **Thesis Rating:** 🔴 **Avoid / Wait & Watch** (Priced to Absolute Perfection)
-*   **Current Stock Price:** ~$964.75 (Closing at $971.00 as of May 31, 2026)
-*   **Market Capitalization:** ~$1.10 Trillion
-*   **Current P/E Ratio:** ~45.8x
+*   **Current Stock Price:** \~$964.75 (Closing at $971.00 as of May 31, 2026)
+*   **Market Capitalization:** \~$1.10 Trillion
+*   **Current P/E Ratio:** \~45.8x
 *   **WACC & Terminal Growth Rates:** 10.5% WACC / 3.0% Terminal Growth Rate ($g$)
 *   **Auditor Assessment:** At a $1.10 Trillion scale, the market has completed a full structural repricing of Micron. The traditional cyclical memory discount has been replaced by a premium secular growth multiple. However, our rigorous mathematical audit reveals that the stock's current price requires an implied 10-year annual FCF growth rate of **31.82% to 39.28%**, leaving an asymmetric margin of safety that is heavily skewed to the downside. The mandatory 3-to-1 upside-to-downside payoff ratio no longer holds at this entry point.
 
@@ -36,7 +36,7 @@ The relationship between Micron and NVIDIA has evolved into a deep technological
 A rigorous audit of Micron's **Q2 FY2026** financial results demonstrates unprecedented operational momentum, but also highlights the peak-cycle nature of current operations:
 
 ### Q2 FY2026 Financial Highlights
-*   **Quarterly Revenue:** **$23.86 Billion** (an explosive **196% YoY** growth from the cyclical troughs of 2023-2024, representing an annualized run-rate of ~$95.4 Billion). This significantly beat Wall Street consensus expectations.
+*   **Quarterly Revenue:** **$23.86 Billion** (an explosive **196% YoY** growth from the cyclical troughs of 2023-2024, representing an annualized run-rate of \~$95.4 Billion). This significantly beat Wall Street consensus expectations.
 *   **Non-GAAP Gross Margin:** **74.9%** (a record-high margin driven by tight industry supply, extreme HBM3E premium pricing, and high yield rates on leading 1-beta DRAM and 232-layer NAND nodes).
 *   **Non-GAAP Diluted EPS:** **$5.21 per share** (beating expectations and reflecting massive operating leverage).
 
@@ -73,7 +73,7 @@ By mathematically solving for $g_{implied}$ across different discount rates and 
 
 > [!IMPORTANT]
 > **Core Reverse DCF Finding:**  
-> Even under a highly optimistic starting FCF base of **$10.0 Billion** and our standard **10.5% WACC**, the current stock price of ~$964.75 implies that Micron must compound its free cash flow at an annual rate of **31.82% for the next 10 consecutive years**. Under a realistic normalized FCF base of **$6.0 Billion**, the implied annual growth rate climbs to an astronomical **39.28%**.
+> Even under a highly optimistic starting FCF base of **$10.0 Billion** and our standard **10.5% WACC**, the current stock price of \~$964.75 implies that Micron must compound its free cash flow at an annual rate of **31.82% for the next 10 consecutive years**. Under a realistic normalized FCF base of **$6.0 Billion**, the implied annual growth rate climbs to an astronomical **39.28%**.
 
 ---
 
@@ -137,13 +137,13 @@ gantt
 ### The 3-to-1 Asymmetric Upside Check
 To justify a high-conviction position, our risk-mitigated framework requires a minimum **3-to-1 Upside-to-Downside ratio**. We model the potential valuation trajectories for Micron over a 3-year investment horizon at the new **$964.75** entry point:
 
-*   **Bull Case Price Target (Market Cap ~$1.71 Trillion): $1,500.00 per share**  
+*   **Bull Case Price Target (Market Cap \~$1.71 Trillion): $1,500.00 per share**  
     *   *Assumptions:* Micron captures 30% of global HBM4 share, yields remain at 90%+, and FCF hits an unprecedented peak of **$50.0 Billion** due to persistent pricing power. Multiple remains elevated at 30x P/FCF.
     *   *Result:* **+$535.25 per share (+55.5% upside)**.
-*   **Base Case Price Target (Market Cap ~$855 Billion): $750.00 per share**  
-    *   *Assumptions:* Micron maintains a ~22% HBM share, margins normalize to 45% as supply catches up, and FCF settles at a mid-cycle **$35.0 Billion** base. P/FCF multiple contracts to a standard 22x hardware multiple.
+*   **Base Case Price Target (Market Cap \~$855 Billion): $750.00 per share**  
+    *   *Assumptions:* Micron maintains a \~22% HBM share, margins normalize to 45% as supply catches up, and FCF settles at a mid-cycle **$35.0 Billion** base. P/FCF multiple contracts to a standard 22x hardware multiple.
     *   *Result:* **-$214.75 per share (-22.3% return)**.
-*   **Bear Case Price Target (Market Cap ~$400 Billion): $350.00 per share**  
+*   **Bear Case Price Target (Market Cap \~$400 Billion): $350.00 per share**  
     *   *Assumptions:* A severe pricing war breaks out by late 2026. Micron's HBM4 transition is delayed, resulting in loss of market share. FCF falls to a cyclical trough of **$12.0 Billion**. P/FCF multiple contracts to 15x, and price finds support at a conservative 1.8x P/B ratio.
     *   *Result:* **-$614.75 per share (-63.7% downside)**.
 

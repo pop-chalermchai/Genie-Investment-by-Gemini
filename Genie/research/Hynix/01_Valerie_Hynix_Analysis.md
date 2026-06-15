@@ -9,7 +9,7 @@
 ## Section 1: Executive Summary & Reverse DCF Analysis
 
 ### Executive Summary
-SK Hynix Inc. (KRX: 000660) stands at the pinnacle of the global "AI memory supercycle." At a current market price of **~₩2,291,000 KRW** per share, representing a trillion-won scale valuation, the market has completed a structural repricing of the company. From its historical status as a cyclical commodity play, SK Hynix is now valued as NVIDIA’s primary memory vendor for high-performance Blackwell systems, commanding **~55-58% of the global HBM3e market**.
+SK Hynix Inc. (KRX: 000660) stands at the pinnacle of the global "AI memory supercycle." At a current market price of **\~₩2,291,000 KRW** per share, representing a trillion-won scale valuation, the market has completed a structural repricing of the company. From its historical status as a cyclical commodity play, SK Hynix is now valued as NVIDIA’s primary memory vendor for high-performance Blackwell systems, commanding **\~55-58% of the global HBM3e market**.
 
 Our core thesis is balanced: **While SK Hynix's technological and packaging lead is robust, the current stock price is priced to absolute perfection.** Under a normalized cyclical model, the current price implies an FCF growth rate of **16.57% annually for the next 10 years**, which provides zero margin of safety for disciplined capital allocators. 
 

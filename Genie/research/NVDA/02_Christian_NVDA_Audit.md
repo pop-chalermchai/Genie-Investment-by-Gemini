@@ -24,11 +24,11 @@ This report gathers all relevant market and financial parameters for NVIDIA Corp
 ### Market Data (as of June 15, 2026)
 * **Share Price:** $205.19 (as of market close June 12, 2026)
 * **Shares Outstanding:** 24.39 Billion
-* **Market Capitalization (Equity Value):** $5,004.58 Billion (~$5.00 Trillion)
+* **Market Capitalization (Equity Value):** $5,004.58 Billion (\~$5.00 Trillion)
 * **Cash & Short-Term Investments:** $80.57 Billion
 * **Total Debt:** $12.81 Billion
 * **Net Debt:** -$67.76 Billion (Net Cash position)
-* **Enterprise Value (EV):** $4,936.82 Billion (~$4.94 Trillion)
+* **Enterprise Value (EV):** $4,936.82 Billion (\~$4.94 Trillion)
 
 ### Financial Data (TTM as of Q1 FY2027)
 * **Revenue TTM:** $242.0 Billion
@@ -38,12 +38,12 @@ This report gathers all relevant market and financial parameters for NVIDIA Corp
 * **GAAP Net Income TTM:** $159.61 Billion
 * **GAAP Diluted EPS TTM:** $6.54
 * **Free Cash Flow TTM:** $119.1 Billion
-* **FCF Margin TTM:** ~49.2%
+* **FCF Margin TTM:** \~49.2%
 
 ### Capital Structure
 * **Shares Outstanding:** 24.39 Billion
 * **SBC Expense (TTM):** $6.72 Billion (Annualized Q1 FY2027: $7.72 Billion)
-* **SBC as % of Revenue:** ~2.78% (TTM)
+* **SBC as % of Revenue:** \~2.78% (TTM)
 * **Dilution Rate (3Y Average):** -0.85% per year (Net Share Accretion via buybacks)
 
 ### Business Profile
@@ -104,9 +104,9 @@ Under this model, we assume the company immediately reaches a steady-state busin
 ---
 
 ## Section 1 — Reverse DCF Summary
-To justify its current ~$5.00 Trillion Market Capitalization, NVIDIA must achieve the following milestones over the next 10 years:
+To justify its current \~$5.00 Trillion Market Capitalization, NVIDIA must achieve the following milestones over the next 10 years:
 * **Scale Revenue to $1.38 – $1.56 Trillion** by Year 10 (FY2037), representing a 5.7x to 6.4x increase over current TTM Revenue ($242.0 Billion).
-* **Compound Free Cash Flow at 19.31% annually** (Base Case $120B FCF_0$) for the next decade, reaching an annual FCF scale of ~$701.49 Billion.
+* **Compound Free Cash Flow at 19.31% annually** (Base Case $120B FCF_0$) for the next decade, reaching an annual FCF scale of \~$701.49 Billion.
 * **Maintain 70%+ of the global AI accelerated computing market** as the Total Addressable Market expands to $2.0 Trillion.
 * **Successfully transition from a hardware silicon vendor to a high-margin platform business**, keeping normalized long-term FCF margins between 45% and 50%.
 * **Scale system-level ASPs (Advanced DGX/GB architectures)** while shifting volume toward recurring software licensing and networking.
@@ -179,7 +179,7 @@ The single-stage model fails the sanity check, demanding market shares above 100
 ## Section 6 — Revenue Per Employee Check
 * **Current Status:** $242.0 Billion TTM Revenue / 30,000 employees = **$8.07 Million per employee**.
 * **Implied Year 10 Base Case ($1,534.3B Revenue):** Even if headcount triples to 90,000, Revenue per Employee would need to reach **$17.05 Million**.
-* **Comparison:** Current elite SaaS leaders generate $1.5 – $2.0 Million per employee. Semiconductor peer Broadcom (AVGO) generates ~$1.8 Million. 
+* **Comparison:** Current elite SaaS leaders generate $1.5 – $2.0 Million per employee. Semiconductor peer Broadcom (AVGO) generates \~$1.8 Million. 
 * **Assessment:** **Aggressive to Unrealistic**. NVIDIA’s fabless leverage is unmatched, but maintaining $17.0+ Million per employee at a massive scale requires almost complete automation of chip design and software distribution.
 
 ---
@@ -193,14 +193,14 @@ $$\text{Rule of 40} = \text{Revenue Growth} + \text{FCF Margin}$$
 ---
 
 ## Section 8 — Dilution & SBC Analysis
-* **SBC % of Revenue:** ~2.78% (TTM). This is classified as **Low** for a technology leader.
+* **SBC % of Revenue:** \~2.78% (TTM). This is classified as **Low** for a technology leader.
 * **Dilution Rate:** -0.85% (Net Share Repurchases). NVIDIA’s $80.0 Billion share repurchase authorization actively offsets employee SBC dilution.
 * **Shareholder Impact:** Highly positive. The cash generation capacity eliminates any need for capital raises or dilutive secondary offerings. Dilution risk is **Low**.
 
 ---
 
 ## Section 9 — Capital Intensity
-* **CapEx Requirements:** Fabless model ensures low physical capital intensity (CapEx is ~3-5% of revenue).
+* **CapEx Requirements:** Fabless model ensures low physical capital intensity (CapEx is \~3-5% of revenue).
 * **Working Capital Intensity:** **High**. NVIDIA must commit tens of billions in prepayments to TSMC for wafer starts and CoWoS packaging capacity, alongside inventory build-up.
 * **Classification:** **Moderate** (asset-light on property, plant, and equipment; capital-heavy on working capital). This supports high long-term FCF margins.
 
@@ -208,7 +208,7 @@ $$\text{Rule of 40} = \text{Revenue Growth} + \text{FCF Margin}$$
 
 ## Section 10 — Customer Concentration
 * **Largest Customers:** Four major hyperscalers (CSPs) represent the bulk of demand.
-* **Revenue Concentration:** Top 4 customers account for **~40% of total revenue**.
+* **Revenue Concentration:** Top 4 customers account for **\~40% of total revenue**.
 * **Classification:** **High Risk** (>25% concentration). Any CapEx pull-back or custom chip deployment by a single major cloud provider creates immediate downside to NVDA's revenue guidance.
 
 ---

@@ -76,7 +76,7 @@ Our audit scrutinizes Forgent's Q3 Fiscal 2026 Form 10-Q (filed May 14, 2026) fo
 Forgent priced an upsized public offering of **42,280,000 shares of Class A common stock at $47.00 per share** (closing officially on June 2, 2026, with full underwriter green-shoe exercise). 
 *   **Primary Shares (Forgent Portion):** **13,737,580 shares**, generating **$645.7 million** in gross proceeds.
 *   **Secondary Shares (Sponsor Portion - Neos Partners):** **28,542,420 shares**. Forgent did not receive any proceeds from this portion.
-*   **Cash Flow Impact:** The company utilized 100% of its net primary proceeds to redeem corresponding ownership interests (common units) in its operating subsidiary held by Neos Partners, LP. This structure simplifies the dual-class ownership, reduces future Class B exchange overhang, and is cash-flow neutral to the company's operating cash balance. The net cash addition to the balance sheet was nominal, leaving cash at ~$93.8 million, while total outstanding shares remained stable at **244.1 million** as Class B units were redeemed/converted.
+*   **Cash Flow Impact:** The company utilized 100% of its net primary proceeds to redeem corresponding ownership interests (common units) in its operating subsidiary held by Neos Partners, LP. This structure simplifies the dual-class ownership, reduces future Class B exchange overhang, and is cash-flow neutral to the company's operating cash balance. The net cash addition to the balance sheet was nominal, leaving cash at \~$93.8 million, while total outstanding shares remained stable at **244.1 million** as Class B units were redeemed/converted.
 
 ---
 
@@ -125,7 +125,7 @@ Our numerical solver calculates the required 10-year annual FCF growth rate unde
 ### Comparison to Backlog Execution and Market Expansion
 Is Forgent overvalued at $47.00? **Absolutely not.**
 1.  **Hurdle Achievability:** A 25.98% implied growth rate is exceptionally conservative for a business currently growing revenue at **103% YoY** and backlog at **157% YoY**.
-2.  **Backlog Support:** The $1.98 billion record backlog represents ~1.4x the guided FY2026 revenue of $1.37 billion. Converting this backlog over the next 12 to 18 months, combined with a 2.3x book-to-bill ratio, guarantees that revenue and EBITDA will scale far faster than the market's implied projections.
+2.  **Backlog Support:** The $1.98 billion record backlog represents \~1.4x the guided FY2026 revenue of $1.37 billion. Converting this backlog over the next 12 to 18 months, combined with a 2.3x book-to-bill ratio, guarantees that revenue and EBITDA will scale far faster than the market's implied projections.
 3.  **Margin Expansion Leverage:** In FY2026, Forgent is investing **$205.0 million in CapEx** to expand its manufacturing footprint (a massive drag on FCF). In FY2027/28, management projects capital intensity to decline to just **1.0% to 1.5% of revenue**. This massive CapEx roll-off, combined with high operating leverage, will trigger an explosive FCF inflection, allowing the company to easily surpass a starting FCF base of $150.0 million and exceed the required 26% growth trajectory.
 
 ---

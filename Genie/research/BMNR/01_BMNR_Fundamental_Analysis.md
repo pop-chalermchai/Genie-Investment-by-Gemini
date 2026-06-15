@@ -10,7 +10,7 @@
 
 | Market & Peer Metrics | Value | Wall Street Consensus | Value |
 | :--- | :--- | :--- | :--- |
-| **Market Capitalization** | ~$9.5 Billion | **Consensus Rating** | Hold / Speculative Buy |
+| **Market Capitalization** | \~$9.5 Billion | **Consensus Rating** | Hold / Speculative Buy |
 | **Trailing P/E \| Forward P/E** | -1.86x \| 39.18x | **Consensus Mean Price Target**| N/A |
 | **Current P/S \| Forward P/S** | N/A \| N/A | **Number of Analysts Covering**| Limited |
 | **Peer Average P/E (Industry)**| N/A | **Upside to Consensus Target** | N/A |
@@ -26,7 +26,7 @@
     * **Gross Margin / Operating Margin:** >97% for the new staking operations segment, while consolidated margins fluctuate based on legacy mining mix.
 * **Balance Sheet & Financial Health:**
     * **Cash Flow Status:** Cash flow driven by staking yields.
-    * **Debt & Liquidity:** Total crypto and cash holdings valued at ~$9.6 billion, including ~5.54 million ETH tokens. Relies heavily on capital raises for asset acquisition.
+    * **Debt & Liquidity:** Total crypto and cash holdings valued at \~$9.6 billion, including \~5.54 million ETH tokens. Relies heavily on capital raises for asset acquisition.
 
 ---
 
@@ -45,7 +45,7 @@
 ### 🌐 4. Market Opportunity & Addressable Market (TAM / SAM / SOM)
 
 * **TAM (Total Addressable Market):** $1+ Trillion | *The total global market capitalization and yield generation potential of institutional-grade digital assets (Ethereum/Bitcoin).*
-* **SAM (Serviceable Addressable Market):** ~$100 Billion | *The market for institutional Ethereum staking and enterprise-scale digital asset treasury management.*
+* **SAM (Serviceable Addressable Market):** \~$100 Billion | *The market for institutional Ethereum staking and enterprise-scale digital asset treasury management.*
 * **SOM (Serviceable Obtainable Market):** $15-20 Billion | *BMNR's targeted 5% of the total circulating Ethereum supply under its management and staking infrastructure over the next 3-5 years.*
 
 ---
@@ -69,7 +69,7 @@
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **FY2024 (A)** | N/A | N/A | Volatile | Negative | N/A | N/A |
 | **FY2025 (A)** | N/A | N/A | N/A | Negative | N/A | N/A |
-| **FY2026 (E)** | ~$300.0 | High | >90% (Staking) | $0.20 | 39.18x | N/A |
+| **FY2026 (E)** | \~$300.0 | High | >90% (Staking) | $0.20 | 39.18x | N/A |
 | **FY2027 (E)** | N/A | N/A | >90% (Staking) | N/A | N/A | N/A |
 
 *(Note: A = Actual / Historical, E = Analyst Estimates. Due to the pivot in 2025, historical revenue comps are not reflective of the current staking model)*

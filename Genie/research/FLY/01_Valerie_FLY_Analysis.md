@@ -10,10 +10,10 @@ Firefly Aerospace (FLY) represents a rare public vehicle in the high-barrier com
 
 | Market & Peer Metrics | Value | Wall Street Consensus | Value |
 | :--- | :--- | :--- | :--- |
-| **Market Capitalization** | $5,099.2 Million (~$5.10B) | **Consensus Rating** | Moderate Buy |
+| **Market Capitalization** | $5,099.2 Million (\~$5.10B) | **Consensus Rating** | Moderate Buy |
 | **Trailing P/E / Forward P/E** | N/M / N/M (Est. -37.5x) | **Consensus Mean Price Target** | $43.50 |
 | **Current P/S / Forward P/S** | 27.6x / 11.7x | **Number of Analysts Covering** | 8 Analysts |
-| **Peer Average P/E (Industry)** | N/M (~8.5x P/S) | **Upside to Consensus Target** | +36.5% |
+| **Peer Average P/E (Industry)** | N/M (\~8.5x P/S) | **Upside to Consensus Target** | +36.5% |
 
 ---
 
@@ -34,7 +34,7 @@ Firefly’s financial architecture is typical of a high-growth aerospace firm tr
 
 * **Revenue Architecture (How it makes money):**
     * **Spacecraft Solutions (45% of revenue):** Delivery of commercial and scientific payloads to lunar orbit and the surface via the Blue Ghost lander program, as well as defense-focused orbital vehicle contracts (Forge and Golden Dome).
-    * **Launch Services (35% of revenue):** Small-lift orbital launch services using the Alpha rocket (~1,000 kg to LEO, priced at ~$15M per launch) and advance contract deposits for the upcoming Eclipse medium-lift launcher.
+    * **Launch Services (35% of revenue):** Small-lift orbital launch services using the Alpha rocket (\~1,000 kg to LEO, priced at \~$15M per launch) and advance contract deposits for the upcoming Eclipse medium-lift launcher.
     * **Propulsion & Subsystems (20% of revenue):** Development and supply of Miranda rocket engines and first-stage assemblies for Northrop Grumman's Antares 330 rocket.
 * **Competitive Advantage (Economic Moat Analysis):**
     * Firefly possess a **Moderate Moat** built on:

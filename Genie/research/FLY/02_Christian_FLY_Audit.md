@@ -112,12 +112,12 @@ Classify: **Reasonable (5–15%)**
 Revenue per Employee = $2,530.31 Million ÷ 1,500 (projected steady-state headcount) = **$1.69 Million**
 
 Compare with:
-* Elite SaaS: ~$1.0M
-* Semiconductor Leaders: ~$2.0M
-* Infrastructure/Space Leaders (Rocket Lab / Northrop Grumman): ~$400k – $500k
+* Elite SaaS: \~$1.0M
+* Semiconductor Leaders: \~$2.0M
+* Infrastructure/Space Leaders (Rocket Lab / Northrop Grumman): \~$400k – $500k
 
 Assess: **Aggressive**
-* Space manufacturing is highly labor-intensive (requiring assembly technicians, quality assurance, and launch crew). Achieving $1.69M per employee would require unprecedented automation in rocket manufacturing, far exceeding current industry standards (~$400k for Rocket Lab).
+* Space manufacturing is highly labor-intensive (requiring assembly technicians, quality assurance, and launch crew). Achieving $1.69M per employee would require unprecedented automation in rocket manufacturing, far exceeding current industry standards (\~$400k for Rocket Lab).
 
 ---
 
@@ -136,8 +136,8 @@ Rule of 40 = Revenue Growth + FCF Margin
 ---
 
 ## Section 8 — Dilution & SBC Analysis
-* **SBC % Revenue:** ~8.0% (Estimated)
-* **Dilution Rate:** ~6.0% (Reflecting recent May 2026 equity offering to fund Eclipse development)
+* **SBC % Revenue:** \~8.0% (Estimated)
+* **Dilution Rate:** \~6.0% (Reflecting recent May 2026 equity offering to fund Eclipse development)
 
 Classify: **Moderate** to **High**
 

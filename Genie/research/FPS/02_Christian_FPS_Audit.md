@@ -40,7 +40,7 @@ We isolated the baseline valuation inputs from the company's public market prosp
    * *Formula:* $600.0M (Term Loan) + $207.3M (Tax Receivable Agreement [TRA] Liability) - $93.8M (Cash)
    * *Target Enterprise Value:* **$12,187,085,950**
 
-*Forensic Note on June 1 Offering:* The upsized primary proceeds ($645.7 million before fees) were entirely utilized to redeem corresponding ownership units held by Neos Partners, LP. The cash balance remained essentially neutral at ~$93.8M, and total diluted shares outstanding remained stable at 244.1 million, as Class B units were converted. The balance sheet representations are deemed accurate and in accordance with the SEC Form 424B4 Prospectus.
+*Forensic Note on June 1 Offering:* The upsized primary proceeds ($645.7 million before fees) were entirely utilized to redeem corresponding ownership units held by Neos Partners, LP. The cash balance remained essentially neutral at \~$93.8M, and total diluted shares outstanding remained stable at 244.1 million, as Class B units were converted. The balance sheet representations are deemed accurate and in accordance with the SEC Form 424B4 Prospectus.
 
 ---
 
@@ -219,7 +219,7 @@ From a fundamental and structural perspective, we highlight the following audits
 1. **Conservative Hurdle Rate at $47.00 Offering:** 
    Our model confirms that at a starting FCF base of **$150M** under Core Net Debt (Case 1), the market implies a **25.98%** compound annual growth rate over the next 10 years to justify the $47.00 price. For an AI infrastructure-adjacent player that recently grew quarterly revenue by **103% YoY** and boasts a **$1.98 billion backlog** (+157% YoY), this represents a highly achievable hurdle rate. 
 2. **CapEx De-leveraging Catalyst:** 
-   In FY26, Forgent's capital expenditures peak at $205.0 million. The roll-off of capacity expansion in FY27 down to ~1.0%–1.5% of revenue represents a massive FCF inflection catalyst. The $150.0 million FCF base for FY27 is not only realistic but highly likely to be exceeded. If FCF hits $200.0 million in Year 1, the required growth rate to justify $47.00 drops to a mere **22.00%**, providing a wider fundamental cushion.
+   In FY26, Forgent's capital expenditures peak at $205.0 million. The roll-off of capacity expansion in FY27 down to \~1.0%–1.5% of revenue represents a massive FCF inflection catalyst. The $150.0 million FCF base for FY27 is not only realistic but highly likely to be exceeded. If FCF hits $200.0 million in Year 1, the required growth rate to justify $47.00 drops to a mere **22.00%**, providing a wider fundamental cushion.
 3. **Payoff Symmetry:** 
    Both Scenario A (12-Month) and Scenario B (24-Month) return an exact asymmetric ratio of **3.0x**. In Scenario A, the $39.00 downside level represents a 17.0% decline from the baseline, which is protected by a solid 30.0x multiple on near-term EBITDA. In Scenario B, the $35.00 downside represents a conservative level near the original IPO price. The upside targets of $71.00 and $83.00 represent realistic outcomes based on backlog monetization and double capacity expansion. 
 

@@ -1,8 +1,8 @@
 # EQUITY RESEARCH AUDIT: JABIL INC. (NYSE: JBL)
 **Date:** June 2, 2026  
 **Analyst:** Valerie V2, The Quantitative Oracle  
-**Current Price:** ~$365.00  
-**Fully Diluted Shares Outstanding:** ~105.6 Million  
+**Current Price:** \~$365.00  
+**Fully Diluted Shares Outstanding:** \~105.6 Million  
 **Implied Equity Value (Market Cap):** $38.544 Billion  
 **Net Debt (Q2 FY2026):** $2.046 Billion  
 **Implied Enterprise Value (EV):** $40.590 Billion  
@@ -11,11 +11,11 @@
 
 ### Executive Summary & Investment Thesis
 
-Jabil Inc. (NYSE: JBL) has successfully executed one of the most remarkable corporate transformations in the Electronic Manufacturing Services (EMS) sector. Historically pigeonholed as a low-margin consumer electronics assembler heavily reliant on Apple Inc., Jabil has aggressively pivoted. By selling its lower-margin **Mobility** business in early 2024 to BYD Electronic for ~$2.2 Billion and acquiring thermal specialist **Mikros Technologies**, Jabil has transitioned into a high-value, "silicon-to-systems" co-engineering partner for hyperscalers and AI data center operators.
+Jabil Inc. (NYSE: JBL) has successfully executed one of the most remarkable corporate transformations in the Electronic Manufacturing Services (EMS) sector. Historically pigeonholed as a low-margin consumer electronics assembler heavily reliant on Apple Inc., Jabil has aggressively pivoted. By selling its lower-margin **Mobility** business in early 2024 to BYD Electronic for \~$2.2 Billion and acquiring thermal specialist **Mikros Technologies**, Jabil has transitioned into a high-value, "silicon-to-systems" co-engineering partner for hyperscalers and AI data center operators.
 
 Today, Jabil stands at the epicenter of the AI hardware build-out. Its **Intelligent Infrastructure** segment grew a staggering **+52% YoY** in Q2 FY2026 to reach $4.0 Billion—now constituting nearly half of the firm's total net revenue. 
 
-However, at ~$365.00, the stock has experienced massive multiple expansion, pushing it past Wall Street's consensus average target ($303 - $320) and leaving virtually no margin of safety. This audit performs a rigorous fundamental dissection, balance sheet audit, and a mandatory **Reverse DCF Analysis** to determine the implied growth rates baked into this current valuation. Finally, we execute our proprietary **3-to-1 Asymmetric Upside Check** to establish a mathematically sound entry price.
+However, at \~$365.00, the stock has experienced massive multiple expansion, pushing it past Wall Street's consensus average target ($303 - $320) and leaving virtually no margin of safety. This audit performs a rigorous fundamental dissection, balance sheet audit, and a mandatory **Reverse DCF Analysis** to determine the implied growth rates baked into this current valuation. Finally, we execute our proprietary **3-to-1 Asymmetric Upside Check** to establish a mathematically sound entry price.
 
 ---
 
@@ -37,7 +37,7 @@ Jabil's Q2 FY2026 results (filed April 8, 2026) demonstrate strong top-line mome
 *   **Net Revenue:** **$8.28 Billion**, up **+23% YoY** from $6.73 Billion in Q2 FY2025.
 *   **Diluted EPS:** **$2.08** (GAAP) and **$2.69** (Core Non-GAAP), reflecting robust operational leverage.
 *   **Intelligent Infrastructure Segment:** Revenue reached **$4.0 Billion**, representing an explosive **+52% YoY growth** driven by hyperscalers scaling AI clusters.
-*   **Operating Margins:** GAAP operating income was $374 Million (~4.52% operating margin), while Core Non-GAAP operating income was $436 Million (~5.27% operating margin).
+*   **Operating Margins:** GAAP operating income was $374 Million (\~4.52% operating margin), while Core Non-GAAP operating income was $436 Million (\~5.27% operating margin).
 
 #### Balance Sheet & Liquidity Audit
 *   **Cash and Cash Equivalents:** **$1.83 Billion** as of February 28, 2026.
@@ -46,7 +46,7 @@ Jabil's Q2 FY2026 results (filed April 8, 2026) demonstrate strong top-line mome
     *   *Notes payable & long-term debt (less current installments):* $3.376 Billion.
 *   **Net Debt:** **$2.046 Billion** (Total Debt - Cash).
 *   **Refinancing Activity:** In January 2026, Jabil successfully priced **$1.0 Billion** in senior unsecured notes ($500M at 4.20% Senior Notes due 2029 and $500M at 4.75% Senior Notes due 2033) to retire its high-interest short-term paper and refinance the $500 Million Senior Notes due in 2026.
-*   **Debt Maturity Schedule:** Jabil possesses a clean, well-laddered debt profile with roughly ~$500 Million due annually over the next four years, fully covered by its $4.0 Billion in available revolving credit facilities.
+*   **Debt Maturity Schedule:** Jabil possesses a clean, well-laddered debt profile with roughly \~$500 Million due annually over the next four years, fully covered by its $4.0 Billion in available revolving credit facilities.
 
 ---
 
@@ -83,8 +83,8 @@ $$\text{Enterprise Value} = \text{Equity Value} + \text{Net Debt} = \sum_{t=1}^{
 *   **Historical Growth:** Jabil's historical FCF CAGR over the last four years (FY2021 to FY2025) is approximately **19.8%** ($0.640B in FY21 to $1.318B in FY25).
 *   **Is the Stock Overvalued at $365.00?**
     If we assume a normalized starting FCF base of **$1.2 Billion** (highly reasonable given Jabil's FY2025 FCF of $1.318B), the market is pricing in an implied growth rate of **13.55% to 14.22%** for the next 10 years.
-    While Jabil has historically grown faster (19.8%), maintaining a ~14% compound growth rate for an entire decade in the highly cyclical hardware manufacturing industry is extremely difficult. Any "AI CapEx fatigue" or deceleration in hyperscaler spending would result in massive multiple contraction.
-    Jabil’s trailing P/E has historically sat in the 10x-15x range. At $365.00, it is valued at **~30x Core FY2026 EPS Guidance ($12.25)**, representing massive premium multiple expansion. We conclude that **Jabil is technically overvalued at $365.00**, as it leaves no room for execution errors or cyclical downturns.
+    While Jabil has historically grown faster (19.8%), maintaining a \~14% compound growth rate for an entire decade in the highly cyclical hardware manufacturing industry is extremely difficult. Any "AI CapEx fatigue" or deceleration in hyperscaler spending would result in massive multiple contraction.
+    Jabil’s trailing P/E has historically sat in the 10x-15x range. At $365.00, it is valued at **\~30x Core FY2026 EPS Guidance ($12.25)**, representing massive premium multiple expansion. We conclude that **Jabil is technically overvalued at $365.00**, as it leaves no room for execution errors or cyclical downturns.
 
 ---
 
@@ -102,7 +102,7 @@ $$\text{Enterprise Value} = \text{Equity Value} + \text{Net Debt} = \sum_{t=1}^{
 
 While the transition to Intelligent Infrastructure has expanded its moat, Jabil is not immune to structural risks:
 
-*   **Operating Margin Volatility:** Operating margins remain low (~4.5% to 5.3%). In a high-volume, low-margin environment, minor cost overruns, yield inefficiencies, or inventory write-offs can completely wipe out net profitability.
+*   **Operating Margin Volatility:** Operating margins remain low (\~4.5% to 5.3%). In a high-volume, low-margin environment, minor cost overruns, yield inefficiencies, or inventory write-offs can completely wipe out net profitability.
 *   **Hyperscaler Over-CapEx / Cyclical Fatigue:** If hyperscalers face pressure from investors to show monetization on their massive AI investments and choose to pause or slow down infrastructure build-outs, Jabil's high-capacity lines will sit idle, leading to severe operating deleverage.
 *   **High Customer Concentration:** Despite divesting its Mobility business, Jabil's top five customers still represent **36%** of net revenue. Crucially, **Customer A represents 16% of total net revenue**, with sales heavily concentrated in the Intelligent Infrastructure segment. A slowdown from Customer A represents a devastating single-point-of-failure risk.
 *   **Capital Reinvestment Risk:** Shifting to advanced technologies like co-packaged optics and liquid cooling requires continuous, high-intensity CapEx. The risk of over-building capacity during a cyclical peak is highly elevated.
@@ -117,7 +117,7 @@ As of June 2, 2026, Wall Street sentiment is generally optimistic but cautious r
 *   **Wall Street Average Price Target:** **$303 - $320**
 *   **High Estimate:** **$384** (Goldman Sachs - Buy rating, raised in May 2026)
 *   **Low Estimate:** **$273**
-*   **Current Stock Position:** At ~$365.00, Jabil trades at a **~14% to 20% premium** to Wall Street's consensus average, and is approaching the absolute ceiling set by Goldman Sachs ($384). This confirms our fundamental thesis that the stock has run ahead of historical consensus value.
+*   **Current Stock Position:** At \~$365.00, Jabil trades at a **\~14% to 20% premium** to Wall Street's consensus average, and is approaching the absolute ceiling set by Goldman Sachs ($384). This confirms our fundamental thesis that the stock has run ahead of historical consensus value.
 
 ---
 

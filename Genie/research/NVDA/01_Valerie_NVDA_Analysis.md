@@ -6,14 +6,14 @@
 ---
 
 ### 📊 1. Quick Snapshot & Valuation Metrics
-NVIDIA Corporation (NVDA) is currently trading at $205.19, representing a $5,004.58 Billion (~$5.00 Trillion) market capitalization. Following its blowout Q1 FY2027 earnings release, the stock trades at a Forward P/E of 22.4x and a Forward P/S of 12.7x based on consensus FY2027 estimates. This represents a significant valuation discount to its high-growth semiconductor peer AMD (~70.0x Forward P/E) and the broader AI infrastructure group. The market is pricing NVDA with a "cyclical peak" discount, presenting an asymmetric risk-reward profile for long-term growth investors as the company transitions from a hardware chip vendor to an integrated vertical computing platform.
+NVIDIA Corporation (NVDA) is currently trading at $205.19, representing a $5,004.58 Billion (\~$5.00 Trillion) market capitalization. Following its blowout Q1 FY2027 earnings release, the stock trades at a Forward P/E of 22.4x and a Forward P/S of 12.7x based on consensus FY2027 estimates. This represents a significant valuation discount to its high-growth semiconductor peer AMD (\~70.0x Forward P/E) and the broader AI infrastructure group. The market is pricing NVDA with a "cyclical peak" discount, presenting an asymmetric risk-reward profile for long-term growth investors as the company transitions from a hardware chip vendor to an integrated vertical computing platform.
 
 | Market & Peer Metrics | Value | Wall Street Consensus | Value |
 | :--- | :--- | :--- | :--- |
 | **Market Capitalization** | $5,004.58 Billion | **Consensus Rating** | Strong Buy |
 | **Trailing P/E \| Forward P/E** | 31.4x \| 22.4x | **Consensus Mean Price Target** | $305.00 |
 | **Current P/S \| Forward P/S** | 20.7x \| 12.7x | **Number of Analysts Covering** | 60 Analysts |
-| **Peer Average P/E (Industry)** | ~70.0x (Semiconductor) | **Upside to Consensus Target** | +48.6% |
+| **Peer Average P/E (Industry)** | \~70.0x (Semiconductor) | **Upside to Consensus Target** | +48.6% |
 
 ---
 
@@ -21,12 +21,12 @@ NVIDIA Corporation (NVDA) is currently trading at $205.19, representing a $5,004
 NVIDIA reported stellar Q1 FY2027 results on May 20, 2026, beating consensus on both top and bottom lines due to relentless data center demand and Blackwell chip prepayments.
 
 * **Quarterly Performance (Q1 FY2027):**
-    * **Revenue:** $81,615 Million (**BEAT** consensus of ~$80,000 Million by +2.0%) | Growing +85% YoY.
-    * **GAAP Diluted EPS:** $2.39 (**BEAT** consensus of ~$1.85 by +$0.54). 
-    * **Non-GAAP Diluted EPS:** $1.87 (**BEAT** consensus of ~$1.85 by +$0.02). *Note: Starting Q1 FY2027, NVIDIA's non-GAAP metrics no longer exclude stock-based compensation.*
+    * **Revenue:** $81,615 Million (**BEAT** consensus of \~$80,000 Million by +2.0%) | Growing +85% YoY.
+    * **GAAP Diluted EPS:** $2.39 (**BEAT** consensus of \~$1.85 by +$0.54). 
+    * **Non-GAAP Diluted EPS:** $1.87 (**BEAT** consensus of \~$1.85 by +$0.02). *Note: Starting Q1 FY2027, NVIDIA's non-GAAP metrics no longer exclude stock-based compensation.*
     * **Gross Margin / Operating Margin:** GAAP Gross Margin reached 74.9% (expanding +1440 bps YoY / +220 bps QoQ) / GAAP Operating Margin expanded to 65.6%.
 * **Balance Sheet & Financial Health:**
-    * **Cash Flow Status:** Free Cash Flow (FCF) generated this quarter reached a record $48,554 Million, representing a 59.5% FCF margin. FCF Yield stands at ~1.0% for the quarter (annualized at ~2.4% on a normalized $120B base).
+    * **Cash Flow Status:** Free Cash Flow (FCF) generated this quarter reached a record $48,554 Million, representing a 59.5% FCF margin. FCF Yield stands at \~1.0% for the quarter (annualized at \~2.4% on a normalized $120B base).
     * **Debt & Liquidity:** Total Cash & Short-Term Investments stood at $80.57 Billion vs. Total Debt of $12.81 Billion, resulting in a Net Debt position of -$67.76 Billion (Net Cash). Net Debt/EBITDA is -0.4x, indicating zero credit risk.
 
 ---
@@ -34,7 +34,7 @@ NVIDIA reported stellar Q1 FY2027 results on May 20, 2026, beating consensus on 
 ### 🎯 3. Business Model & Economic Moat
 
 * **Revenue Architecture (How it makes money):**
-    * NVIDIA's business has consolidated around its **Data Center** segment, which generated **$75.2 Billion (92.1% of revenue)** in Q1 FY2027. This segment includes HGX/DGX AI platforms, Mellanox InfiniBand, Spectrum-X Ethernet networking, and the NVIDIA AI Enterprise software stack. The remaining ~8% of revenue is distributed among Gaming (GeForce GPUs), Professional Visualization (Omniverse), and Automotive/Robotics.
+    * NVIDIA's business has consolidated around its **Data Center** segment, which generated **$75.2 Billion (92.1% of revenue)** in Q1 FY2027. This segment includes HGX/DGX AI platforms, Mellanox InfiniBand, Spectrum-X Ethernet networking, and the NVIDIA AI Enterprise software stack. The remaining \~8% of revenue is distributed among Gaming (GeForce GPUs), Professional Visualization (Omniverse), and Automotive/Robotics.
 * **Competitive Advantage (Economic Moat Analysis):**
     * **Wide Economic Moat:** NVIDIA holds a dominant software-and-systems moat. 
         1. *High Switching Costs (CUDA Platform):* Developers have spent 15+ years building libraries and optimizing AI workloads exclusively on NVIDIA’s proprietary CUDA API. Porting code to AMD’s ROCm or Intel’s oneAPI is extremely labor-intensive, creating massive software lock-in.
@@ -47,7 +47,7 @@ NVIDIA reported stellar Q1 FY2027 results on May 20, 2026, beating consensus on 
 
 ### 🌐 4. Market Opportunity & Addressable Market (TAM / SAM / SOM)
 
-* **TAM (Total Addressable Market):** $2,000.0 Billion | *The total installed base of global data center infrastructure that must be modernized from legacy CPU-only architecture to accelerated GPU-based computing by FY2030 (CAGR: ~25%).*
+* **TAM (Total Addressable Market):** $2,000.0 Billion | *The total installed base of global data center infrastructure that must be modernized from legacy CPU-only architecture to accelerated GPU-based computing by FY2030 (CAGR: \~25%).*
 * **SAM (Serviceable Addressable Market):** $350.0 Billion | *The addressable annual spend on AI processors, high-performance networking, and enterprise AI software suites by FY2028.*
 * **SOM (Serviceable Obtainable Market):** $280.0 Billion | *NVIDIA's realistic target capture representing an 80% market share in AI computing systems and networking components over the next 3 years.*
 
