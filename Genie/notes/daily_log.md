@@ -8,6 +8,7 @@
 - Updated sub-portfolio badges, dynamic asset allocation cards, and doughnut charts in JS/CSS to align with Solarized color mappings.
 - Successfully verified the design by launching the local Python server on http://127.0.0.1:8000.
 - Implemented a theme switcher component in index.html, styles.css, and app.js allowing on-the-fly toggling between Solarized Light and Solarized Dark, with theme persistence via localStorage.
+- Integrated a live search box and collapsible sector-based accordions in the Equity Research sidebar (index.html and app.js) to organize and scale the reports list dynamically.
 
 ## 2026-06-15
 - Completed end-to-end equity research pipeline for NVIDIA Corporation (NVDA) under ticker `NVDA` based on June 12, 2026 closing market price of $205.19.
