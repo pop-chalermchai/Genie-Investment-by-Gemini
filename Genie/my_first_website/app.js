@@ -12,6 +12,33 @@ let displayCurrency = "USD";
 let exchangeRateUSDTHB = 32.505;
 let currentSort = { column: null, direction: 'asc' };
 
+// ==========================================================================
+// THEME STATE MANAGEMENT (Solarized Light / Dark Switcher)
+// ==========================================================================
+let activeTheme = localStorage.getItem("genie-portfolio-theme") || "light";
+
+function setTheme(theme) {
+    activeTheme = theme;
+    localStorage.setItem("genie-portfolio-theme", theme);
+    
+    const body = document.body;
+    const btnLight = document.getElementById("theme-btn-light");
+    const btnDark = document.getElementById("theme-btn-dark");
+    
+    if (theme === "dark") {
+        body.classList.add("dark-theme");
+        if (btnDark) btnDark.classList.add("active");
+        if (btnLight) btnLight.classList.remove("active");
+    } else {
+        body.classList.remove("dark-theme");
+        if (btnLight) btnLight.classList.add("active");
+        if (btnDark) btnDark.classList.remove("active");
+    }
+}
+
+// Initialize theme immediately on script load
+setTheme(activeTheme);
+
 function sortTable(column) {
     if (currentSort.column === column) {
         currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
@@ -354,7 +381,13 @@ function updateDashboard() {
     const gridEl = document.getElementById("sub-portfolios-grid");
     if (gridEl) {
         gridEl.innerHTML = ""; // clear current cards
-        const colors = ["#00F0FF", "#D4AF37", "#8B5CF6", "#10B981", "#FF5C5C", "#FFA500"];
+        const colors = ["#8B5CF6", "#CA8A04", "#EF4444", "#22C55E", "#FFA500", "#FF5C5C"];
+        const portfolioColors = {
+            "dime": "#8B5CF6",
+            "webull": "#CA8A04",
+            "tax saving fund": "#EF4444",
+            "provident fund": "#22C55E"
+        };
         let colorIdx = 0;
         
         Object.keys(portfoliosData).forEach(pName => {
@@ -363,7 +396,8 @@ function updateDashboard() {
             const pGainLossPct = data.cost > 0 ? (pGainLoss / data.cost) * 100 : 0;
             const isPos = pGainLoss >= 0;
             
-            const color = colors[colorIdx % colors.length];
+            const lowerName = pName.toLowerCase();
+            const color = portfolioColors[lowerName] || colors[colorIdx % colors.length];
             colorIdx++;
             
             const card = document.createElement("div");
@@ -418,16 +452,16 @@ function renderChart() {
             datasets: [{
                 data: data,
                 backgroundColor: [
-                    "rgba(0, 240, 255, 0.65)", // Neon cyan
-                    "rgba(212, 175, 55, 0.65)",  // Gold
-                    "rgba(139, 92, 246, 0.65)",  // Violet
-                    "rgba(16, 185, 129, 0.65)"  // Emerald
+                    "rgba(202, 138, 4, 0.65)",  // Quest Gold
+                    "rgba(245, 208, 97, 0.65)",  // Lighter Gold Accent
+                    "rgba(139, 92, 246, 0.65)",  // Royal Purple
+                    "rgba(34, 197, 94, 0.65)"   // Jade Green
                 ],
                 borderColor: [
-                    "#00F0FF",
-                    "#D4AF37",
+                    "#CA8A04",
+                    "#F5D061",
                     "#8B5CF6",
-                    "#10B981"
+                    "#22C55E"
                 ],
                 borderWidth: 1.5,
                 hoverOffset: 12

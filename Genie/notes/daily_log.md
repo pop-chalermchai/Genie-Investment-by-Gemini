@@ -1,5 +1,14 @@
 # Daily Log
 
+## 2026-06-17
+- Redesigned the website UI color theme from the dark medieval RPG theme to a clean, modern "Solarized Light" design theme to match Pop's active VS Code preferences.
+- Replaced heavy serif fonts (Cinzel, Spectral) with modern sans-serif typography (Inter for headings and main text, Fira Code for numerical data and code blocks).
+- Configured light-mode color variables: cream background (#FDF6E3 / #EEE8D5), dark gray-teal text (#586E75 / #657B83), and soft shadows/glows using Solarized Blue (#268BD2) and Solarized Yellow (#B58900).
+- Restored standard rounded corners (8px border-radius) and clean card layout borders, removing heavy gothic borders and neon color leaks.
+- Updated sub-portfolio badges, dynamic asset allocation cards, and doughnut charts in JS/CSS to align with Solarized color mappings.
+- Successfully verified the design by launching the local Python server on http://127.0.0.1:8000.
+- Implemented a theme switcher component in index.html, styles.css, and app.js allowing on-the-fly toggling between Solarized Light and Solarized Dark, with theme persistence via localStorage.
+
 ## 2026-06-15
 - Completed end-to-end equity research pipeline for NVIDIA Corporation (NVDA) under ticker `NVDA` based on June 12, 2026 closing market price of $205.19.
 - Valerie generated the initial fundamental stock analysis and Reverse DCF models.

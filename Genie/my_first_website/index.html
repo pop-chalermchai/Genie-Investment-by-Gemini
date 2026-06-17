@@ -8,7 +8,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
     <!-- Local Chart.js for stunning visualizations -->
     <script src="chart.js"></script>
     <link rel="stylesheet" href="styles.css?v=2">
@@ -150,6 +150,11 @@
                             <div class="currency-switch">
                                 <button onclick="toggleCurrency('USD')" id="cur-usd" class="cur-btn active">USD</button>
                                 <button onclick="toggleCurrency('THB')" id="cur-thb" class="cur-btn">THB</button>
+                            </div>
+                            <!-- Theme Toggle Switch -->
+                            <div class="theme-switch" style="margin-left: 10px;">
+                                <button onclick="setTheme('light')" id="theme-btn-light" class="cur-btn active">☀️ Light</button>
+                                <button onclick="setTheme('dark')" id="theme-btn-dark" class="cur-btn">🌙 Dark</button>
                             </div>
                             <button onclick="fetchLivePrices()" id="btn-refresh-prices" style="width: auto; margin-left: 10px; padding: 8px 16px; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(90deg, var(--accent-neon) 0%, #0088FF 100%); border: none; color: #030712; border-radius: 6px; cursor: pointer; transition: var(--transition);">
                                 <span class="refresh-spinner" id="btn-refresh-icon">🔄</span> <span id="btn-refresh-text">Refresh Prices</span>
