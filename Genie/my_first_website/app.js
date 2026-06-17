@@ -633,22 +633,12 @@ function toggleCardFlip(cardEl) {
 // ==========================================================================
 // RESEARCH VIEW LOCALIZATION ENGINE
 // ==========================================================================
+let collapsedSectors = {}; // Remember collapsed states client-side
+
 function selectReport(reportId) {
     activeReport = reportId;
-
-    // Toggle active list item classes
-    Object.keys(researchReports).forEach(r => {
-        const item = document.getElementById(`report-item-${r}`);
-        if (item) {
-            if (r === reportId) {
-                item.classList.add("active");
-            } else {
-                item.classList.remove("active");
-            }
-        }
-    });
-
     renderReport();
+    renderReportList();
 }
 
 function setLanguage(lang) {
@@ -666,25 +656,104 @@ function setReportTab(tab) {
     document.getElementById("tab-" + tab).classList.add("active");
     renderReport();
 }
+
 function renderReportList() {
     const container = document.getElementById("report-list-container");
     if (!container) return;
     
+    const searchInput = document.getElementById("report-search-input");
+    const query = searchInput ? searchInput.value.toLowerCase().trim() : "";
+    
     container.innerHTML = "";
+    
+    const reportSectors = {
+        "MU": "Technology & Semiconductors",
+        "NVDA": "Technology & Semiconductors",
+        "FLY": "Aerospace & Defense",
+        "000660": "Technology & Semiconductors",
+        "005930": "Technology & Semiconductors",
+        "NBIS": "Technology & Semiconductors",
+        "IREN": "Technology & Semiconductors"
+    };
+    
+    // Group reports by sector and filter by query
+    const groups = {};
     Object.keys(researchReports).forEach(key => {
         const report = researchReports[key];
-        const btn = document.createElement("button");
-        btn.className = "report-list-item " + (activeReport === key ? "active" : "");
-        btn.id = "report-item-" + key;
-        btn.onclick = () => selectReport(key);
         
-        btn.innerHTML = `
-            <div class="report-status-badge verified">AUDITED</div>
-            <span class="report-ticker">${report.ticker}</span>
-            <span class="report-name">${report.companyName}</span>
-        `;
-        container.appendChild(btn);
+        if (query) {
+            const matchesTicker = report.ticker.toLowerCase().includes(query);
+            const matchesName = report.companyName.toLowerCase().includes(query);
+            if (!matchesTicker && !matchesName) {
+                return; // filter out
+            }
+        }
+        
+        const sector = reportSectors[report.ticker] || "Other Sectors";
+        if (!groups[sector]) {
+            groups[sector] = [];
+        }
+        groups[sector].push({ key, ...report });
     });
+    
+    // Render groups
+    Object.keys(groups).forEach(sector => {
+        const reportsInSector = groups[sector];
+        if (reportsInSector.length === 0) return;
+        
+        // Auto-expand if searching, otherwise use remembered state (default expanded)
+        const isCollapsed = collapsedSectors[sector] === true && !query;
+        
+        // Sector Header Component
+        const groupHeader = document.createElement("div");
+        groupHeader.className = "report-sector-header";
+        groupHeader.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--bg-card-solid); border: 1px solid var(--border-dim); border-radius: 6px; margin-top: 10px; cursor: pointer; font-size: 0.78rem; font-weight: 700; color: var(--text-primary); user-select: none; transition: var(--transition);";
+        
+        // Hover effects
+        groupHeader.onmouseover = () => { groupHeader.style.background = "rgba(147, 161, 161, 0.15)"; };
+        groupHeader.onmouseout = () => { groupHeader.style.background = "var(--bg-card-solid)"; };
+        
+        groupHeader.onclick = () => {
+            if (query) return; // Disable toggle during active search
+            collapsedSectors[sector] = !isCollapsed;
+            renderReportList();
+        };
+        
+        groupHeader.innerHTML = `
+            <span>📁 ${sector} (${reportsInSector.length})</span>
+            <span style="font-size: 0.65rem; transition: transform 0.2s; transform: ${isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)'};">▼</span>
+        `;
+        container.appendChild(groupHeader);
+        
+        // Wrapper for buttons inside sector
+        const buttonsWrapper = document.createElement("div");
+        buttonsWrapper.className = "report-sector-wrapper";
+        buttonsWrapper.style.cssText = "display: flex; flex-direction: column; gap: 6px; margin-top: 6px; padding-left: 8px;";
+        if (isCollapsed) {
+            buttonsWrapper.style.display = "none";
+        }
+        
+        reportsInSector.forEach(report => {
+            const btn = document.createElement("button");
+            btn.className = "report-list-item " + (activeReport === report.key ? "active" : "");
+            btn.id = "report-item-" + report.key;
+            btn.style.width = "100%";
+            btn.onclick = () => selectReport(report.key);
+            
+            btn.innerHTML = `
+                <div class="report-status-badge verified">AUDITED</div>
+                <span class="report-ticker">${report.ticker}</span>
+                <span class="report-name">${report.companyName}</span>
+            `;
+            buttonsWrapper.appendChild(btn);
+        });
+        
+        container.appendChild(buttonsWrapper);
+    });
+}
+
+function filterReports() {
+    renderReportList();
 }
 
 function renderReport() {

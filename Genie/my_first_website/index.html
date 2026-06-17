@@ -536,6 +536,15 @@
                     <!-- REPORT LIST & CONTROLS -->
                     <div class="research-sidebar glass-panel">
                         <h2 class="sidebar-title">Research Reports</h2>
+                        
+                        <!-- Search Box for Reports -->
+                        <div class="report-search-box" style="padding: 0 15px 12px 15px; border-bottom: 1px solid var(--border-dim); margin-bottom: 8px;">
+                            <div style="position: relative; width: 100%;">
+                                <svg class="search-icon" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; fill: var(--text-muted);" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                                <input type="text" id="report-search-input" placeholder="Search reports..." onkeyup="filterReports()" style="width: 100%; background: var(--bg-card-solid); border: 1px solid var(--border-dim); border-radius: 4px; padding: 6px 10px 6px 32px; color: var(--text-primary); font-family: var(--font-sans); font-size: 0.82rem; outline: none; transition: var(--transition);">
+                            </div>
+                        </div>
+
                         <div class="report-list" id="report-list-container">
                             <!-- Dynamic report list rendered by app.js -->
                         </div>
