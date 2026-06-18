@@ -26,11 +26,11 @@ cursor = conn.cursor()
 try:
     cursor.execute('''
         INSERT OR REPLACE INTO research_reports (
-            report_key, ticker, company_name, subtitle, prepared_by, audited_by, rating, is_positive, en_overview, th_overview, en_dcf, th_dcf
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            report_key, ticker, company_name, subtitle, prepared_by, audited_by, rating, is_positive, en_overview, th_overview, en_dcf, th_dcf, sector
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         'bmnr', 'BMNR', 'BitMine Immersion Technologies', 'Ethereum Proxy Vault & Asymmetric Risk',
-        'Valerie', 'Christian', 'AVOID / Speculative', False, en_overview, th_overview, en_dcf, th_dcf
+        'Valerie', 'Christian', 'AVOID / Speculative', False, en_overview, th_overview, en_dcf, th_dcf, 'Technology & Semiconductors'
     ))
     conn.commit()
     print("Successfully inserted BMNR reports into the new database schema!")

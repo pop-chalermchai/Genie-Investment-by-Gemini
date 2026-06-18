@@ -22,11 +22,11 @@ cursor = conn.cursor()
 try:
     cursor.execute('''
         INSERT OR REPLACE INTO research_reports (
-            report_key, ticker, company_name, subtitle, prepared_by, audited_by, rating, is_positive, en_overview, th_overview, en_dcf, th_dcf
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            report_key, ticker, company_name, subtitle, prepared_by, audited_by, rating, is_positive, en_overview, th_overview, en_dcf, th_dcf, sector
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         'fly', 'FLY', 'Firefly Aerospace, Inc.', 'Northrop Partnership & High-Hurdle Growth Scaling',
-        'Valerie', 'Christian', 'SPECULATIVE BUY', True, en_overview, th_overview, en_dcf, th_dcf
+        'Valerie', 'Christian', 'SPECULATIVE BUY', True, en_overview, th_overview, en_dcf, th_dcf, 'Aerospace & Defense'
     ))
     conn.commit()
     print("Successfully inserted FLY reports into the database!")

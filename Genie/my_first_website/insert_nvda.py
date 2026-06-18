@@ -26,11 +26,11 @@ cursor_sqlite = conn_sqlite.cursor()
 try:
     cursor_sqlite.execute('''
         INSERT OR REPLACE INTO research_reports (
-            report_key, ticker, company_name, subtitle, prepared_by, audited_by, rating, is_positive, en_overview, th_overview, en_dcf, th_dcf
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            report_key, ticker, company_name, subtitle, prepared_by, audited_by, rating, is_positive, en_overview, th_overview, en_dcf, th_dcf, sector
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         'nvda', 'NVDA', 'NVIDIA Corporation', 'CUDA Lock-In, Blackwell Scaling & Valuation Audits',
-        'Valerie', 'Christian', 'BUY (ON PULLBACKS)', True, en_overview, th_overview, en_dcf, th_dcf
+        'Valerie', 'Christian', 'BUY (ON PULLBACKS)', True, en_overview, th_overview, en_dcf, th_dcf, 'Technology & Semiconductors'
     ))
     conn_sqlite.commit()
     print("✅ Successfully inserted NVDA reports into local SQLite!")
@@ -75,8 +75,8 @@ if db_url:
 
         query = """
             INSERT INTO research_reports (
-                report_key, ticker, company_name, subtitle, prepared_by, audited_by, rating, is_positive, en_overview, th_overview, en_dcf, th_dcf
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                report_key, ticker, company_name, subtitle, prepared_by, audited_by, rating, is_positive, en_overview, th_overview, en_dcf, th_dcf, sector
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (report_key) DO UPDATE SET
                 ticker = EXCLUDED.ticker,
                 company_name = EXCLUDED.company_name,
@@ -88,12 +88,13 @@ if db_url:
                 en_overview = EXCLUDED.en_overview,
                 th_overview = EXCLUDED.th_overview,
                 en_dcf = EXCLUDED.en_dcf,
-                th_dcf = EXCLUDED.th_dcf
+                th_dcf = EXCLUDED.th_dcf,
+                sector = EXCLUDED.sector
         """
 
         cursor_pg.execute(query, (
             'nvda', 'NVDA', 'NVIDIA Corporation', 'CUDA Lock-In, Blackwell Scaling & Valuation Audits',
-            'Valerie', 'Christian', 'BUY (ON PULLBACKS)', True, en_overview, th_overview, en_dcf, th_dcf
+            'Valerie', 'Christian', 'BUY (ON PULLBACKS)', True, en_overview, th_overview, en_dcf, th_dcf, 'Technology & Semiconductors'
         ))
         conn_pg.commit()
         print("✅ Successfully inserted NVDA reports into Supabase!")

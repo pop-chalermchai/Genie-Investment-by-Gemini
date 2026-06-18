@@ -32,11 +32,11 @@ cursor = conn.cursor()
 try:
     cursor.execute('''
         INSERT OR REPLACE INTO research_reports (
-            report_key, ticker, company_name, subtitle, prepared_by, audited_by, rating, is_positive, en_content, th_content
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            report_key, ticker, company_name, subtitle, prepared_by, audited_by, rating, is_positive, en_content, th_content, sector
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         'bmnr', 'BMNR', 'BitMine Immersion Technologies', 'Crypto Infrastructure & ETH Treasury',
-        'Mateo & Valerie', 'Christian (Forensic)', 'HOLD / Speculative', False, en_content, th_content
+        'Mateo & Valerie', 'Christian (Forensic)', 'HOLD / Speculative', False, en_content, th_content, 'Technology & Semiconductors'
     ))
 except Exception as e:
     print("Error:", e)

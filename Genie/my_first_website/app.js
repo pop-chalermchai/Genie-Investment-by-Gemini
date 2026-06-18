@@ -666,16 +666,6 @@ function renderReportList() {
     
     container.innerHTML = "";
     
-    const reportSectors = {
-        "MU": "Technology & Semiconductors",
-        "NVDA": "Technology & Semiconductors",
-        "FLY": "Aerospace & Defense",
-        "000660": "Technology & Semiconductors",
-        "005930": "Technology & Semiconductors",
-        "NBIS": "Technology & Semiconductors",
-        "IREN": "Technology & Semiconductors"
-    };
-    
     // Group reports by sector and filter by query
     const groups = {};
     Object.keys(researchReports).forEach(key => {
@@ -689,7 +679,7 @@ function renderReportList() {
             }
         }
         
-        const sector = reportSectors[report.ticker] || "Other Sectors";
+        const sector = report.sector || "Other Sectors";
         if (!groups[sector]) {
             groups[sector] = [];
         }

@@ -125,7 +125,8 @@ tables_schemas = {
             en_overview TEXT,
             th_overview TEXT,
             en_dcf TEXT,
-            th_dcf TEXT
+            th_dcf TEXT,
+            sector VARCHAR(255)
         );
     """
 }
@@ -204,8 +205,8 @@ try:
     )
     migrate_table(
         "research_reports", 
-        ["id", "report_key", "ticker", "company_name", "subtitle", "prepared_by", "audited_by", "rating", "is_positive", "en_overview", "th_overview", "en_dcf", "th_dcf"], 
-        "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
+        ["id", "report_key", "ticker", "company_name", "subtitle", "prepared_by", "audited_by", "rating", "is_positive", "en_overview", "th_overview", "en_dcf", "th_dcf", "sector"], 
+        "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
     )
 
     # 6. Reset Sequences for Auto-Increment
