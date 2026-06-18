@@ -10,9 +10,10 @@
     --border-dim: rgba(147, 161, 161, 0.25); /* Solarized Light Muted Border */
     --border-glow: rgba(38, 139, 210, 0.15); /* Soft Solarized Blue Glow */
     
-    --text-primary: #586E75;        /* Solarized Light Base01 (Dark Gray-Teal) */
-    --text-secondary: #657B83;      /* Solarized Light Base00 (Medium Gray-Teal) */
-    --text-muted: #93A1A1;          /* Solarized Light Base1 (Muted Gray-Teal) */
+    --text-primary: #073642;        /* Solarized Light Base02 (Very Dark Gray-Teal) for maximum contrast */
+    --text-emphasis: #002B36;       /* Solarized Light Base03 (Extremely Dark Gray-Teal) for headers/metrics */
+    --text-secondary: #586E75;      /* Solarized Light Base01 (Dark Gray-Teal) */
+    --text-muted: #657B83;          /* Solarized Light Base00 (Medium Gray-Teal) */
     
     /* Semantic Colors */
     --color-positive: #859900;      /* Solarized Light Green */
@@ -44,6 +45,7 @@ body.dark-theme {
     --border-glow: rgba(38, 139, 210, 0.25);
     
     --text-primary: #839496;        /* Solarized Dark Base0 Text */
+    --text-emphasis: #FDF6E3;       /* Solarized Dark Base3 (Cream White) for high-contrast headers */
     --text-secondary: #93A1A1;      /* Solarized Dark Base1 Text */
     --text-muted: #586E75;          /* Solarized Dark Base01 Text */
     
@@ -338,7 +340,7 @@ header::before {
     font-size: 2.1rem;
     font-weight: 800;
     font-family: var(--font-mono);
-    color: #FFFFFF;
+    color: var(--text-emphasis);
 }
 
 .metric-change {
@@ -404,11 +406,11 @@ header::before {
 
 #search-input {
     width: 100%;
-    background: rgba(10, 15, 26, 0.6);
+    background: var(--bg-card-solid);
     border: 1px solid var(--border-dim);
     border-radius: 8px;
     padding: 10px 15px 10px 42px;
-    color: #FFFFFF;
+    color: var(--text-primary);
     font-family: var(--font-sans);
     font-size: 0.9rem;
     outline: none;
@@ -421,7 +423,7 @@ header::before {
 }
 
 .filter-wrapper select {
-    background: rgba(10, 15, 26, 0.6);
+    background: var(--bg-card-solid);
     border: 1px solid var(--border-dim);
     color: var(--text-secondary);
     border-radius: 8px;
@@ -434,7 +436,7 @@ header::before {
 
 .filter-wrapper select:focus {
     border-color: var(--accent-neon);
-    color: #FFFFFF;
+    color: var(--text-primary);
 }
 
 /* Positions Table */
@@ -520,7 +522,7 @@ header::before {
     font-size: 1.05rem;
     font-weight: 700;
     letter-spacing: 1px;
-    color: #FFFFFF;
+    color: var(--text-emphasis);
     margin-bottom: 18px;
     position: relative;
     padding-left: 14px;
@@ -577,9 +579,9 @@ header::before {
 
 .form-group input,
 .form-group select {
-    background: rgba(10, 15, 26, 0.6);
+    background: var(--bg-card-solid);
     border: 1px solid var(--border-dim);
-    color: #FFFFFF;
+    color: var(--text-primary);
     border-radius: 8px;
     padding: 9px 12px;
     font-family: var(--font-sans);
@@ -802,7 +804,7 @@ header::before {
 .member-name {
     font-size: 1.15rem;
     font-weight: 700;
-    color: #FFFFFF;
+    color: var(--text-emphasis);
 }
 
 .member-role {
@@ -837,9 +839,9 @@ header::before {
 }
 
 .btn-card-details {
-    background: rgba(30, 41, 59, 0.5);
+    background: var(--bg-card-solid);
     border: 1px solid var(--border-dim);
-    color: #FFFFFF;
+    color: var(--text-primary);
     padding: 8px;
     border-radius: 6px;
     font-weight: 600;
@@ -900,7 +902,7 @@ header::before {
 }
 
 .modal-close:hover {
-    color: #FFFFFF;
+    color: var(--text-emphasis);
 }
 
 /* Modal details layout */
@@ -937,7 +939,7 @@ header::before {
 .modal-quote {
     font-size: 1.05rem;
     font-style: italic;
-    color: #FFFFFF;
+    color: var(--text-emphasis);
     line-height: 1.5;
     padding-left: 12px;
     border-left: 3px solid var(--accent-neon);
@@ -980,7 +982,7 @@ header::before {
     font-size: 0.85rem;
     font-weight: 700;
     letter-spacing: 1px;
-    color: #FFFFFF;
+    color: var(--text-emphasis);
     text-transform: uppercase;
 }
 
@@ -1032,7 +1034,7 @@ header::before {
     font-family: var(--font-mono);
     font-size: 1.05rem;
     font-weight: 700;
-    color: #FFFFFF;
+    color: var(--text-emphasis);
 }
 
 .report-name {
@@ -1058,7 +1060,7 @@ header::before {
 
 .lang-selector-group {
     display: flex;
-    background: rgba(10, 15, 26, 0.8);
+    background: var(--bg-card-solid);
     border: 1px solid var(--border-dim);
     border-radius: 8px;
     padding: 3px;
@@ -1078,9 +1080,13 @@ header::before {
 }
 
 .lang-btn.active {
-    background: rgba(30, 41, 59, 0.8);
-    color: #FFFFFF;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    background: var(--accent-neon);
+    color: #FDF6E3; /* Cream text on active blue button in light theme */
+    box-shadow: 0 2px 5px rgba(88, 110, 117, 0.15);
+}
+
+body.dark-theme .lang-btn.active {
+    color: #002B36; /* Dark background text on active blue button in dark theme */
 }
 
 /* Research Viewer Main Area */
@@ -1193,15 +1199,15 @@ header::before {
     max-width: 900px;
     margin: 0 auto;
     font-size: 0.98rem;
-    color: #E2E8F0;
+    color: var(--text-primary);
 }
 
 .report-article-body h2 {
     font-size: 1.3rem;
     font-weight: 700;
-    color: #FFFFFF;
+    color: var(--text-emphasis);
     margin: 35px 0 15px;
-    border-bottom: 1px solid rgba(30, 41, 59, 0.6);
+    border-bottom: 1px solid var(--border-dim);
     padding-bottom: 8px;
 }
 
@@ -1234,8 +1240,8 @@ header::before {
 
 .report-article-body th {
     padding: 12px 14px;
-    background: rgba(15, 23, 42, 0.6);
-    color: var(--text-secondary);
+    background: var(--bg-card-solid);
+    color: var(--text-primary);
     font-weight: 600;
     text-align: left;
     border-bottom: 2px solid var(--border-dim);
@@ -1243,15 +1249,15 @@ header::before {
 
 .report-article-body td {
     padding: 12px 14px;
-    border-bottom: 1px solid rgba(30, 41, 59, 0.4);
+    border-bottom: 1px solid var(--border-dim);
 }
 
 .report-article-body tbody tr:hover {
-    background: rgba(30, 41, 59, 0.15);
+    background: rgba(147, 161, 161, 0.08);
 }
 
 .report-article-body blockquote {
-    background: rgba(30, 41, 59, 0.2);
+    background: var(--bg-card-solid);
     border-left: 4px solid var(--accent-neon);
     padding: 16px 20px;
     border-radius: 0 8px 8px 0;
@@ -1266,7 +1272,7 @@ header::before {
 
 .report-article-body code {
     font-family: var(--font-mono);
-    background: rgba(15, 23, 42, 0.8);
+    background: var(--bg-card-solid);
     padding: 2px 6px;
     border-radius: 4px;
     font-size: 0.85rem;

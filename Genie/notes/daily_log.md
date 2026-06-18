@@ -1,5 +1,11 @@
 # Daily Log
 
+## 2026-06-18
+- Refactored text and heading colors in styles.css to significantly increase contrast and readability for the Solarized Light theme.
+- Added a `--text-emphasis` color variable for emphasized headers and metric numbers (#002B36 in light mode, #FDF6E3 in dark mode).
+- Replaced hardcoded white (#FFFFFF) and light gray (#E2E8F0) text colors with theme-adaptive CSS variables, fixing contrast issues on metric cards, search inputs, subagent details, and research report viewer contents.
+- Updated select dropdown inputs, search inputs, language buttons, code snippets, and blockquotes inside research reports to use Solarized theme backgrounds and borders rather than dark-mode hardcodes.
+
 ## 2026-06-17
 - Redesigned the website UI color theme from the dark medieval RPG theme to a clean, modern "Solarized Light" design theme to match Pop's active VS Code preferences.
 - Replaced heavy serif fonts (Cinzel, Spectral) with modern sans-serif typography (Inter for headings and main text, Fira Code for numerical data and code blocks).
