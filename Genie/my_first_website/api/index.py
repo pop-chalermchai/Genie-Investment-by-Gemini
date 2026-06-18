@@ -173,7 +173,8 @@ def get_reports():
                 "en_overview": r['en_overview'],
                 "th_overview": r['th_overview'],
                 "en_dcf": r['en_dcf'],
-                "th_dcf": r['th_dcf']
+                "th_dcf": r['th_dcf'],
+                "sector": r.get('sector')
             }
         conn.close()
         return jsonify(reports)
