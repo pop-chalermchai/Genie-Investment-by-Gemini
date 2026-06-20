@@ -15,6 +15,11 @@
   - Phase 2 (Christian × 3): Audit passed and corrected reports generated (Completed)
   - Phase 3 (Serene + Mateo): Thai localization and Infographic cover art generated (Completed)
   - Phase 4 (Deploy via API): Reports successfully injected into the database via direct POST /api/research-report (Completed)
+- **Production Hotfixes (Vercel & Supabase Sync)**:
+  - Discovered that local `server.py` routing/database schema updates were entirely missing from the Vercel production server (`api/index.py`) and Supabase DB, leading to complete Vercel data load failures.
+  - Rewrote and pushed `api/index.py` to mirror `server.py` exactly (added `/api/portfolios`, `/api/transfer`, `/api/transaction` PUT/DELETE, and updated SQL logic for `holdings` & `transactions` with new columns).
+  - Executed a direct Postgres connection script (port 5432) to `ALTER TABLE` in Supabase, injecting missing `parent_id` and `domain` columns.
+  - Built and executed a python script to truncate and fully re-sync all data (`categories`, `portfolios`, `assets`, `transactions`, `research_reports`) from Local SQLite to Supabase, guaranteeing 100% data fidelity and resolving foreign-key constraints.
 - Updated `SOP_Stock_Research.md` Phase 4: replaced Python script approach with direct `POST /api/research-report` curl call by Genie — no manual copy-paste, no separate script needed. Added new required fields: `sector`, `price_target`, `analysis_price`
 
 ## 2026-06-20 (session 6)
