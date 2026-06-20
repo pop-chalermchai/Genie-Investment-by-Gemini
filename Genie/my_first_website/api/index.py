@@ -170,6 +170,8 @@ def get_reports():
                 "auditedBy": r['audited_by'],
                 "rating": r['rating'],
                 "isPositive": bool(r['is_positive']),
+                "priceTarget": r.get('price_target'),
+                "analysisPrice": r.get('analysis_price'),
                 "en_overview": r['en_overview'],
                 "th_overview": r['th_overview'],
                 "en_dcf": r['en_dcf'],
@@ -400,6 +402,115 @@ def delete_portfolio():
         
         # Delete portfolio
         execute_sql(cursor, is_postgres, "DELETE FROM portfolios WHERE id=?", (p_id,))
+        
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/research-report', methods=['POST'])
+def add_research_report():
+    try:
+        data = request.get_json(force=True)
+        report_key = data.get('report_key', '').strip()
+        ticker = data.get('ticker', '').strip().upper()
+        company_name = data.get('company_name', '').strip()
+        subtitle = data.get('subtitle', '')
+        prepared_by = data.get('prepared_by', '')
+        audited_by = data.get('audited_by', '')
+        rating = data.get('rating', '')
+        is_positive = bool(data.get('is_positive'))
+        price_target = data.get('price_target')
+        analysis_price = data.get('analysis_price')
+        sector = data.get('sector', 'Other Sectors')
+        en_overview = data.get('en_overview', '')
+        th_overview = data.get('th_overview', '')
+        en_dcf = data.get('en_dcf', '')
+        th_dcf = data.get('th_dcf', '')
+        
+        if not report_key or not ticker or not company_name:
+            raise ValueError("report_key, ticker, and company_name are required")
+            
+        conn, is_postgres = get_db_connection()
+        cursor = conn.cursor()
+        
+        query = '''
+            INSERT INTO research_reports (
+                report_key, ticker, company_name, subtitle, prepared_by, audited_by, 
+                rating, is_positive, price_target, analysis_price, sector, 
+                en_overview, th_overview, en_dcf, th_dcf
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        '''
+        execute_sql(cursor, is_postgres, query, (
+            report_key, ticker, company_name, subtitle, prepared_by, audited_by, 
+            rating, 1 if is_positive else 0, price_target, analysis_price, sector, 
+            en_overview, th_overview, en_dcf, th_dcf
+        ))
+        
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/research-report', methods=['PUT'])
+def edit_research_report():
+    report_key = request.args.get('key')
+    if not report_key:
+        return jsonify({"error": "report_key required"}), 400
+        
+    try:
+        data = request.get_json(force=True)
+        ticker = data.get('ticker', '').strip().upper()
+        company_name = data.get('company_name', '').strip()
+        subtitle = data.get('subtitle', '')
+        prepared_by = data.get('prepared_by', '')
+        audited_by = data.get('audited_by', '')
+        rating = data.get('rating', '')
+        is_positive = bool(data.get('is_positive'))
+        price_target = data.get('price_target')
+        analysis_price = data.get('analysis_price')
+        sector = data.get('sector', 'Other Sectors')
+        en_overview = data.get('en_overview', '')
+        th_overview = data.get('th_overview', '')
+        en_dcf = data.get('en_dcf', '')
+        th_dcf = data.get('th_dcf', '')
+        
+        conn, is_postgres = get_db_connection()
+        cursor = conn.cursor()
+        
+        query = '''
+            UPDATE research_reports 
+            SET ticker=?, company_name=?, subtitle=?, prepared_by=?, audited_by=?, 
+                rating=?, is_positive=?, price_target=?, analysis_price=?, sector=?, 
+                en_overview=?, th_overview=?, en_dcf=?, th_dcf=?
+            WHERE report_key=?
+        '''
+        execute_sql(cursor, is_postgres, query, (
+            ticker, company_name, subtitle, prepared_by, audited_by, 
+            rating, 1 if is_positive else 0, price_target, analysis_price, sector, 
+            en_overview, th_overview, en_dcf, th_dcf, report_key
+        ))
+        
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/research-report', methods=['DELETE'])
+def delete_research_report():
+    report_key = request.args.get('key')
+    if not report_key:
+        return jsonify({"error": "report_key required"}), 400
+        
+    try:
+        conn, is_postgres = get_db_connection()
+        cursor = conn.cursor()
+        
+        query = "DELETE FROM research_reports WHERE report_key=?"
+        execute_sql(cursor, is_postgres, query, (report_key,))
         
         conn.commit()
         conn.close()
