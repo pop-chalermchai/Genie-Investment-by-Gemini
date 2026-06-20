@@ -2,6 +2,10 @@
 // CLIENT-SIDE PORTFOLIO DATABASE & STATE MANAGEMENT
 // ==========================================================================
 let holdings = [];
+let portfoliosList = [];
+let cachedParentTotals = {};
+let activeParentPortfolio = null;
+let activeSubPortfolio = null;
 
 let activeTab = "dashboard";
 let activeReport = "mu";
@@ -119,6 +123,20 @@ const teamProfiles = {
             "Re-compute every DCF growth percentage, WACC formula, and margin calculation.",
             "Flag all model inconsistencies or unmitigated risk overlaps immediately."
         ]
+    },
+    lex: {
+        name: "Lex",
+        avatar: "🛡️",
+        role: "The Code Sentinel",
+        skills: ["Security Audit", "Bug Detection", "Performance Review", "SOP Compliance"],
+        quote: "Every line of code is guilty of a vulnerability until proven otherwise. Ship clean, or don't ship.",
+        intro: "The code gatekeeper. Audits all web platform changes for security holes, logic bugs, and SOP violations before any git commit.",
+        guardrails: [
+            "Never approve a commit containing a CRITICAL security or logic finding.",
+            "Classify all findings as 🔴 CRITICAL / 🟡 WARNING / 🟢 SUGGESTION with file:line references.",
+            "Scope reviews strictly to changed files only — do not rewrite legacy code.",
+            "Conclude every review with a clear ✅ APPROVED or 🚫 REJECTED verdict."
+        ]
     }
 };
 
@@ -127,32 +145,139 @@ const teamProfiles = {
 // ==========================================================================
 let researchReports = {};
 
-// === DELETE PORTFOLIO LOGIC ===
-function deletePortfolio(pName) {
-    if (confirm(`Are you sure you want to delete the portfolio "${pName}"? This will also delete all assets and transactions inside it.`)) {
+// === PORTFOLIO DRILL-DOWN NAVIGATION ===
+function navigateToPortfolio(parentName) {
+    activeParentPortfolio = parentName;
+    activeSubPortfolio = null;
+    document.getElementById("dashboard-main-view").style.display = "none";
+    document.getElementById("portfolio-detail-view").style.display = "block";
+    renderPortfolioPage();
+}
+
+function navigateBack() {
+    activeParentPortfolio = null;
+    activeSubPortfolio = null;
+    document.getElementById("dashboard-main-view").style.display = "";
+    document.getElementById("portfolio-detail-view").style.display = "none";
+}
+
+function selectSubPortfolio(subName) {
+    activeSubPortfolio = activeSubPortfolio === subName ? null : subName;
+    renderPortfolioPage();
+}
+
+function renderPortfolioPage() {
+    const data = cachedParentTotals[activeParentPortfolio];
+    if (!data) return;
+
+    const symbol = displayCurrency === "USD" ? "$" : "฿";
+    const pGainLoss = data.value - data.cost;
+    const pGainLossPct = data.cost > 0 ? (pGainLoss / data.cost) * 100 : 0;
+
+    // Update header
+    document.getElementById("port-detail-name").innerText = activeParentPortfolio;
+    document.getElementById("port-detail-value").innerText = `${symbol}${formatNumber(data.value, 2)}`;
+    const plEl = document.getElementById("port-detail-pl");
+    plEl.innerText = `${pGainLoss >= 0 ? '+' : ''}${pGainLossPct.toFixed(1)}% (${symbol}${formatNumber(Math.abs(pGainLoss), 0)})`;
+    plEl.style.color = pGainLoss >= 0 ? 'var(--color-positive)' : 'var(--color-negative)';
+
+    // Build sub-portfolio chips
+    const chipsEl = document.getElementById("subport-chips");
+    chipsEl.innerHTML = "";
+
+    const allChip = document.createElement("button");
+    allChip.className = "subport-chip" + (activeSubPortfolio === null ? " active" : "");
+    allChip.innerHTML = `<span class="chip-name">All</span><span class="chip-value">${symbol}${formatNumber(data.value, 0)}</span>`;
+    allChip.onclick = () => { activeSubPortfolio = null; renderPortfolioPage(); };
+    chipsEl.appendChild(allChip);
+
+    Object.keys(data.subPorts).forEach(subName => {
+        const subData = data.subPorts[subName];
+        const subGainLoss = subData.value - subData.cost;
+        const subGainLossPct = subData.cost > 0 ? (subGainLoss / subData.cost) * 100 : 0;
+        const chip = document.createElement("button");
+        chip.className = "subport-chip" + (activeSubPortfolio === subName ? " active" : "");
+        chip.innerHTML = `<span class="chip-name">${subName}</span><span class="chip-value">${symbol}${formatNumber(subData.value, 0)}</span><span class="chip-pl" style="color:${subGainLoss >= 0 ? 'var(--color-positive)' : 'var(--color-negative)'}">${subGainLoss >= 0 ? '+' : ''}${subGainLossPct.toFixed(1)}%</span>`;
+        chip.onclick = () => selectSubPortfolio(subName);
+        chipsEl.appendChild(chip);
+    });
+
+    // Build filtered holdings table
+    const tbody = document.getElementById("portfolio-table-body");
+    tbody.innerHTML = "";
+
+    const filteredHoldings = holdings.filter(pos => {
+        const parentMatch = (pos.parentPortfolio || pos.portfolio) === activeParentPortfolio;
+        const subMatch = activeSubPortfolio === null || pos.portfolio === activeSubPortfolio;
+        return parentMatch && subMatch;
+    });
+
+    if (filteredHoldings.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text-secondary);padding:24px;">No holdings in this portfolio.</td></tr>`;
+        return;
+    }
+
+    filteredHoldings.forEach(pos => {
+        let avgCost = pos.avgCost;
+        let currentPrice = pos.currentPrice;
+        let costBasis = pos.shares * avgCost;
+        let marketValue = pos.shares * currentPrice;
+
+        if (displayCurrency === "USD" && pos.currency === "THB") {
+            avgCost = pos.avgCost / exchangeRateUSDTHB;
+            currentPrice = pos.currentPrice / exchangeRateUSDTHB;
+            costBasis = (pos.shares * pos.avgCost) / exchangeRateUSDTHB;
+            marketValue = (pos.shares * pos.currentPrice) / exchangeRateUSDTHB;
+        } else if (displayCurrency === "THB" && pos.currency === "USD") {
+            avgCost = pos.avgCost * exchangeRateUSDTHB;
+            currentPrice = pos.currentPrice * exchangeRateUSDTHB;
+            costBasis = (pos.shares * pos.avgCost) * exchangeRateUSDTHB;
+            marketValue = (pos.shares * pos.currentPrice) * exchangeRateUSDTHB;
+        }
+
+        const gainLoss = marketValue - costBasis;
+        const gainLossPct = costBasis > 0 ? (gainLoss / costBasis) * 100 : 0;
+
+        const row = document.createElement("tr");
+        row.style.cursor = "pointer";
+        row.title = "Click to view detailed chart & stats";
+        row.onclick = () => openStockDetail(pos.ticker);
+        row.innerHTML = `
+            <td><span class="ticker-badge">${pos.ticker}</span></td>
+            <td><strong>${pos.companyName}</strong><br><span style="font-size:0.72rem;color:var(--text-secondary);">${pos.sector}</span></td>
+            <td><span class="portfolio-badge">${pos.portfolio}</span></td>
+            <td class="text-right table-shares">${formatShares(pos.shares)}</td>
+            <td class="text-right table-currency">${symbol}${avgCost.toFixed(2)}</td>
+            <td class="text-right table-currency">${symbol}${currentPrice.toFixed(2)}</td>
+            <td class="text-right table-currency" style="font-weight:500;">${symbol}${formatNumber(marketValue, 2)}</td>
+            <td class="text-right ${gainLoss >= 0 ? 'cell-positive' : 'cell-negative'}">
+                ${symbol}${formatNumber(gainLoss, 2)} (${gainLossPct >= 0 ? '+' : ''}${gainLossPct.toFixed(1)}%)
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+function deleteParentPortfolio(pName) {
+    if (confirm(`Are you sure you want to delete the portfolio "${pName}"? This will also delete all sub-portfolios, assets, and transactions inside it.`)) {
         fetch('/api/portfolio?name=' + encodeURIComponent(pName), {
             method: 'DELETE'
         })
         .then(r => r.json())
         .then(data => {
             if (data.success) {
-                // Remove from dropdowns
-                const filter = document.getElementById("portfolio-filter");
-                const option1 = [...filter.options].find(o => o.value === pName);
-                if (option1) option1.remove();
-                
-                const ingestFilter = document.getElementById("ingest-portfolio");
-                const option2 = [...ingestFilter.options].find(o => o.value === pName);
-                if (option2) option2.remove();
-
-                // Re-fetch holdings
-                fetch('/api/holdings')
-                    .then(r => r.json())
-                    .then(hData => {
-                        holdings = hData.map(h => ({...h, currentPrice: h.avgCost}));
-                        updateDashboard();
-                        fetchLivePrices(); // Update with real prices
-                    });
+                // Re-fetch holdings and portfolios
+                Promise.all([
+                    fetch('/api/holdings').then(res => res.json()),
+                    fetch('/api/portfolios').then(res => res.json())
+                ])
+                .then(([hData, pData]) => {
+                    holdings = hData.map(h => ({...h, currentPrice: h.avgCost}));
+                    portfoliosList = pData;
+                    populateDropdowns();
+                    updateDashboard();
+                    fetchLivePrices(); // Update with real prices
+                });
             } else {
                 alert("Error deleting portfolio: " + data.error);
             }
@@ -170,21 +295,35 @@ function deletePortfolio(pName) {
 document.addEventListener("DOMContentLoaded", () => {
     Promise.all([
         fetch('/api/holdings').then(res => res.json()),
-        fetch('/api/reports').then(res => res.json())
+        fetch('/api/reports').then(res => res.json()),
+        fetch('/api/portfolios').then(res => res.json())
     ])
-    .then(([holdingsData, reportsData]) => {
+    .then(([holdingsData, reportsData, portfoliosData]) => {
         holdings = holdingsData.map(h => ({...h, currentPrice: h.avgCost}));
         researchReports = reportsData;
+        portfoliosList = portfoliosData;
         
+        populateDropdowns();
+
+        // Apply cached prices from localStorage for instant first render
+        try {
+            const cached = JSON.parse(localStorage.getItem('genie-price-cache') || '{}');
+            const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+            if (cached.__ts__ && (Date.now() - cached.__ts__) < CACHE_TTL) {
+                if (cached.__rate__) exchangeRateUSDTHB = cached.__rate__;
+                holdings.forEach(h => { if (cached[h.ticker]) h.currentPrice = cached[h.ticker]; });
+            }
+        } catch (e) { /* ignore corrupt cache */ }
+
         updateDashboard();
         renderReportList();
-        
+
         // Auto-select first report if any
         const reportKeys = Object.keys(researchReports);
         if (reportKeys.length > 0 && !activeReport) {
             activeReport = reportKeys[0];
         }
-        
+
         renderReport();
 
         // Detect initial tab from URL path
@@ -195,8 +334,8 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             switchTab("dashboard", false);
         }
-        
-        fetchLivePrices();
+
+        fetchLivePrices(); // runs in background, silently updates prices
         setupDragAndDrop();
     })
     .catch(err => console.error("Error fetching data:", err));
@@ -275,6 +414,7 @@ function updateDashboard() {
                 case 'avgCost': valA = getCostBasis(a)/a.shares; valB = getCostBasis(b)/b.shares; break;
                 case 'marketPrice': valA = getMarketValue(a)/a.shares; valB = getMarketValue(b)/b.shares; break;
                 case 'marketValue': valA = getMarketValue(a); valB = getMarketValue(b); break;
+                case 'weight': valA = getMarketValue(a); valB = getMarketValue(b); break;
                 case 'return': valA = getMarketValue(a) - getCostBasis(a); valB = getMarketValue(b) - getCostBasis(b); break;
                 default: valA = a.ticker; valB = b.ticker;
             }
@@ -285,15 +425,20 @@ function updateDashboard() {
         });
     }
 
-    const portfoliosData = {};
-    holdings.forEach(pos => {
-        if (!portfoliosData[pos.portfolio]) {
-            portfoliosData[pos.portfolio] = { value: 0, cost: 0 };
-        }
-    });
+    // Group totals by parent portfolio and nested sub-portfolio
+    const parentTotals = {}; // { "US Stock": { value: 0, cost: 0, subPorts: { "Dime": { value: 0, cost: 0 }, "WeBull": { value: 0, cost: 0 } } } }
     
     const tableBody = document.getElementById("positions-table-body");
     tableBody.innerHTML = ""; // Clear table
+
+    // Pre-pass: calculate total market value for weight % computation
+    let preTotalMarketValue = 0;
+    holdings.forEach(pos => {
+        let mv = pos.shares * pos.currentPrice;
+        if (displayCurrency === "USD" && pos.currency === "THB") mv /= exchangeRateUSDTHB;
+        else if (displayCurrency === "THB" && pos.currency === "USD") mv *= exchangeRateUSDTHB;
+        preTotalMarketValue += mv;
+    });
 
     holdings.forEach((pos, index) => {
         let avgCost = pos.avgCost;
@@ -320,14 +465,33 @@ function updateDashboard() {
         totalCostBasis += costBasis;
         totalMarketValue += marketValue;
 
-        // Accumulate sub-portfolio totals
-        const pData = portfoliosData[pos.portfolio];
-        if (pData) {
-            pData.value += marketValue;
-            pData.cost += costBasis;
+        // Accumulate parent and sub-portfolio totals
+        const parentName = pos.parentPortfolio || pos.portfolio;
+        const subName = pos.portfolio;
+        
+        if (!parentTotals[parentName]) {
+            parentTotals[parentName] = { value: 0, cost: 0, subPorts: {} };
         }
+        parentTotals[parentName].value += marketValue;
+        parentTotals[parentName].cost += costBasis;
+
+        if (!parentTotals[parentName].subPorts[subName]) {
+            parentTotals[parentName].subPorts[subName] = { value: 0, cost: 0 };
+        }
+        parentTotals[parentName].subPorts[subName].value += marketValue;
+        parentTotals[parentName].subPorts[subName].cost += costBasis;
 
         const symbol = displayCurrency === "USD" ? "$" : "฿";
+        const weightPct = preTotalMarketValue > 0 ? (marketValue / preTotalMarketValue) * 100 : 0;
+
+        // Check if this ticker has a research report
+        const reportKey = Object.keys(researchReports).find(k => researchReports[k].ticker === pos.ticker);
+        const researchLink = reportKey
+            ? `<span onclick="event.stopPropagation();openResearchFromHolding('${reportKey}')" style="display:block;font-size:0.62rem;color:var(--accent-gold);opacity:0.7;cursor:pointer;letter-spacing:0.4px;margin-top:3px;transition:opacity 0.15s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7">research ↗</span>`
+            : '';
+
+        // Badge class derived from sub-portfolio name
+        const badgeName = subName.toLowerCase().replace(/ /g, '-');
 
         // Generate HTML row
         const row = document.createElement("tr");
@@ -335,13 +499,21 @@ function updateDashboard() {
         row.title = "Click to view detailed chart & stats";
         row.onclick = () => openStockDetail(pos.ticker);
         row.innerHTML = `
-            <td><span class="ticker-badge">${pos.ticker}</span></td>
+            <td style="text-align:center;"><span class="ticker-badge">${pos.ticker}</span>${researchLink}</td>
             <td><strong>${pos.companyName}</strong><br><span style="font-size: 0.72rem; color: var(--text-secondary);">${pos.sector}</span></td>
-            <td><span class="portfolio-badge badge-${pos.portfolio.toLowerCase().replace(/ /g, '-')}">${pos.portfolio}</span></td>
-            <td class="text-right table-shares">${formatNumber(pos.shares, 1)}</td>
+            <td><span class="portfolio-badge badge-${badgeName}">${subName}</span></td>
+            <td class="text-right table-shares">${formatShares(pos.shares)}</td>
             <td class="text-right table-currency">${symbol}${avgCost.toFixed(2)}</td>
             <td class="text-right table-currency">${symbol}${currentPrice.toFixed(2)}</td>
             <td class="text-right table-currency" style="font-weight: 500;">${symbol}${formatNumber(marketValue, 2)}</td>
+            <td class="text-right" style="font-family:var(--font-mono);font-size:0.85rem;">
+                <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;">
+                    <div style="width:40px;height:4px;background:var(--border-dim);border-radius:2px;overflow:hidden;flex-shrink:0;">
+                        <div style="width:${Math.min(weightPct,100)}%;height:100%;background:var(--accent-neon);border-radius:2px;"></div>
+                    </div>
+                    <span style="color:var(--text-secondary);min-width:36px;text-align:right;">${weightPct.toFixed(1)}%</span>
+                </div>
+            </td>
             <td class="text-right ${gainLoss >= 0 ? 'cell-positive' : 'cell-negative'}">
                 ${symbol}${formatNumber(gainLoss, 2)} (${gainLossPct >= 0 ? '+' : ''}${gainLossPct.toFixed(1)}%)
             </td>
@@ -377,44 +549,55 @@ function updateDashboard() {
         valPortPct.className = "metric-change negative";
     }
 
-    // Update Sub-Portfolios Summaries Cards dynamically
+    // Cache parentTotals for portfolio drill-down page
+    cachedParentTotals = parentTotals;
+
+    // If user is on portfolio detail page, re-render it with fresh prices
+    if (activeParentPortfolio) {
+        renderPortfolioPage();
+    }
+
+    // Update Parent Portfolio Summary Cards (compact, always fixed height)
     const gridEl = document.getElementById("sub-portfolios-grid");
     if (gridEl) {
-        gridEl.innerHTML = ""; // clear current cards
-        const colors = ["#8B5CF6", "#CA8A04", "#EF4444", "#22C55E", "#FFA500", "#FF5C5C"];
-        const portfolioColors = {
-            "dime": "#8B5CF6",
-            "webull": "#CA8A04",
-            "tax saving fund": "#EF4444",
-            "provident fund": "#22C55E"
+        gridEl.innerHTML = "";
+        const parentColors = {
+            "us stock": "#CA8A04",
+            "tax saving fund": "#8B5CF6",
+            "provident fund": "#10B981"
         };
+        const colors = ["#8B5CF6", "#CA8A04", "#EF4444", "#22C55E", "#FFA500", "#FF5C5C"];
         let colorIdx = 0;
-        
-        Object.keys(portfoliosData).forEach(pName => {
-            const data = portfoliosData[pName];
+
+        Object.keys(parentTotals).forEach(parentName => {
+            const data = parentTotals[parentName];
             const pGainLoss = data.value - data.cost;
             const pGainLossPct = data.cost > 0 ? (pGainLoss / data.cost) * 100 : 0;
             const isPos = pGainLoss >= 0;
-            
-            const lowerName = pName.toLowerCase();
-            const color = portfolioColors[lowerName] || colors[colorIdx % colors.length];
+            const subPortCount = Object.keys(data.subPorts).length;
+
+            const lowerName = parentName.toLowerCase();
+            const color = parentColors[lowerName] || colors[colorIdx % colors.length];
             colorIdx++;
-            
+
             const card = document.createElement("div");
-            card.className = "metric-card glass-panel";
-            card.style.padding = "15px";
-            card.style.borderLeft = `3px solid ${color}`;
-            card.style.display = "flex";
-            card.style.flexDirection = "column";
-            card.style.position = "relative";
-            
+            card.className = "metric-card glass-panel parent-portfolio-card";
+            card.style.cssText = `padding:15px; border-left:3px solid ${color}; display:flex; flex-direction:column; cursor:pointer; position:relative; transition:var(--transition);`;
+            card.onclick = (e) => {
+                if (e.target.tagName === "BUTTON") return;
+                navigateToPortfolio(parentName);
+            };
+            card.onmouseover = () => { card.style.transform = "translateY(-2px)"; card.style.boxShadow = `0 4px 20px ${color}33`; };
+            card.onmouseout = () => { card.style.transform = ""; card.style.boxShadow = ""; };
+
             card.innerHTML = `
-                <button onclick="deletePortfolio('${pName}')" title="Delete Portfolio" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: var(--color-negative); cursor: pointer; font-size: 1.2rem; padding: 0; line-height: 1; opacity: 0.7; transition: opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7">&times;</button>
-                <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;">${pName}</span>
-                <div style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin: 5px 0;">${symbol}${formatNumber(data.value, 2)}</div>
-                <span class="${isPos ? 'positive' : 'negative'}" style="font-size: 0.8rem; font-weight: 500; color: ${isPos ? 'var(--color-positive)' : 'var(--color-negative)'}">
-                    ${isPos ? '+' : ''}${pGainLossPct.toFixed(1)}% (${symbol}${formatNumber(pGainLoss, 0)})
-                </span>
+                <button onclick="deleteParentPortfolio('${parentName}')" title="Delete Portfolio" style="position:absolute;top:10px;right:10px;background:none;border:none;color:var(--color-negative);cursor:pointer;font-size:1.2rem;padding:0;line-height:1;opacity:0.5;transition:opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.5">&times;</button>
+                <div style="font-size:1.2rem;font-weight:700;color:var(--text-emphasis);margin:0 0 2px 0;">${parentName}</div>
+                <span style="font-size:1.1rem;font-weight:700;color:var(--text-primary);">${symbol}${formatNumber(data.value, 2)}</span>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+                    <span style="font-size:0.78rem;font-weight:600;color:${isPos ? 'var(--color-positive)' : 'var(--color-negative)'};">${isPos ? '+' : ''}${pGainLossPct.toFixed(1)}% (${symbol}${formatNumber(Math.abs(pGainLoss), 0)})</span>
+                    <span style="font-size:0.72rem;color:var(--text-secondary);">${subPortCount} sub-port${subPortCount > 1 ? 's' : ''} →</span>
+                </div>
             `;
             gridEl.appendChild(card);
         });
@@ -730,10 +913,19 @@ function renderReportList() {
             btn.style.width = "100%";
             btn.onclick = () => selectReport(report.key);
             
+            const recColor = report.isPositive ? 'var(--color-positive)' : 'var(--color-negative)';
+            const recBg   = report.isPositive ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)';
+            const recLabel = (report.rating || 'N/A').split(' ')[0].replace(/[^A-Z/]/gi,'') || 'N/A';
+            const ptLine = report.priceTarget
+                ? `<span style="font-size:0.68rem;color:var(--text-secondary);font-family:var(--font-mono);">PT: $${parseFloat(report.priceTarget).toFixed(2)}</span>`
+                : '';
             btn.innerHTML = `
-                <div class="report-status-badge verified">AUDITED</div>
-                <span class="report-ticker">${report.ticker}</span>
-                <span class="report-name">${report.companyName}</span>
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+                    <span style="font-size:0.68rem;font-weight:700;padding:1px 5px;border-radius:3px;background:${recBg};color:${recColor};white-space:nowrap;">${recLabel}</span>
+                    <span class="report-ticker">${report.ticker}</span>
+                    ${ptLine}
+                </div>
+                <span class="report-name" style="font-size:0.78rem;">${report.companyName}</span>
             `;
             buttonsWrapper.appendChild(btn);
         });
@@ -826,6 +1018,11 @@ async function fetchLivePrices() {
     // Wait for all to complete
     await Promise.all([...promises, ratePromise]);
 
+    // Save prices to localStorage cache for instant render on next page load
+    const priceCache = { __ts__: Date.now(), __rate__: exchangeRateUSDTHB };
+    holdings.forEach(h => { priceCache[h.ticker] = h.currentPrice; });
+    localStorage.setItem('genie-price-cache', JSON.stringify(priceCache));
+
     // Update the UI
     updateDashboard();
 
@@ -879,9 +1076,59 @@ function formatNumber(number, decimals = 0) {
     });
 }
 
+function formatShares(shares) {
+    return shares.toLocaleString("en-US", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 8
+    });
+}
+
 // ==========================================================================
 // PORTFOLIO MANAGEMENT
 // ==========================================================================
+function populateDropdowns() {
+    // Populate portfolio filter
+    const portfolioFilter = document.getElementById("portfolio-filter");
+    if (portfolioFilter) {
+        portfolioFilter.innerHTML = '<option value="ALL">All</option>';
+        // Show only sub-portfolios (those with a parent)
+        portfoliosList.filter(p => p.parentId !== null).forEach(p => {
+            const option = document.createElement("option");
+            option.value = p.name;
+            option.text = p.name;
+            portfolioFilter.appendChild(option);
+        });
+    }
+
+    // Populate ingest sub-portfolio dropdown (only sub-portfolios!)
+    const ingestPortfolio = document.getElementById("ingest-portfolio");
+    if (ingestPortfolio) {
+        ingestPortfolio.innerHTML = '<option value="" disabled selected>Select Sub-Portfolio...</option>';
+        // Sub-portfolios have parentId !== null
+        const subPorts = portfoliosList.filter(p => p.parentId !== null);
+        subPorts.forEach(p => {
+            const option = document.createElement("option");
+            option.value = p.name;
+            option.text = `${p.parentName} - ${p.name}`;
+            ingestPortfolio.appendChild(option);
+        });
+    }
+    
+    // Populate Add Portfolio parent dropdown
+    const newPortParent = document.getElementById("new-port-parent");
+    if (newPortParent) {
+        newPortParent.innerHTML = '<option value="">None (Create as Parent Portfolio)</option>';
+        // Parent portfolios have parentId === null
+        const parentPorts = portfoliosList.filter(p => p.parentId === null);
+        parentPorts.forEach(p => {
+            const option = document.createElement("option");
+            option.value = p.id;
+            option.text = p.name;
+            newPortParent.appendChild(option);
+        });
+    }
+}
+
 function openAddPortfolioModal() {
     document.getElementById("add-portfolio-modal").classList.add("active");
 }
@@ -892,15 +1139,17 @@ function closeAddPortfolioModal() {
 
 function handleAddPortfolio(event) {
     event.preventDefault();
-    const name = document.getElementById("new-port-name").value;
+    const name = document.getElementById("new-port-name").value.trim();
     const category = document.getElementById("new-port-category").value;
+    const parentIdVal = document.getElementById("new-port-parent").value;
+    const parentId = parentIdVal === "" ? null : parseInt(parentIdVal);
     
     fetch('/api/portfolios', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ name, category })
+        body: JSON.stringify({ name, category, parentId })
     })
     .then(response => response.json())
     .then(data => {
@@ -908,22 +1157,16 @@ function handleAddPortfolio(event) {
             closeAddPortfolioModal();
             document.getElementById("add-portfolio-form").reset();
             
-            // Add to dropdown filters immediately so they can ingest
-            const filter = document.getElementById("portfolio-filter");
-            if (![...filter.options].find(o => o.value === name)) {
-                const option = document.createElement("option");
-                option.value = name; option.text = name;
-                filter.appendChild(option);
-            }
+            // Re-fetch all portfolios and re-populate
+            fetch('/api/portfolios')
+                .then(r => r.json())
+                .then(pData => {
+                    portfoliosList = pData;
+                    populateDropdowns();
+                    updateDashboard();
+                });
             
-            const ingestFilter = document.getElementById("ingest-portfolio");
-            if (![...ingestFilter.options].find(o => o.value === name)) {
-                const option = document.createElement("option");
-                option.value = name; option.text = name;
-                ingestFilter.appendChild(option);
-            }
-            
-            alert("Portfolio created successfully! You can now add positions to it using the Quick Ingest panel.");
+            alert("Portfolio created successfully!");
         } else {
             alert("Error adding portfolio: " + data.error);
         }
@@ -938,10 +1181,48 @@ function handleAddPortfolio(event) {
 // FEATURE 1: TRANSACTIONS (ACTIVITY LOG)
 // ==========================================================================
 let transactionsList = [];
+let txCurrentPage = 1;
+let txRowsPerPage = 25;
+let txDatePreset = 'all';
+let txTypeFilter = 'all';
+
+function setTxPreset(preset) {
+    txDatePreset = preset;
+    txCurrentPage = 1;
+
+    // Update active button state
+    ['all', 'this_year', 'last_3m', 'this_month', 'custom'].forEach(p => {
+        const btn = document.getElementById(`tx-preset-${p}`);
+        if (btn) btn.classList.toggle('active', p === preset);
+    });
+
+    renderTransactions();
+}
+
+function setTxPage(page) {
+    txCurrentPage = page;
+    renderTransactions();
+}
+
+function setTxRowsPerPage(val) {
+    txRowsPerPage = val === 'all' ? 'all' : parseInt(val);
+    txCurrentPage = 1;
+    renderTransactions();
+}
+
+function setTxTypeFilter(type) {
+    txTypeFilter = type;
+    txCurrentPage = 1;
+    ['all', 'BUY', 'SELL', 'TRANSFER_IN', 'TRANSFER_OUT', 'DIVIDEND'].forEach(t => {
+        const btn = document.getElementById(`tx-type-${t}`);
+        if (btn) btn.classList.toggle('active', t === type);
+    });
+    renderTransactions();
+}
 
 function loadTransactions() {
     const tbody = document.getElementById("transactions-table-body");
-    tbody.innerHTML = `<tr><td colspan="8" class="text-center" style="color: var(--text-secondary); text-align: center; padding: 20px;">🔄 Loading transaction history...</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" class="text-center" style="color: var(--text-secondary); text-align: center; padding: 20px;">🔄 Loading transaction history...</td></tr>`;
 
     fetch('/api/transactions')
         .then(res => res.json())
@@ -952,72 +1233,240 @@ function loadTransactions() {
         })
         .catch(err => {
             console.error("Error loading transactions:", err);
-            tbody.innerHTML = `<tr><td colspan="8" class="text-center" style="color: #EF4444; text-align: center; padding: 20px;">❌ Failed to load transactions: ${err.message}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="9" class="text-center" style="color: #EF4444; text-align: center; padding: 20px;">❌ Failed to load transactions: ${err.message}</td></tr>`;
         });
 }
 
 function renderTransactions() {
     const tbody = document.getElementById("transactions-table-body");
     tbody.innerHTML = "";
-    
-    const filterText = document.getElementById("tx-search-input").value.toUpperCase();
-    
+
+    // 1. Search filter
+    const filterText = (document.getElementById("tx-search-input")?.value || "").toUpperCase();
+
+    // 2. Date range filter
+    const now = new Date();
+    let dateFrom = null;
+    let dateTo = null;
+
+    if (txDatePreset === 'this_month') {
+        dateFrom = new Date(now.getFullYear(), now.getMonth(), 1);
+    } else if (txDatePreset === 'last_3m') {
+        dateFrom = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+    } else if (txDatePreset === 'this_year') {
+        dateFrom = new Date(now.getFullYear(), 0, 1);
+    } else if (txDatePreset === 'custom') {
+        const fromVal = document.getElementById("tx-date-from")?.value;
+        const toVal = document.getElementById("tx-date-to")?.value;
+        if (fromVal) dateFrom = new Date(fromVal);
+        if (toVal) { dateTo = new Date(toVal); dateTo.setHours(23, 59, 59); }
+    }
+
     const filtered = transactionsList.filter(t => {
-        return !filterText || t.ticker.toUpperCase().includes(filterText) || t.companyName.toUpperCase().includes(filterText);
+        if (filterText && !t.ticker.toUpperCase().includes(filterText) && !t.companyName.toUpperCase().includes(filterText)) return false;
+        if (txTypeFilter !== 'all' && t.type !== txTypeFilter) return false;
+        if (dateFrom || dateTo) {
+            const txDate = new Date(t.transactionDate);
+            if (dateFrom && txDate < dateFrom) return false;
+            if (dateTo && txDate > dateTo) return false;
+        }
+        return true;
     });
-    
-    if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center" style="color: var(--text-secondary); text-align: center; padding: 20px;">No transactions found.</td></tr>`;
+
+    // 3. Pagination
+    const total = filtered.length;
+    const rpp = txRowsPerPage === 'all' ? total : txRowsPerPage;
+    const totalPages = rpp > 0 ? Math.max(1, Math.ceil(total / rpp)) : 1;
+    txCurrentPage = Math.min(Math.max(1, txCurrentPage), totalPages);
+    const start = (txCurrentPage - 1) * rpp;
+    const paginated = txRowsPerPage === 'all' ? filtered : filtered.slice(start, start + rpp);
+
+    // Update pagination UI
+    const pageInfo = document.getElementById("tx-page-info");
+    const countLabel = document.getElementById("tx-count-label");
+    const prevBtn = document.getElementById("tx-btn-prev");
+    const nextBtn = document.getElementById("tx-btn-next");
+    if (pageInfo) pageInfo.innerText = total > 0 ? `Page ${txCurrentPage} of ${totalPages}` : "";
+    if (countLabel) countLabel.innerText = `of ${total} entries`;
+    if (prevBtn) prevBtn.disabled = txCurrentPage <= 1;
+    if (nextBtn) nextBtn.disabled = txCurrentPage >= totalPages;
+
+    if (paginated.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" style="color: var(--text-secondary); text-align: center; padding: 24px;">No transactions found.</td></tr>`;
         return;
     }
-    
-    filtered.forEach(t => {
-        const tr = document.createElement("tr");
-        
-        let dateStr = t.transactionDate || "";
-        if (dateStr.includes("T")) {
-            dateStr = dateStr.replace("T", " ").substring(0, 16);
-        } else if (dateStr.includes(" ")) {
-            dateStr = dateStr.substring(0, 16);
-        }
-        
-        const typeBadge = t.type === "BUY" 
-            ? `<span class="badge badge-success" style="background: rgba(16, 185, 129, 0.1); color: #10B981; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">BUY</span>`
-            : `<span class="badge badge-danger" style="background: rgba(239, 68, 68, 0.1); color: #EF4444; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">SELL</span>`;
-            
+
+    const typeMeta = {
+        BUY:          { label: "BUY",      bg: "rgba(16,185,129,0.1)",  color: "#10B981" },
+        SELL:         { label: "SELL",     bg: "rgba(239,68,68,0.1)",   color: "#EF4444" },
+        TRANSFER_IN:  { label: "TRSF IN",  bg: "rgba(59,130,246,0.1)",  color: "#3B82F6" },
+        TRANSFER_OUT: { label: "TRSF OUT", bg: "rgba(245,158,11,0.1)",  color: "#F59E0B" },
+        DIVIDEND:     { label: "DIV",      bg: "rgba(168,85,247,0.1)",  color: "#A855F7" },
+    };
+
+    paginated.forEach(t => {
+        let dateStr = (t.transactionDate || "").replace("T", " ").substring(0, 16);
+
+        const meta = typeMeta[t.type] || { label: t.type, bg: "rgba(100,100,100,0.1)", color: "var(--text-secondary)" };
+        const typeBadge = `<span style="background:${meta.bg};color:${meta.color};padding:4px 8px;border-radius:4px;font-weight:600;font-size:0.75rem;">${meta.label}</span>`;
+
         let price = parseFloat(t.price);
-        let shares = parseFloat(t.shares);
-        
         let displayPrice = price;
-        let displayCurrencySym = t.currency === "THB" ? "฿" : "$";
-        
-        if (displayCurrency === "THB" && t.currency === "USD") {
-            displayPrice = price * exchangeRateUSDTHB;
-            displayCurrencySym = "฿";
-        } else if (displayCurrency === "USD" && t.currency === "THB") {
-            displayPrice = price / exchangeRateUSDTHB;
-            displayCurrencySym = "$";
-        }
-        
-        const formattedPrice = displayCurrencySym + displayPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        const formattedQty = Math.abs(shares).toLocaleString(undefined, { maximumFractionDigits: 4 });
-        
+        let sym = t.currency === "THB" ? "฿" : "$";
+        if (displayCurrency === "THB" && t.currency === "USD") { displayPrice = price * exchangeRateUSDTHB; sym = "฿"; }
+        else if (displayCurrency === "USD" && t.currency === "THB") { displayPrice = price / exchangeRateUSDTHB; sym = "$"; }
+
+        const formattedPrice = sym + displayPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const formattedQty = formatShares(Math.abs(parseFloat(t.shares)));
+
+        const tr = document.createElement("tr");
         tr.innerHTML = `
-            <td style="color: var(--text-secondary); font-family: var(--font-mono); font-size: 0.85rem;">${dateStr}</td>
-            <td style="font-weight: 700; color: var(--accent-neon);">${t.ticker}</td>
-            <td style="color: var(--text-primary);">${t.companyName}</td>
+            <td style="color:var(--text-secondary);font-family:var(--font-mono);font-size:0.85rem;">${dateStr}</td>
+            <td style="font-weight:700;color:var(--accent-neon);">${t.ticker}</td>
+            <td style="color:var(--text-primary);">${t.companyName}</td>
             <td>${typeBadge}</td>
-            <td class="text-right" style="font-family: var(--font-mono); font-weight: 500; color: var(--text-primary); text-align: right;">${formattedQty}</td>
-            <td class="text-right" style="font-family: var(--font-mono); color: var(--text-secondary); text-align: right;">${formattedPrice}</td>
-            <td style="color: var(--text-secondary); font-size: 0.85rem;">${t.currency}</td>
-            <td><span style="font-size: 0.8rem; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 3px; color: var(--text-secondary);">${t.portfolio}</span></td>
+            <td class="text-right" style="font-family:var(--font-mono);font-weight:500;color:var(--text-primary);">${formattedQty}</td>
+            <td class="text-right" style="font-family:var(--font-mono);color:var(--text-secondary);">${formattedPrice}</td>
+            <td style="color:var(--text-secondary);font-size:0.85rem;">${t.currency}</td>
+            <td><span style="font-size:0.78rem;background:var(--bg-card-solid);border:1px solid var(--border-dim);padding:2px 7px;border-radius:4px;color:var(--text-primary);font-weight:500;">${t.portfolio}</span></td>
+            <td style="white-space:nowrap;">
+                <button onclick="openEditTransactionModal(${t.id})" class="tx-action-btn" title="Edit"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button>
+                <button onclick="deleteTransaction(${t.id})" class="tx-action-btn tx-action-delete" title="Delete"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
+            </td>
         `;
         tbody.appendChild(tr);
     });
 }
 
+function openResearchFromHolding(reportKey) {
+    switchTab('research');
+    setTimeout(() => {
+        selectReport(reportKey);
+    }, 100);
+}
+
 function filterTransactions() {
+    txCurrentPage = 1;
     renderTransactions();
+}
+
+function openEditTransactionModal(txId) {
+    const tx = transactionsList.find(t => t.id === txId);
+    if (!tx) return;
+
+    document.getElementById('edit-tx-id').value = tx.id;
+    document.getElementById('edit-tx-type').value = tx.type;
+    document.getElementById('edit-tx-currency').value = tx.currency;
+    document.getElementById('edit-tx-shares').value = Math.abs(parseFloat(tx.shares));
+    document.getElementById('edit-tx-price').value = parseFloat(tx.price);
+    document.getElementById('edit-tx-date').value = (tx.transactionDate || '').substring(0, 10);
+    document.getElementById('edit-tx-meta').textContent = `${tx.ticker} · ${tx.companyName} · ${tx.portfolio}`;
+    document.getElementById('edit-tx-error').style.display = 'none';
+
+    document.getElementById('edit-transaction-modal').classList.add('active');
+}
+
+function closeEditTransactionModal() {
+    document.getElementById('edit-transaction-modal').classList.remove('active');
+}
+
+async function saveEditTransaction(event) {
+    event.preventDefault();
+    const errEl = document.getElementById('edit-tx-error');
+    errEl.style.display = 'none';
+
+    const id = document.getElementById('edit-tx-id').value;
+    const payload = {
+        type: document.getElementById('edit-tx-type').value,
+        shares: parseFloat(document.getElementById('edit-tx-shares').value),
+        price: parseFloat(document.getElementById('edit-tx-price').value),
+        currency: document.getElementById('edit-tx-currency').value,
+        transactionDate: document.getElementById('edit-tx-date').value,
+    };
+
+    try {
+        const res = await fetch(`/api/transaction?id=${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) throw new Error(data.error || 'Failed to save');
+        closeEditTransactionModal();
+        loadTransactions();
+        updateDashboard();
+    } catch (err) {
+        errEl.textContent = err.message;
+        errEl.style.display = 'block';
+    }
+}
+
+async function deleteTransaction(txId) {
+    const tx = transactionsList.find(t => t.id === txId);
+    const label = tx ? `${tx.ticker} ${tx.type} ${Math.abs(parseFloat(tx.shares))} shares` : `#${txId}`;
+    if (!confirm(`Delete transaction: ${label}?\n\nThis cannot be undone.`)) return;
+
+    try {
+        const res = await fetch(`/api/transaction?id=${txId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (!res.ok || data.error) throw new Error(data.error || 'Delete failed');
+        loadTransactions();
+        updateDashboard();
+    } catch (err) {
+        alert(`Error: ${err.message}`);
+    }
+}
+
+function exportTransactionsCSV() {
+    // Build same filtered set as current view (all pages, not just current page)
+    const filterText = (document.getElementById("tx-search-input")?.value || "").toUpperCase();
+    const now = new Date();
+    let dateFrom = null, dateTo = null;
+
+    if (txDatePreset === 'this_month') {
+        dateFrom = new Date(now.getFullYear(), now.getMonth(), 1);
+    } else if (txDatePreset === 'last_3m') {
+        dateFrom = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+    } else if (txDatePreset === 'this_year') {
+        dateFrom = new Date(now.getFullYear(), 0, 1);
+    } else if (txDatePreset === 'custom') {
+        const fromVal = document.getElementById("tx-date-from")?.value;
+        const toVal = document.getElementById("tx-date-to")?.value;
+        if (fromVal) dateFrom = new Date(fromVal);
+        if (toVal) { dateTo = new Date(toVal); dateTo.setHours(23, 59, 59); }
+    }
+
+    const rows = transactionsList.filter(t => {
+        if (filterText && !t.ticker.toUpperCase().includes(filterText) && !t.companyName.toUpperCase().includes(filterText)) return false;
+        if (txTypeFilter !== 'all' && t.type !== txTypeFilter) return false;
+        if (dateFrom || dateTo) {
+            const txDate = new Date(t.transactionDate);
+            if (dateFrom && txDate < dateFrom) return false;
+            if (dateTo && txDate > dateTo) return false;
+        }
+        return true;
+    });
+
+    const headers = ['Date', 'Ticker', 'Company Name', 'Type', 'Shares', 'Price', 'Currency', 'Portfolio'];
+    const lines = [headers.join(',')];
+    rows.forEach(t => {
+        const date = (t.transactionDate || '').substring(0, 10);
+        const shares = Math.abs(parseFloat(t.shares));
+        const price = parseFloat(t.price);
+        const companyEsc = `"${(t.companyName || '').replace(/"/g, '""')}"`;
+        const portEsc = `"${(t.portfolio || '').replace(/"/g, '""')}"`;
+        lines.push([date, t.ticker, companyEsc, t.type, shares, price, t.currency, portEsc].join(','));
+    });
+
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `transactions_${new Date().toISOString().substring(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }
 
 // ==========================================================================
@@ -1541,5 +1990,144 @@ function confirmExcelUpload() {
     .finally(() => {
         btn.disabled = false;
         btn.innerText = originalText;
+    });
+}
+
+// ==========================================================================
+// FEATURE: STOCK TRANSFERS BETWEEN SUB-PORTFOLIOS
+// ==========================================================================
+function openTransferStockModal() {
+    const modal = document.getElementById("transfer-stock-modal");
+    if (!modal) return;
+    
+    // Clear fields
+    document.getElementById("transfer-stock-form").reset();
+    document.getElementById("transfer-source-available").innerText = "";
+    
+    // Populate Ticker select dropdown with tickers from holdings
+    const tickerSelect = document.getElementById("transfer-ticker");
+    tickerSelect.innerHTML = '<option value="" disabled selected>Select Ticker...</option>';
+    
+    // Get unique tickers that currently have active shares > 0
+    const uniqueTickers = [...new Set(holdings.map(h => h.ticker))].sort();
+    
+    uniqueTickers.forEach(ticker => {
+        const option = document.createElement("option");
+        option.value = ticker;
+        option.text = ticker;
+        tickerSelect.appendChild(option);
+    });
+    
+    modal.classList.add("active");
+}
+
+function closeTransferStockModal() {
+    const modal = document.getElementById("transfer-stock-modal");
+    if (modal) modal.classList.remove("active");
+}
+
+function onTransferTickerChange() {
+    const ticker = document.getElementById("transfer-ticker").value;
+    const sourceSelect = document.getElementById("transfer-source");
+    sourceSelect.innerHTML = '<option value="" disabled selected>Select Source...</option>';
+    
+    // Find all portfolios that hold this ticker
+    const holdingPorts = holdings.filter(h => h.ticker === ticker);
+    
+    holdingPorts.forEach(hp => {
+        // Find portfolio ID for the portfolio name
+        const portObj = portfoliosList.find(p => p.name === hp.portfolio && p.parentId !== null);
+        if (portObj) {
+            const option = document.createElement("option");
+            option.value = portObj.id;
+            option.text = `${hp.parentPortfolio || hp.portfolio} - ${hp.portfolio}`;
+            // Store shares and average cost in attributes for easy access
+            option.setAttribute("data-shares", hp.shares);
+            option.setAttribute("data-cost", hp.avgCost);
+            sourceSelect.appendChild(option);
+        }
+    });
+    
+    document.getElementById("transfer-source-available").innerText = "";
+    document.getElementById("transfer-dest").innerHTML = '<option value="" disabled selected>Select Destination...</option>';
+}
+
+function onTransferSourceChange() {
+    const sourceSelect = document.getElementById("transfer-source");
+    const selectedOption = sourceSelect.options[sourceSelect.selectedIndex];
+    
+    if (!selectedOption) return;
+    
+    const shares = parseFloat(selectedOption.getAttribute("data-shares"));
+    const cost = parseFloat(selectedOption.getAttribute("data-cost"));
+    
+    document.getElementById("transfer-source-available").innerText = `Available: ${formatShares(shares)} shares (Avg Cost: $${cost.toFixed(2)})`;
+    
+    // Pre-fill fields
+    document.getElementById("transfer-shares").value = shares;
+    document.getElementById("transfer-price").value = cost.toFixed(2);
+    
+    // Populate Destination dropdown with sub-portfolios EXCEPT the source portfolio
+    const sourceId = parseInt(sourceSelect.value);
+    const destSelect = document.getElementById("transfer-dest");
+    destSelect.innerHTML = '<option value="" disabled selected>Select Destination...</option>';
+    
+    const subPorts = portfoliosList.filter(p => p.parentId !== null && p.id !== sourceId);
+    subPorts.forEach(p => {
+        const option = document.createElement("option");
+        option.value = p.id;
+        option.text = `${p.parentName} - ${p.name}`;
+        destSelect.appendChild(option);
+    });
+}
+
+function handleTransferStock(event) {
+    event.preventDefault();
+    
+    const ticker = document.getElementById("transfer-ticker").value;
+    const sourcePortfolioId = parseInt(document.getElementById("transfer-source").value);
+    const destPortfolioId = parseInt(document.getElementById("transfer-dest").value);
+    const shares = parseFloat(document.getElementById("transfer-shares").value);
+    const price = parseFloat(document.getElementById("transfer-price").value);
+    
+    if (sourcePortfolioId === destPortfolioId) {
+        alert("Source and Destination portfolios must be different!");
+        return;
+    }
+    
+    fetch('/api/transfer', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            sourcePortfolioId,
+            destPortfolioId,
+            ticker,
+            shares,
+            price
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            alert("Stock transferred successfully!");
+            closeTransferStockModal();
+            
+            // Re-fetch holdings
+            fetch('/api/holdings')
+                .then(r => r.json())
+                .then(hData => {
+                    holdings = hData.map(h => ({...h, currentPrice: h.avgCost}));
+                    updateDashboard();
+                    fetchLivePrices(); // update with real prices
+                });
+        } else {
+            alert("Error transferring stock: " + data.error);
+        }
+    })
+    .catch(err => {
+        console.error("Error during transfer:", err);
+        alert("Failed to transfer stock.");
     });
 }

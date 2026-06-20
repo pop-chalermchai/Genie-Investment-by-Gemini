@@ -1,5 +1,43 @@
 # Daily Log
 
+## 2026-06-20 (session 5)
+- Completed tasks #8–11 from the feature roadmap:
+  - **#8 Portfolio weight %**: added pre-pass to calculate totalMarketValue before rendering, new "Weight ↕" column with mini progress bar + % number per holding row, sortable.
+  - **#9 Dividend transaction type**: added DIVIDEND type with purple badge (#A855F7), DIV filter button in transaction page, option in Quick Ingest and Edit modal dropdowns.
+  - **#10 Research recommendation badge + price target**: added `price_target` and `analysis_price` columns to research_reports DB via migration. API now returns priceTarget/analysisPrice. Sidebar shows colored recommendation label (green=positive, red=negative) and "PT: $X.XX" inline per report row.
+  - **#11 Link research → holdings**: holdings table now shows "Research ↗" button next to ticker badge if a report exists. Clicking switches to Equity Research tab and auto-selects the matching report.
+
+## 2026-06-20 (session 4)
+- Implemented mobile responsiveness across the full dashboard.
+- Nav tabs switch to icon-only grid layout at ≤900px (4-column grid, `font-size: 0` hides labels).
+- Control bar wraps to 3 rows on mobile: search (full width) → 2 filter selects (50/50) → currency + theme + refresh (compact, "Refresh Prices" label hidden).
+- Fixed horizontal scroll on both tables: root cause was `overflow: hidden` inline style on the transaction table container (line 801 in index.html) and `body { overflow-x: hidden }` blocking inner scroll contexts on mobile. Fix: changed transaction container to `overflow-x: auto`, added `body { overflow-x: auto }` + `overflow-x: auto !important` on `.positions-container` in mobile media query, and set `min-width: 680px` / `min-width: 860px` on holdings and transaction tables respectively.
+- Added ≤600px and ≤400px media query blocks covering: dashboard padding, header layout, metrics grid, sub-portfolio chips, form grid (1 column), transaction filter buttons, pagination, footer.
+
+## 2026-06-20 (session 3)
+- Added 4 features to the Transaction History page:
+  1. **Edit Transaction** — pencil icon per row opens a pre-filled modal (Type, Shares, Price, Currency, Date). Saves via `PUT /api/transaction?id=` in `server.py`.
+  2. **Delete Transaction** — trash icon per row triggers a confirm dialog then calls `DELETE /api/transaction?id=`. Both dashboard and transaction list refresh after delete.
+  3. **Filter by Type** — new button group in the filter bar: All / BUY / SELL / TRSF IN / TRSF OUT. Active type highlights in its type color (green/red/blue). Stacks alongside the existing date preset buttons.
+  4. **Export CSV** — "Export CSV" button top-right exports all currently filtered rows (all pages) as a dated `.csv` file, client-side only.
+- Added `do_PUT` handler in `server.py` for transaction editing.
+- Extended `do_DELETE` in `server.py` to handle `/api/transaction?id=` in addition to existing `/api/portfolio`.
+- New CSS classes: `.tx-type-btn`, `.tx-export-btn`, `.tx-action-btn`, `.tx-action-delete` in `styles.css`.
+
+## 2026-06-20 (session 2)
+- Redesigned portfolio dashboard navigation from inline expand/collapse to a **drill-down Portfolio Page** pattern.
+- Dashboard parent portfolio cards are now compact fixed-height cards — clicking any card navigates to a dedicated Portfolio Page for that portfolio.
+- Added `#portfolio-detail-view` section in `index.html` with: back button (← Dashboard), portfolio name/value/P&L header, sub-portfolio selection chips row, and a filtered holdings table.
+- Added `navigateToPortfolio()`, `navigateBack()`, `selectSubPortfolio()`, `renderPortfolioPage()` functions in `app.js`. Portfolio page re-renders automatically when live prices refresh.
+- Moved **Transfer Stock** button from the dashboard header into the Portfolio Page header — only accessible in context of a specific portfolio.
+- Removed inline sub-portfolio expand/collapse logic (`expandedParents`, `toggleParentExpand`) in favour of the new drill-down navigation.
+- Added CSS classes: `.portfolio-detail-header`, `.btn-back`, `.subport-chip`, `.chip-name`, `.chip-value`, `.chip-pl` in `styles.css`.
+
+## 2026-06-20 (session 1)
+- Onboarded a new specialist agent: **Lex (The Code Sentinel)** as the team's dedicated code review gatekeeper. Saved skill profile to `team_members/Lex_SKILL.md`.
+- Lex's mandate: audit all code changes for security vulnerabilities, logic bugs, performance issues, and SOP compliance before any git commit is allowed. Issues a clear ✅ APPROVED or 🚫 REJECTED verdict with file:line references.
+- Updated `SOP_Web_Development.md` from a 4-step to a **5-step development pipeline**, inserting **Phase 2: Code Review Gate (Lex)** as a mandatory gate between local validation and git commit. A REJECTED verdict sends the code back to Phase 1 for fixes before re-review.
+
 ## 2026-06-18
 - Refactored text and heading colors in styles.css to significantly increase contrast and readability for the Solarized Light theme.
 - Added a `--text-emphasis` color variable for emphasized headers and metric numbers (#002B36 in light mode, #FDF6E3 in dark mode).

@@ -22,13 +22,15 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 conn.row_factory = sqlite3.Row
                 cursor = conn.cursor()
                 
-                # Fetch holdings joined across tables
+                # Fetch holdings joined across tables with parent portfolio info
                 query = '''
                     SELECT 
                         a.ticker, a.company_name as companyName, a.sector, 
-                        p.name as portfolio, 
+                        p.name as portfolio, p.id as portfolioId, p.parent_id as parentId,
+                        (SELECT name FROM portfolios WHERE id = p.parent_id) as parentPortfolio,
                         t.currency, SUM(t.shares) as shares, 
-                        SUM(CASE WHEN t.type = 'BUY' THEN t.shares * t.price ELSE 0 END) / NULLIF(SUM(CASE WHEN t.type = 'BUY' THEN t.shares ELSE 0 END), 0) as avgCost
+                        SUM(CASE WHEN t.type IN ('BUY', 'TRANSFER_IN') THEN t.shares * t.price ELSE 0 END) / 
+                        NULLIF(SUM(CASE WHEN t.type IN ('BUY', 'TRANSFER_IN') THEN t.shares ELSE 0 END), 0) as avgCost
                     FROM assets a
                     JOIN portfolios p ON a.portfolio_id = p.id
                     JOIN transactions t ON t.asset_id = a.id
@@ -65,7 +67,8 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 query = '''
                     SELECT 
                         t.id, t.type, t.shares, t.price, t.currency, t.transaction_date as transactionDate,
-                        a.ticker, a.company_name as companyName, p.name as portfolio
+                        a.ticker, a.company_name as companyName, p.name as portfolio, p.parent_id as parentId,
+                        (SELECT name FROM portfolios WHERE id = p.parent_id) as parentPortfolio
                     FROM transactions t
                     JOIN assets a ON t.asset_id = a.id
                     JOIN portfolios p ON a.portfolio_id = p.id
@@ -159,6 +162,8 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                         "auditedBy": r['audited_by'],
                         "rating": r['rating'],
                         "isPositive": bool(r['is_positive']),
+                        "priceTarget": r['price_target'],
+                        "analysisPrice": r['analysis_price'],
                         "en_overview": r['en_overview'],
                         "th_overview": r['th_overview'],
                         "en_dcf": r['en_dcf'],
@@ -171,6 +176,37 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
                 self.wfile.write(json.dumps(reports).encode())
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode())
+            return
+        elif parsed_url.path == '/api/portfolios':
+            db_path = os.path.join(DIRECTORY, 'portfolio.db')
+            try:
+                conn = sqlite3.connect(db_path)
+                conn.row_factory = sqlite3.Row
+                cursor = conn.cursor()
+                # Fetch all portfolios, left joining categories and sub-querying parent portfolio names
+                query = '''
+                    SELECT 
+                        p.id, p.name, p.category_id as categoryId, c.name as category, p.parent_id as parentId,
+                        (SELECT name FROM portfolios WHERE id = p.parent_id) as parentName
+                    FROM portfolios p
+                    LEFT JOIN categories c ON p.category_id = c.id
+                '''
+                cursor.execute(query)
+                rows = cursor.fetchall()
+                ports = [dict(r) for r in rows]
+                conn.close()
+                
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps(ports).encode())
             except Exception as e:
                 self.send_response(500)
                 self.send_header('Content-Type', 'application/json')
@@ -248,6 +284,8 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 data = json.loads(post_data.decode('utf-8'))
                 portfolio_name = data.get('name')
                 category_name = data.get('category', 'Stocks')
+                parent_id = data.get('parentId')
+                if parent_id == '': parent_id = None
                 
                 if not portfolio_name:
                     raise ValueError("Portfolio name is required")
@@ -265,7 +303,96 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                     cursor.execute("INSERT INTO categories (name) VALUES (?)", (category_name,))
                     cat_id = cursor.lastrowid
                 
-                cursor.execute("INSERT INTO portfolios (name, category_id) VALUES (?, ?)", (portfolio_name, cat_id))
+                cursor.execute("INSERT INTO portfolios (name, category_id, parent_id) VALUES (?, ?, ?)", (portfolio_name, cat_id, parent_id))
+                conn.commit()
+                conn.close()
+                
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": True}).encode())
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode())
+        elif parsed_url.path == '/api/transfer':
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            
+            try:
+                data = json.loads(post_data.decode('utf-8'))
+                source_portfolio_id = data.get('sourcePortfolioId')
+                dest_portfolio_id = data.get('destPortfolioId')
+                ticker = data.get('ticker').upper().strip()
+                shares = float(data.get('shares', 0))
+                price = float(data.get('price', 0))
+                date = data.get('date')
+                
+                if not all([source_portfolio_id, dest_portfolio_id, ticker, shares > 0, price >= 0]):
+                    raise ValueError("Missing required fields or invalid amounts")
+                
+                if int(source_portfolio_id) == int(dest_portfolio_id):
+                    raise ValueError("Source and destination portfolios must be different")
+                    
+                db_path = os.path.join(DIRECTORY, 'portfolio.db')
+                conn = sqlite3.connect(db_path)
+                cursor = conn.cursor()
+                
+                # Check source and destination portfolios
+                cursor.execute("SELECT id FROM portfolios WHERE id=?", (source_portfolio_id,))
+                if not cursor.fetchone():
+                    raise ValueError(f"Source portfolio ID {source_portfolio_id} does not exist")
+                    
+                cursor.execute("SELECT id FROM portfolios WHERE id=?", (dest_portfolio_id,))
+                if not cursor.fetchone():
+                    raise ValueError(f"Destination portfolio ID {dest_portfolio_id} does not exist")
+                
+                # Check if asset exists in source portfolio
+                cursor.execute("SELECT id, company_name, sector FROM assets WHERE ticker=? AND portfolio_id=?", (ticker, source_portfolio_id))
+                src_asset_row = cursor.fetchone()
+                if not src_asset_row:
+                    raise ValueError(f"Ticker {ticker} not found in source portfolio")
+                src_asset_id, company_name, sector = src_asset_row
+                
+                # Calculate available shares in source
+                cursor.execute("SELECT SUM(shares) FROM transactions WHERE asset_id=?", (src_asset_id,))
+                avail_shares_row = cursor.fetchone()
+                avail_shares = avail_shares_row[0] if (avail_shares_row and avail_shares_row[0] is not None) else 0
+                
+                # Use a small tolerance for floating point comparison (e.g., 1e-8)
+                if avail_shares < shares - 1e-8:
+                    raise ValueError(f"Insufficient shares of {ticker} in source portfolio. Available: {avail_shares}, requested: {shares}")
+                
+                # Get or create destination asset
+                cursor.execute("SELECT id FROM assets WHERE ticker=? AND portfolio_id=?", (ticker, dest_portfolio_id))
+                dest_asset_row = cursor.fetchone()
+                if dest_asset_row:
+                    dest_asset_id = dest_asset_row[0]
+                else:
+                    cursor.execute("INSERT INTO assets (ticker, company_name, sector, portfolio_id) VALUES (?, ?, ?, ?)",
+                                   (ticker, company_name, sector, dest_portfolio_id))
+                    dest_asset_id = cursor.lastrowid
+                
+                # Get currency from source asset
+                cursor.execute("SELECT currency FROM transactions WHERE asset_id=? LIMIT 1", (src_asset_id,))
+                currency_row = cursor.fetchone()
+                currency = currency_row[0] if currency_row else 'USD'
+                
+                # Perform the transfer transactions inside SQLite transaction
+                if date:
+                    cursor.execute("INSERT INTO transactions (asset_id, type, shares, price, currency, transaction_date) VALUES (?, 'TRANSFER_OUT', ?, ?, ?, ?)",
+                                   (src_asset_id, -shares, price, currency, date))
+                    cursor.execute("INSERT INTO transactions (asset_id, type, shares, price, currency, transaction_date) VALUES (?, 'TRANSFER_IN', ?, ?, ?, ?)",
+                                   (dest_asset_id, shares, price, currency, date))
+                else:
+                    cursor.execute("INSERT INTO transactions (asset_id, type, shares, price, currency) VALUES (?, 'TRANSFER_OUT', ?, ?, ?)",
+                                   (src_asset_id, -shares, price, currency))
+                    cursor.execute("INSERT INTO transactions (asset_id, type, shares, price, currency) VALUES (?, 'TRANSFER_IN', ?, ?, ?)",
+                                   (dest_asset_id, shares, price, currency))
+                
                 conn.commit()
                 conn.close()
                 
@@ -412,10 +539,100 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": str(e)}).encode())
 
+    def do_PUT(self):
+        parsed_url = urllib.parse.urlparse(self.path)
+        if parsed_url.path == '/api/transaction':
+            query = urllib.parse.parse_qs(parsed_url.query)
+            tx_id = query.get('id', [None])[0]
+            if not tx_id:
+                self.send_response(400)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": "Transaction id required"}).encode())
+                return
+            try:
+                length = int(self.headers.get('Content-Length', 0))
+                body = self.rfile.read(length)
+                data = json.loads(body)
+
+                tx_type = data.get('type')
+                shares = float(data.get('shares', 0))
+                price = float(data.get('price', 0))
+                currency = data.get('currency', 'USD')
+                tx_date = data.get('transactionDate')
+
+                if not tx_type or shares == 0 or price <= 0:
+                    raise ValueError("Missing required fields")
+
+                # Negative shares for SELL/TRANSFER_OUT
+                if tx_type in ('SELL', 'TRANSFER_OUT'):
+                    shares = -abs(shares)
+                else:
+                    shares = abs(shares)
+
+                db_path = os.path.join(DIRECTORY, 'portfolio.db')
+                conn = sqlite3.connect(db_path)
+                cursor = conn.cursor()
+                if tx_date:
+                    cursor.execute(
+                        "UPDATE transactions SET type=?, shares=?, price=?, currency=?, transaction_date=? WHERE id=?",
+                        (tx_type, shares, price, currency, tx_date, tx_id)
+                    )
+                else:
+                    cursor.execute(
+                        "UPDATE transactions SET type=?, shares=?, price=?, currency=? WHERE id=?",
+                        (tx_type, shares, price, currency, tx_id)
+                    )
+                conn.commit()
+                conn.close()
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": True}).encode())
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode())
+        else:
+            self.send_response(404)
+            self.end_headers()
+
     def do_DELETE(self):
-        parsed_url = urlparse(self.path)
-        if parsed_url.path == '/api/portfolio':
-            query = parse_qs(parsed_url.query)
+        parsed_url = urllib.parse.urlparse(self.path)
+        if parsed_url.path == '/api/transaction':
+            query = urllib.parse.parse_qs(parsed_url.query)
+            tx_id = query.get('id', [None])[0]
+            if not tx_id:
+                self.send_response(400)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": "Transaction id required"}).encode())
+                return
+            try:
+                db_path = os.path.join(DIRECTORY, 'portfolio.db')
+                conn = sqlite3.connect(db_path)
+                cursor = conn.cursor()
+                cursor.execute("DELETE FROM transactions WHERE id=?", (tx_id,))
+                conn.commit()
+                conn.close()
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": True}).encode())
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode())
+        elif parsed_url.path == '/api/portfolio':
+            query = urllib.parse.parse_qs(parsed_url.query)
             p_name = query.get('name', [None])[0]
             
             if not p_name:
@@ -438,14 +655,18 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                     raise ValueError(f"Portfolio '{p_name}' not found")
                 p_id = p_row[0]
                 
-                # Delete transactions related to assets in this portfolio
-                cursor.execute("DELETE FROM transactions WHERE asset_id IN (SELECT id FROM assets WHERE portfolio_id=?)", (p_id,))
+                # If it's a parent portfolio, we need to gather all sub-portfolios under it
+                cursor.execute("SELECT id FROM portfolios WHERE parent_id=?", (p_id,))
+                sub_ids = [row[0] for row in cursor.fetchall()]
                 
-                # Delete assets in this portfolio
-                cursor.execute("DELETE FROM assets WHERE portfolio_id=?", (p_id,))
+                # Combine parent ID and sub portfolio IDs
+                all_ids = [p_id] + sub_ids
                 
-                # Delete portfolio
-                cursor.execute("DELETE FROM portfolios WHERE id=?", (p_id,))
+                # Delete transactions related to assets in these portfolios
+                for curr_id in all_ids:
+                    cursor.execute("DELETE FROM transactions WHERE asset_id IN (SELECT id FROM assets WHERE portfolio_id=?)", (curr_id,))
+                    cursor.execute("DELETE FROM assets WHERE portfolio_id=?", (curr_id,))
+                    cursor.execute("DELETE FROM portfolios WHERE id=?", (curr_id,))
                 
                 conn.commit()
                 conn.close()

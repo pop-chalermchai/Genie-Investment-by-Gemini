@@ -61,6 +61,9 @@
         <main id="main-content">
             <!-- SECTION 1: DASHBOARD (STOCK HOLDINGS) -->
             <section id="section-dashboard" class="tab-content active-content">
+                <!-- DASHBOARD MAIN VIEW (hidden when navigating into a portfolio) -->
+                <div id="dashboard-main-view">
+
                 <!-- METRIC SUMMARY CARDS -->
                 <div class="metrics-grid">
                     <div class="metric-card glass-panel" id="card-total-value">
@@ -91,8 +94,10 @@
 
                 <!-- SUB-PORTFOLIOS OVERVIEW GRID -->
                 <div style="display: flex; justify-content: space-between; align-items: center; margin: 25px 0 15px 0;">
-                    <h3 style="color: var(--text-primary); font-size: 1.1rem; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin: 0;">Sub-Portfolios Summaries</h3>
-                    <button onclick="openAddPortfolioModal()" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 4px; border: none; cursor: pointer; background: linear-gradient(90deg, #00F0FF 0%, #0088FF 100%); color: #030712; font-weight: 700; transition: 0.2s;">+ Add Portfolio</button>
+                    <h3 style="color: var(--text-primary); font-size: 1.1rem; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin: 0;">Portfolio Summaries</h3>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="openAddPortfolioModal()" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 4px; border: none; cursor: pointer; background: linear-gradient(90deg, #00F0FF 0%, #0088FF 100%); color: #030712; font-weight: 700; transition: 0.2s;">+ Add Portfolio</button>
+                    </div>
                 </div>
                 <div class="sub-portfolios-grid" id="sub-portfolios-grid">
                     <div class="metric-card glass-panel" id="subcard-dime" style="padding: 15px; border-left: 3px solid #00F0FF; display: flex; flex-direction: column;">
@@ -125,7 +130,7 @@
                         <div class="control-bar glass-panel">
                             <div class="search-wrapper">
                                 <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                                <input type="text" id="search-input" placeholder="Search Ticker or Company..." onkeyup="filterPositions()">
+                                <input type="text" id="search-input" placeholder="" onkeyup="filterPositions()">
                             </div>
                             <div class="filter-wrapper">
                                 <label for="sector-filter" class="visually-hidden">Filter by Sector</label>
@@ -140,10 +145,6 @@
                                 <label for="portfolio-filter" class="visually-hidden">Filter by Portfolio</label>
                                 <select id="portfolio-filter" onchange="filterPositions()">
                                     <option value="ALL">All Portfolios</option>
-                                    <option value="Dime">Dime</option>
-                                    <option value="WeBull">WeBull</option>
-                                    <option value="Tax Saving Fund">Tax Saving Fund</option>
-                                    <option value="Provident Fund">Provident Fund</option>
                                 </select>
                             </div>
                             <!-- Currency Toggle Switch -->
@@ -173,6 +174,7 @@
                                         <th class="text-right" style="cursor:pointer;" onclick="sortTable('avgCost')" title="Sort by Avg Cost">Avg Cost ↕</th>
                                         <th class="text-right" style="cursor:pointer;" onclick="sortTable('marketPrice')" title="Sort by Price">Market Price ↕</th>
                                         <th class="text-right" style="cursor:pointer;" onclick="sortTable('marketValue')" title="Sort by Market Value">Market Value ↕</th>
+                                        <th class="text-right" style="cursor:pointer;" onclick="sortTable('weight')" title="Sort by Weight">Weight ↕</th>
                                         <th class="text-right" style="cursor:pointer;" onclick="sortTable('return')" title="Sort by Return">Return (P&L) ↕</th>
                                     </tr>
                                 </thead>
@@ -203,17 +205,18 @@
                                         <select id="ingest-type" class="type-buy" required onchange="toggleIngestType()">
                                             <option value="BUY">Buy</option>
                                             <option value="SELL">Sell</option>
+                                            <option value="DIVIDEND">Dividend</option>
                                         </select>
                                     </div>
                                     <div class="form-group">
                                         <label for="ingest-ticker">Ticker</label>
                                         <input type="text" id="ingest-ticker" placeholder="e.g., TSLA" required maxlength="5" onblur="autoFillCompanyName()">
                                     </div>
-                                    <div class="form-group">
+                                    <div class="form-group span-2">
                                         <label for="ingest-name">Company Name</label>
                                         <input type="text" id="ingest-name" placeholder="e.g., Tesla, Inc." required>
                                     </div>
-                                    <div class="form-group">
+                                    <div class="form-group span-2">
                                         <label for="ingest-sector">Sector</label>
                                         <select id="ingest-sector" required>
                                             <option value="Technology">Technology</option>
@@ -222,22 +225,19 @@
                                             <option value="Financial Services">Financial Services</option>
                                         </select>
                                     </div>
-                                    <div class="form-group">
+                                    <div class="form-group span-2">
                                         <label for="ingest-portfolio">Sub-Portfolio</label>
                                         <select id="ingest-portfolio" required>
-                                            <option value="Dime">Dime</option>
-                                            <option value="WeBull">WeBull</option>
-                                            <option value="Tax Saving Fund">Tax Saving Fund</option>
-                                            <option value="Provident Fund">Provident Fund</option>
+                                            <option value="" disabled selected>Select Sub-Portfolio...</option>
                                         </select>
                                     </div>
                                     <div class="form-group">
                                         <label for="ingest-shares">Shares (Qty)</label>
-                                        <input type="number" id="ingest-shares" placeholder="100" min="1" step="any" required>
+                                        <input type="number" id="ingest-shares" placeholder="0.00" min="0.00000001" step="any" required>
                                     </div>
                                     <div class="form-group">
                                         <label for="ingest-avg-cost" id="label-avg-cost">Avg Cost ($)</label>
-                                        <input type="number" id="ingest-avg-cost" placeholder="150.00" min="0.01" step="any" required>
+                                        <input type="number" id="ingest-avg-cost" placeholder="150.00" min="0.00000001" step="any" required>
                                     </div>
                                     <div class="form-group">
                                         <label for="ingest-currency">Currency</label>
@@ -254,6 +254,52 @@
                         </div>
                     </div>
                 </div>
+
+                </div> <!-- end #dashboard-main-view -->
+
+                <!-- PORTFOLIO DETAIL VIEW (shown when drilling into a parent portfolio) -->
+                <div id="portfolio-detail-view" style="display:none;">
+
+                    <!-- Header bar -->
+                    <div class="portfolio-detail-header glass-panel">
+                        <button class="btn-back" onclick="navigateBack()">← Dashboard</button>
+                        <div class="portfolio-detail-title">
+                            <span class="portfolio-detail-label">PORTFOLIO</span>
+                            <h2 id="port-detail-name" class="portfolio-detail-name">–</h2>
+                        </div>
+                        <div class="portfolio-detail-metrics">
+                            <span id="port-detail-value" class="portfolio-detail-value">$0.00</span>
+                            <span id="port-detail-pl" class="portfolio-detail-pl">+0.0%</span>
+                        </div>
+                        <button onclick="openTransferStockModal()" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.82rem; border-radius: 4px; border: 1px solid var(--border-dim); background: var(--bg-card-solid); color: var(--text-primary); font-weight: 700; cursor: pointer; transition: var(--transition); margin-left: auto;">⇄ Transfer Stock</button>
+                    </div>
+
+                    <!-- Sub-portfolio selection chips -->
+                    <div class="subport-chips-row" id="subport-chips-row">
+                        <div id="subport-chips"></div>
+                    </div>
+
+                    <!-- Filtered holdings table -->
+                    <div class="positions-container glass-panel" style="margin-top: 0;">
+                        <table class="positions-table">
+                            <thead>
+                                <tr>
+                                    <th>Ticker</th>
+                                    <th>Company Name</th>
+                                    <th>Sub-Portfolio</th>
+                                    <th class="text-right">Shares</th>
+                                    <th class="text-right">Avg Cost</th>
+                                    <th class="text-right">Market Price</th>
+                                    <th class="text-right">Market Value</th>
+                                    <th class="text-right">Return (P&amp;L)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="portfolio-table-body"></tbody>
+                        </table>
+                    </div>
+
+                </div> <!-- end #portfolio-detail-view -->
+
             </section>
 
             <!-- SECTION 2: GENIE TEAM (INTERACTIVE CARDS) -->
@@ -527,6 +573,59 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Lex Card -->
+                    <div class="team-card lex-glow" onclick="toggleCardFlip(this)">
+                        <div class="team-card-inner">
+                            <!-- FRONT -->
+                            <div class="team-card-front glass-panel">
+                                <div class="card-glow-border"></div>
+                                <div class="member-photo-container">
+                                    <img src="./assets/Lex.png" alt="Lex" class="member-photo" onerror="this.style.display='none'; this.parentElement.querySelector('.member-avatar-emoji').style.display='flex'">
+                                    <div class="member-avatar-emoji" style="display:none; width:100%; height:100%; align-items:center; justify-content:center; font-size:4rem;">🛡️</div>
+                                </div>
+                                <div class="member-front-info">
+                                    <h3 class="member-name">Lex</h3>
+                                    <span class="member-role">The Code Sentinel</span>
+                                </div>
+                                <div class="flip-hint">TAP TO REVEAL DIRECTIVE 🔄</div>
+                            </div>
+                            <!-- BACK -->
+                            <div class="team-card-back glass-panel">
+                                <div class="card-glow-border"></div>
+                                <div class="member-back-header">
+                                    <h3 class="member-name">Lex</h3>
+                                    <span class="member-role">The Code Sentinel</span>
+                                </div>
+                                <div class="member-details-scroll">
+                                    <div class="detail-block">
+                                        <span class="detail-block-title">Key Core Directive</span>
+                                        <p class="modal-quote">"Every line of code is guilty of a vulnerability until proven otherwise. Ship clean, or don't ship."</p>
+                                    </div>
+                                    <div class="detail-block">
+                                        <span class="detail-block-title">Skillset Domains</span>
+                                        <div class="member-skills" style="margin-top: 5px">
+                                            <span class="skill-tag">Security Audit</span>
+                                            <span class="skill-tag">Bug Detection</span>
+                                            <span class="skill-tag">Performance Review</span>
+                                            <span class="skill-tag">SOP Compliance</span>
+                                        </div>
+                                    </div>
+                                    <div class="detail-block">
+                                        <span class="detail-block-title">Operational Guardrails</span>
+                                        <div class="modal-guardrails" style="margin-top: 5px">
+                                            <ul>
+                                                <li>Never approve a commit containing a CRITICAL security or logic finding.</li>
+                                                <li>Classify all findings as 🔴 CRITICAL / 🟡 WARNING / 🟢 SUGGESTION with file:line references.</li>
+                                                <li>Conclude every review with a clear ✅ APPROVED or 🚫 REJECTED verdict.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flip-hint-back">TAP TO FLIP BACK 🔄</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -665,15 +764,44 @@
 
                 <!-- TRANSACTION LOG HISTORY -->
                 <div class="glass-panel" style="padding: 25px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+
+                    <!-- Row 1: Title + Search + Export -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
                         <h2 style="color: var(--text-primary); font-size: 1.1rem; font-weight: 600; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">Transaction History</h2>
-                        <div class="search-wrapper" style="width: 250px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 6px 12px; display: flex; align-items: center; gap: 8px;">
-                            <svg class="search-icon" viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: var(--text-secondary);"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                            <input type="text" id="tx-search-input" placeholder="Search Ticker..." onkeyup="filterTransactions()" style="background: none; border: none; color: #fff; outline: none; font-size: 0.85rem; width: 100%;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="display: flex; align-items: center; gap: 8px; background: var(--bg-card-solid); margin-left: 20px; border: 1px solid var(--border-dim); border-radius: 6px; padding: 6px 12px; width: 200px; flex-shrink: 0; box-sizing: border-box;">
+                                <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: var(--text-secondary); flex-shrink: 0;"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                                <input type="text" id="tx-search-input" placeholder="Search Ticker..." onkeyup="filterTransactions()" style="background: none; border: none; color: var(--text-primary); outline: none; font-size: 0.85rem; flex: 1; min-width: 0; font-family: var(--font-sans);">
+                            </div>
+                            <button onclick="exportTransactionsCSV()" class="tx-export-btn" title="Export filtered transactions as CSV">
+                                <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;flex-shrink:0;"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                                Export CSV
+                            </button>
                         </div>
                     </div>
-                    
-                    <div class="positions-container" style="border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; overflow: hidden; background: rgba(3, 7, 18, 0.2);">
+
+                    <!-- Row 2: Date presets + Type filters + Custom range -->
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
+                        <button onclick="setTxPreset('all')" id="tx-preset-all" class="tx-preset-btn active">All Time</button>
+                        <button onclick="setTxPreset('this_year')" id="tx-preset-this_year" class="tx-preset-btn">This Year</button>
+                        <button onclick="setTxPreset('last_3m')" id="tx-preset-last_3m" class="tx-preset-btn">Last 3M</button>
+                        <button onclick="setTxPreset('this_month')" id="tx-preset-this_month" class="tx-preset-btn">This Month</button>
+                        <div style="width: 1px; height: 18px; background: var(--border-dim);"></div>
+                        <button onclick="setTxTypeFilter('all')" id="tx-type-all" class="tx-type-btn active">All</button>
+                        <button onclick="setTxTypeFilter('BUY')" id="tx-type-BUY" class="tx-type-btn tx-type-buy">BUY</button>
+                        <button onclick="setTxTypeFilter('SELL')" id="tx-type-SELL" class="tx-type-btn tx-type-sell">SELL</button>
+                        <button onclick="setTxTypeFilter('TRANSFER_IN')" id="tx-type-TRANSFER_IN" class="tx-type-btn tx-type-trsf">TRSF IN</button>
+                        <button onclick="setTxTypeFilter('TRANSFER_OUT')" id="tx-type-TRANSFER_OUT" class="tx-type-btn tx-type-trsf">TRSF OUT</button>
+                        <button onclick="setTxTypeFilter('DIVIDEND')" id="tx-type-DIVIDEND" class="tx-type-btn tx-type-div">DIV</button>
+                        <div style="margin-left: auto; display: flex; align-items: center; gap: 6px;">
+                            <input type="date" id="tx-date-from" onchange="setTxPreset('custom')" class="tx-date-input" title="From date">
+                            <span style="color: var(--text-secondary); font-size: 0.85rem;">—</span>
+                            <input type="date" id="tx-date-to" onchange="setTxPreset('custom')" class="tx-date-input" title="To date">
+                        </div>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="positions-container" style="border: 1px solid var(--border-dim); border-radius: 8px; overflow-x: auto; background: var(--bg-card-solid);">
                         <table class="positions-table" id="transactions-table-el">
                             <thead>
                                 <tr>
@@ -685,13 +813,32 @@
                                     <th class="text-right">Price</th>
                                     <th>Currency</th>
                                     <th>Portfolio</th>
+                                    <th></th>
                                 </tr>
                             </thead>
-                            <tbody id="transactions-table-body">
-                                <!-- Loaded dynamically by app.js -->
-                            </tbody>
+                            <tbody id="transactions-table-body"></tbody>
                         </table>
                     </div>
+
+                    <!-- Row 3: Rows per page + Pagination -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; flex-wrap: wrap; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 0.82rem;">
+                            <span>Show</span>
+                            <select id="tx-rows-per-page" onchange="setTxRowsPerPage(this.value)" style="background: var(--bg-card-solid); border: 1px solid var(--border-dim); color: var(--text-primary); border-radius: 5px; padding: 4px 8px; font-size: 0.82rem; font-family: var(--font-sans); outline: none; cursor: pointer;">
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="all">All</option>
+                            </select>
+                            <span id="tx-count-label">entries</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span id="tx-page-info" style="font-size: 0.82rem; color: var(--text-secondary);"></span>
+                            <button onclick="setTxPage(txCurrentPage - 1)" id="tx-btn-prev" class="tx-page-btn">‹</button>
+                            <button onclick="setTxPage(txCurrentPage + 1)" id="tx-btn-next" class="tx-page-btn">›</button>
+                        </div>
+                    </div>
+
                 </div>
             </section>
         </main>
@@ -715,7 +862,7 @@
                     <label for="new-port-name" style="display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 0.85rem;">Portfolio Name</label>
                     <input type="text" id="new-port-name" required placeholder="e.g., Retirement Fund" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 6px; box-sizing: border-box;">
                 </div>
-                <div class="form-group" style="margin-bottom: 25px;">
+                <div class="form-group" style="margin-bottom: 15px;">
                     <label for="new-port-category" style="display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 0.85rem;">Category</label>
                     <select id="new-port-category" required style="width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 6px; box-sizing: border-box; appearance: none;">
                         <option value="Stocks">Stocks</option>
@@ -724,6 +871,12 @@
                         <option value="Provident Fund">Provident Fund</option>
                         <option value="Mutual Fund">Mutual Fund</option>
                         <option value="Gold">Gold</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 25px;">
+                    <label for="new-port-parent" style="display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 0.85rem;">Parent Portfolio (Optional)</label>
+                    <select id="new-port-parent" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 6px; box-sizing: border-box; appearance: none;">
+                        <option value="">None (Create as Parent Portfolio)</option>
                     </select>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: 700; border-radius: 6px; border: none; cursor: pointer; background: linear-gradient(90deg, #00F0FF 0%, #0088FF 100%); color: #030712;">Create Portfolio</button>
@@ -788,8 +941,97 @@
         </div>
     </div>
 
+    <!-- TRANSFER STOCK MODAL -->
+    <div id="transfer-stock-modal" class="modal-overlay">
+        <div class="modal-content glass-panel" style="max-width: 450px; padding: 30px;">
+            <button class="modal-close" onclick="closeTransferStockModal()">×</button>
+            <h2 class="card-title" style="margin-bottom: 20px;">Transfer Stock</h2>
+            <form id="transfer-stock-form" onsubmit="handleTransferStock(event)">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label for="transfer-ticker" style="display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 0.85rem;">Ticker Symbol</label>
+                    <select id="transfer-ticker" required onchange="onTransferTickerChange()" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 6px; box-sizing: border-box; appearance: none;">
+                        <option value="" disabled selected>Select Ticker...</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label for="transfer-source" style="display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 0.85rem;">Source Sub-Portfolio (From)</label>
+                    <select id="transfer-source" required onchange="onTransferSourceChange()" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 6px; box-sizing: border-box; appearance: none;">
+                        <option value="" disabled selected>Select Source...</option>
+                    </select>
+                    <span id="transfer-source-available" style="font-size: 0.78rem; color: var(--color-positive); margin-top: 5px; display: block; font-weight: 600;"></span>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label for="transfer-dest" style="display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 0.85rem;">Destination Sub-Portfolio (To)</label>
+                    <select id="transfer-dest" required style="width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 6px; box-sizing: border-box; appearance: none;">
+                        <option value="" disabled selected>Select Destination...</option>
+                    </select>
+                </div>
+
+                <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <div class="form-group">
+                        <label for="transfer-shares" style="display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 0.85rem;">Shares to Transfer</label>
+                        <input type="number" id="transfer-shares" placeholder="0.00" min="0.00000001" step="any" required style="width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 6px; box-sizing: border-box;">
+                    </div>
+                    <div class="form-group">
+                        <label for="transfer-price" style="display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 0.85rem;">Cost Basis ($/Unit)</label>
+                        <input type="number" id="transfer-price" placeholder="0.00" min="0.00" step="any" required style="width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 6px; box-sizing: border-box;">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: 700; border-radius: 6px; border: none; cursor: pointer; background: linear-gradient(90deg, #00F0FF 0%, #0088FF 100%); color: #030712;">Execute Transfer</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- EDIT TRANSACTION MODAL -->
+    <div id="edit-transaction-modal" class="modal-overlay">
+        <div class="modal-content glass-panel" style="max-width: 460px; padding: 30px;">
+            <button class="modal-close" onclick="closeEditTransactionModal()">×</button>
+            <h3 style="color: var(--text-primary); font-size: 1.1rem; font-weight: 700; margin: 0 0 6px 0;">Edit Transaction</h3>
+            <div id="edit-tx-meta" style="color: var(--text-secondary); font-size: 0.82rem; margin-bottom: 20px; font-family: var(--font-mono);"></div>
+            <form id="edit-transaction-form" onsubmit="saveEditTransaction(event)">
+                <input type="hidden" id="edit-tx-id">
+                <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 14px;">
+                    <div class="form-group">
+                        <label>Type</label>
+                        <select id="edit-tx-type" required>
+                            <option value="BUY">BUY</option>
+                            <option value="SELL">SELL</option>
+                            <option value="TRANSFER_IN">TRANSFER IN</option>
+                            <option value="TRANSFER_OUT">TRANSFER OUT</option>
+                            <option value="DIVIDEND">DIVIDEND</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Currency</label>
+                        <select id="edit-tx-currency" required>
+                            <option value="USD">USD</option>
+                            <option value="THB">THB</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Shares</label>
+                        <input type="number" id="edit-tx-shares" step="any" min="0" required placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Price per Share</label>
+                        <input type="number" id="edit-tx-price" step="any" min="0" required placeholder="0.00">
+                    </div>
+                    <div class="form-group span-2">
+                        <label>Date</label>
+                        <input type="date" id="edit-tx-date" required>
+                    </div>
+                </div>
+                <div id="edit-tx-error" style="color: #EF4444; font-size: 0.82rem; margin-top: 10px; display: none;"></div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: 700; border-radius: 6px; border: none; cursor: pointer; background: linear-gradient(90deg, #00F0FF 0%, #0088FF 100%); color: #030712; margin-top: 18px;">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
     <script src="xlsx.full.min.js"></script>
     <script src="marked.min.js"></script>
-    <script src="app.js?v=9"></script>
+    <script src="app.js?v=11"></script>
 </body>
 </html>

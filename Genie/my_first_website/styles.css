@@ -556,18 +556,19 @@ header::before {
 .form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: 10px;
     margin-bottom: 16px;
-}
-
-.form-grid .form-group:nth-child(2) {
-    grid-column: span 2;
 }
 
 .form-group {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    min-width: 0;
+}
+
+.form-group.span-2 {
+    grid-column: span 2;
 }
 
 .form-group label {
@@ -588,6 +589,9 @@ header::before {
     font-size: 0.88rem;
     outline: none;
     transition: var(--transition);
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
 }
 
 .form-group input:focus,
@@ -794,12 +798,14 @@ header::before {
 .serene-glow .card-glow-border { border-color: rgba(139, 92, 246, 0.15); }
 .mateo-glow .card-glow-border { border-color: rgba(236, 72, 153, 0.15); }
 .christian-glow .card-glow-border { border-color: rgba(16, 185, 129, 0.15); }
+.lex-glow .card-glow-border { border-color: rgba(203, 75, 22, 0.15); }
 
 .genie-glow:hover .card-glow-border, .genie-glow.flipped .card-glow-border { border-color: rgba(38, 139, 210, 0.5); box-shadow: 0 0 15px rgba(38, 139, 210, 0.05); }
 .valerie-glow:hover .card-glow-border, .valerie-glow.flipped .card-glow-border { border-color: rgba(234, 179, 8, 0.5); box-shadow: 0 0 15px rgba(234, 179, 8, 0.05); }
 .serene-glow:hover .card-glow-border, .serene-glow.flipped .card-glow-border { border-color: rgba(139, 92, 246, 0.5); box-shadow: 0 0 15px rgba(139, 92, 246, 0.05); }
 .mateo-glow:hover .card-glow-border, .mateo-glow.flipped .card-glow-border { border-color: rgba(236, 72, 153, 0.5); box-shadow: 0 0 15px rgba(236, 72, 153, 0.05); }
 .christian-glow:hover .card-glow-border, .christian-glow.flipped .card-glow-border { border-color: rgba(16, 185, 129, 0.5); box-shadow: 0 0 15px rgba(16, 185, 129, 0.05); }
+.lex-glow:hover .card-glow-border, .lex-glow.flipped .card-glow-border { border-color: rgba(203, 75, 22, 0.5); box-shadow: 0 0 15px rgba(203, 75, 22, 0.05); }
 
 .member-name {
     font-size: 1.15rem;
@@ -1369,14 +1375,28 @@ footer {
     }
     header {
         flex-direction: column;
-        gap: 15px;
+        gap: 12px;
         align-items: stretch;
     }
     .header-left {
         justify-content: space-between;
     }
+    /* Nav tabs: icon-only grid at ≤900px */
     .navigation-tabs {
-        justify-content: space-between;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+    }
+    .nav-tab {
+        padding: 10px 6px;
+        justify-content: center;
+        font-size: 0;       /* collapse text label */
+        gap: 0;
+        border-radius: 8px;
+    }
+    .nav-tab .tab-icon {
+        width: 22px;
+        height: 22px;
     }
 }
 
@@ -1406,12 +1426,236 @@ footer {
     }
 }
 
+/* ==========================================================================
+   MOBILE RESPONSIVE — ≤600px
+   ========================================================================== */
+@media (max-width: 600px) {
+    /* Container padding */
+    .dashboard-container {
+        padding: 16px 12px;
+        gap: 16px;
+    }
+
+    /* Header: stack logo on top, nav below */
+    header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        padding: 14px 16px;
+    }
+
+    .header-left {
+        gap: 12px;
+    }
+
+    /* Hide non-essential header info to save space */
+    .header-divider,
+    .portfolio-meta {
+        display: none;
+    }
+
+    .logo-emoji {
+        font-size: 1.7rem;
+    }
+
+    .logo-title {
+        font-size: 1.2rem;
+    }
+
+    /* Metrics: single column */
+    .metrics-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .metric-card {
+        padding: 16px;
+    }
+
+    /* Glass panel padding */
+    .glass-panel {
+        border-radius: 6px;
+    }
+
+    /* Portfolio parent cards: 1 column */
+    .sub-portfolios-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    /* Portfolio detail page */
+    .portfolio-detail-metrics {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    #subport-chips {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    /* Allow inner scroll containers to work (body default was blocking) */
+    body {
+        overflow-x: auto;
+    }
+
+    /* Prevent dashboard itself from being wider than viewport */
+    .dashboard-container {
+        max-width: 100vw;
+        box-sizing: border-box;
+    }
+
+    /* ── Tables: force horizontal scroll ── */
+    .positions-container {
+        overflow-x: auto !important;   /* !important beats any inline overflow:hidden */
+        -webkit-overflow-scrolling: touch;
+        padding: 0;
+    }
+
+    .positions-table {
+        min-width: 680px;   /* holdings table — forces overflow in 375px container */
+    }
+
+    #transactions-table-el {
+        min-width: 860px;   /* transactions table (more columns incl. Actions) */
+    }
+
+    /* ── Control bar: wrap into rows ── */
+    .control-bar {
+        flex-wrap: wrap;
+        padding: 12px;
+        gap: 8px;
+        align-items: center;
+    }
+
+    /* Row 1: search takes full width */
+    .search-wrapper {
+        flex: 1 1 100%;
+        order: -1;
+    }
+
+    /* Row 2: two selects split 50/50 */
+    .filter-wrapper {
+        flex: 1 1 calc(50% - 4px);
+        min-width: 0;
+    }
+
+    .filter-wrapper select {
+        width: 100%;
+        font-size: 0.78rem;
+        padding: 7px 8px;
+        box-sizing: border-box;
+    }
+
+    /* Row 3: currency + theme + refresh – compact */
+    .currency-switch {
+        margin-left: 0;   /* remove auto so it doesn't push refresh off-screen */
+    }
+
+    .currency-switch,
+    .theme-switch {
+        gap: 1px;
+    }
+
+    .cur-btn {
+        padding: 5px 8px;
+        font-size: 0.72rem;
+    }
+
+    /* Hide "Refresh Prices" label – keep 🔄 icon only */
+    #btn-refresh-text {
+        display: none;
+    }
+
+    #btn-refresh-prices {
+        margin-left: 0 !important;
+        padding: 7px 12px !important;
+    }
+
+    /* ── Workspace layout: sidebar collapses below content ── */
+    .workspace-layout {
+        grid-template-columns: 1fr;
+    }
+
+    /* ── Quick ingest form ── */
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-group.span-2 {
+        grid-column: span 1;
+    }
+
+    .ingest-card {
+        padding: 14px;
+    }
+
+    /* ── Transaction page ── */
+    .tx-preset-btn,
+    .tx-type-btn {
+        padding: 4px 8px;
+        font-size: 0.72rem;
+    }
+
+    .tx-export-btn {
+        padding: 5px 8px;
+        font-size: 0.75rem;
+    }
+
+    #tx-page-info {
+        display: none;
+    }
+
+    /* ── Footer ── */
+    #main-footer {
+        flex-direction: column;
+        gap: 6px;
+        text-align: center;
+    }
+}
+
+/* ==========================================================================
+   MOBILE RESPONSIVE — ≤400px (very small screens)
+   ========================================================================== */
+@media (max-width: 400px) {
+    .dashboard-container {
+        padding: 12px 8px;
+    }
+
+    header {
+        padding: 12px;
+    }
+
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .sub-portfolios-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .portfolio-detail-metrics {
+        grid-template-columns: 1fr;
+    }
+
+    /* Nav tabs: 2×2 grid on very narrow screens */
+    .navigation-tabs {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .tx-export-btn span {
+        display: none; /* hide "Export CSV" text, keep icon */
+    }
+}
+
 /* Portfolio Badges */
 .portfolio-badge {
     padding: 3px 8px;
     border-radius: 4px;
     font-size: 0.72rem;
     font-weight: 600;
+    white-space: nowrap;
+    display: inline-block;
 }
 .badge-dime {
     background: rgba(139, 92, 246, 0.12);
@@ -1535,3 +1779,273 @@ select.type-sell {
     background: rgba(38, 139, 210, 0.05) !important;
     box-shadow: 0 0 15px rgba(38, 139, 210, 0.2);
 }
+
+/* ==========================================================================
+   PARENT & SUB-PORTFOLIO CUSTOM STYLES
+   ========================================================================== */
+.parent-portfolio-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.parent-portfolio-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* =============================================
+   PORTFOLIO DETAIL PAGE
+   ============================================= */
+.portfolio-detail-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 14px 20px;
+    margin-bottom: 14px;
+    border-radius: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-back {
+    background: var(--bg-card-solid);
+    border: 1px solid var(--border-dim);
+    color: var(--text-secondary);
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+    font-family: var(--font-sans);
+}
+.btn-back:hover {
+    color: var(--text-primary);
+    border-color: var(--accent-neon);
+}
+
+.portfolio-detail-title {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.portfolio-detail-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+.portfolio-detail-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-emphasis);
+    margin: 0;
+}
+
+.portfolio-detail-metrics {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+.portfolio-detail-value {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+}
+.portfolio-detail-pl {
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+/* Sub-portfolio chips row */
+.subport-chips-row {
+    margin-bottom: 14px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+#subport-chips {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+    min-width: max-content;
+}
+
+.subport-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+    padding: 10px 16px;
+    background: var(--bg-card-solid);
+    border: 1px solid var(--border-dim);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: var(--font-sans);
+    min-width: 110px;
+}
+.subport-chip:hover {
+    border-color: var(--accent-neon);
+    background: rgba(38, 139, 210, 0.06);
+}
+.subport-chip.active {
+    border-color: var(--accent-neon);
+    background: rgba(38, 139, 210, 0.12);
+    box-shadow: 0 0 10px rgba(38, 139, 210, 0.1);
+}
+.chip-name {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+.chip-value {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--text-emphasis);
+    font-family: var(--font-mono);
+}
+.chip-pl {
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+/* Badges for Parent Portfolios */
+.badge-us-stock {
+    background: rgba(202, 138, 4, 0.12) !important;
+    color: #CA8A04 !important;
+    border: 1px solid rgba(202, 138, 4, 0.3) !important;
+}
+
+.badge-tax-saving-fund {
+    background: rgba(139, 92, 246, 0.12) !important;
+    color: #8B5CF6 !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+}
+
+.badge-provident-fund {
+    background: rgba(16, 185, 129, 0.12) !important;
+    color: #10B981 !important;
+    border: 1px solid rgba(16, 185, 129, 0.3) !important;
+}
+
+/* =============================================
+   TRANSACTION FILTER BAR & PAGINATION
+   ============================================= */
+.tx-preset-btn {
+    padding: 5px 12px;
+    border-radius: 5px;
+    border: 1px solid var(--border-dim);
+    background: var(--bg-card-solid);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    transition: var(--transition);
+    white-space: nowrap;
+}
+.tx-preset-btn:hover {
+    border-color: var(--accent-neon);
+    color: var(--text-primary);
+}
+.tx-preset-btn.active {
+    border-color: var(--accent-neon);
+    background: rgba(38, 139, 210, 0.1);
+    color: var(--accent-neon);
+}
+
+.tx-date-input {
+    background: var(--bg-card-solid);
+    border: 1px solid var(--border-dim);
+    color: var(--text-primary);
+    border-radius: 5px;
+    padding: 5px 8px;
+    font-size: 0.8rem;
+    font-family: var(--font-sans);
+    outline: none;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.tx-date-input:focus {
+    border-color: var(--accent-neon);
+}
+
+.tx-page-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 5px;
+    border: 1px solid var(--border-dim);
+    background: var(--bg-card-solid);
+    color: var(--text-primary);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-sans);
+}
+.tx-page-btn:hover:not(:disabled) {
+    border-color: var(--accent-neon);
+    color: var(--accent-neon);
+}
+.tx-page-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+/* Type filter buttons */
+.tx-type-btn {
+    background: transparent;
+    border: 1px solid var(--border-dim);
+    color: var(--text-secondary);
+    border-radius: 5px;
+    padding: 4px 10px;
+    font-size: 0.78rem;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.tx-type-btn:hover { border-color: var(--accent-neon); color: var(--accent-neon); }
+.tx-type-btn.active { background: var(--accent-neon); border-color: var(--accent-neon); color: #030712; }
+.tx-type-btn.tx-type-buy.active  { background: #10B981; border-color: #10B981; color: #fff; }
+.tx-type-btn.tx-type-sell.active { background: #EF4444; border-color: #EF4444; color: #fff; }
+.tx-type-btn.tx-type-trsf.active { background: #3B82F6; border-color: #3B82F6; color: #fff; }
+.tx-type-btn.tx-type-div.active  { background: #A855F7; border-color: #A855F7; color: #fff; }
+
+/* Export CSV button */
+.tx-export-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: 1px solid var(--border-dim);
+    color: var(--text-secondary);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.82rem;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+.tx-export-btn:hover { border-color: var(--accent-neon); color: var(--accent-neon); }
+
+/* Row action buttons (edit / delete) */
+.tx-action-btn {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-secondary);
+    border-radius: 4px;
+    padding: 4px 5px;
+    cursor: pointer;
+    transition: all 0.15s;
+    line-height: 0;
+}
+.tx-action-btn:hover { border-color: var(--border-dim); color: var(--accent-neon); background: var(--bg-card-solid); }
+.tx-action-btn.tx-action-delete:hover { color: #EF4444; border-color: rgba(239,68,68,0.3); }
