@@ -75,7 +75,8 @@ def get_transactions():
         query = '''
             SELECT 
                 t.id, t.type, t.shares, t.price, t.currency, t.transaction_date as "transactionDate",
-                a.ticker, a.company_name as "companyName", p.name as portfolio
+                a.ticker, a.company_name as "companyName", p.name as portfolio, p.parent_id as "parentId",
+                (SELECT name FROM portfolios WHERE id = p.parent_id) as "parentPortfolio"
             FROM transactions t
             JOIN assets a ON t.asset_id = a.id
             JOIN portfolios p ON a.portfolio_id = p.id
@@ -133,17 +134,18 @@ def get_holdings():
     try:
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
-        # Cleaned up GROUP BY to satisfy Postgres strict requirements
         query = '''
             SELECT 
-                a.ticker, a.company_name as "companyName", a.sector, 
-                p.name as portfolio, 
+                a.ticker, a.company_name as "companyName", a.sector, a.domain,
+                p.name as portfolio, p.id as "portfolioId", p.parent_id as "parentId",
+                (SELECT name FROM portfolios WHERE id = p.parent_id) as "parentPortfolio",
                 t.currency, SUM(t.shares) as shares, 
-                SUM(CASE WHEN t.type = 'BUY' THEN t.shares * t.price ELSE 0 END) / NULLIF(SUM(CASE WHEN t.type = 'BUY' THEN t.shares ELSE 0 END), 0) as "avgCost"
+                SUM(CASE WHEN t.type IN ('BUY', 'TRANSFER_IN') THEN t.shares * t.price ELSE 0 END) / 
+                NULLIF(SUM(CASE WHEN t.type IN ('BUY', 'TRANSFER_IN') THEN t.shares ELSE 0 END), 0) as "avgCost"
             FROM assets a
             JOIN portfolios p ON a.portfolio_id = p.id
             JOIN transactions t ON t.asset_id = a.id
-            GROUP BY a.ticker, a.company_name, a.sector, p.name, t.currency
+            GROUP BY a.id, p.id, t.currency
             HAVING SUM(t.shares) > 0
         '''
         execute_sql(cursor, is_postgres, query)
@@ -512,6 +514,156 @@ def delete_research_report():
         query = "DELETE FROM research_reports WHERE report_key=?"
         execute_sql(cursor, is_postgres, query, (report_key,))
         
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/portfolios', methods=['GET'])
+def get_portfolios():
+    try:
+        conn, is_postgres = get_db_connection()
+        cursor = conn.cursor()
+        query = """
+            SELECT 
+                p.id, p.name, p.category_id as "categoryId", c.name as category, p.parent_id as "parentId",
+                (SELECT name FROM portfolios WHERE id = p.parent_id) as "parentName"
+            FROM portfolios p
+            LEFT JOIN categories c ON p.category_id = c.id
+        """
+        execute_sql(cursor, is_postgres, query)
+        ports = fetch_all_as_dict(cursor, is_postgres)
+        conn.close()
+        return jsonify(ports)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/transfer', methods=['POST'])
+def transfer_stock():
+    try:
+        data = request.get_json(force=True)
+        source_portfolio_id = data.get('sourcePortfolioId')
+        dest_portfolio_id = data.get('destPortfolioId')
+        ticker = data.get('ticker', '').upper().strip()
+        shares = float(data.get('shares', 0))
+        price = float(data.get('price', 0))
+        date = data.get('date')
+        
+        if not all([source_portfolio_id, dest_portfolio_id, ticker, shares > 0, price >= 0]):
+            raise ValueError("Missing required fields or invalid amounts")
+            
+        if int(source_portfolio_id) == int(dest_portfolio_id):
+            raise ValueError("Source and destination portfolios must be different")
+            
+        conn, is_postgres = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Check source and destination portfolios
+        execute_sql(cursor, is_postgres, "SELECT id FROM portfolios WHERE id=?", (source_portfolio_id,))
+        if not fetch_all_as_dict(cursor, is_postgres):
+            raise ValueError(f"Source portfolio ID {source_portfolio_id} does not exist")
+            
+        execute_sql(cursor, is_postgres, "SELECT id FROM portfolios WHERE id=?", (dest_portfolio_id,))
+        if not fetch_all_as_dict(cursor, is_postgres):
+            raise ValueError(f"Destination portfolio ID {dest_portfolio_id} does not exist")
+            
+        # Check if asset exists in source
+        execute_sql(cursor, is_postgres, "SELECT id, company_name, sector FROM assets WHERE ticker=? AND portfolio_id=?", (ticker, source_portfolio_id))
+        src_rows = fetch_all_as_dict(cursor, is_postgres)
+        if not src_rows:
+            raise ValueError(f"Ticker {ticker} not found in source portfolio")
+        src_asset_id = src_rows[0]['id']
+        company_name = src_rows[0]['company_name']
+        sector = src_rows[0]['sector']
+        
+        # Calculate available shares
+        execute_sql(cursor, is_postgres, "SELECT SUM(shares) as total FROM transactions WHERE asset_id=?", (src_asset_id,))
+        avail_row = fetch_all_as_dict(cursor, is_postgres)
+        avail_shares = float(avail_row[0]['total'] or 0) if avail_row else 0
+        
+        if avail_shares < shares - 1e-8:
+            raise ValueError(f"Insufficient shares of {ticker} in source portfolio. Available: {avail_shares}, requested: {shares}")
+            
+        # Get or create dest asset
+        execute_sql(cursor, is_postgres, "SELECT id FROM assets WHERE ticker=? AND portfolio_id=?", (ticker, dest_portfolio_id))
+        dest_rows = fetch_all_as_dict(cursor, is_postgres)
+        if dest_rows:
+            dest_asset_id = dest_rows[0]['id']
+        else:
+            execute_sql(cursor, is_postgres, "INSERT INTO assets (ticker, company_name, sector, portfolio_id) VALUES (?, ?, ?, ?)", (ticker, company_name, sector, dest_portfolio_id))
+            if is_postgres:
+                execute_sql(cursor, is_postgres, "SELECT MAX(id) as id FROM assets")
+                dest_asset_id = fetch_all_as_dict(cursor, is_postgres)[0]['id']
+            else:
+                dest_asset_id = cursor.lastrowid
+                
+        # Get currency
+        execute_sql(cursor, is_postgres, "SELECT currency FROM transactions WHERE asset_id=? LIMIT 1", (src_asset_id,))
+        curr_row = fetch_all_as_dict(cursor, is_postgres)
+        currency = curr_row[0]['currency'] if curr_row else 'USD'
+        
+        # Insert transactions
+        if date:
+            execute_sql(cursor, is_postgres, "INSERT INTO transactions (asset_id, type, shares, price, currency, transaction_date) VALUES (?, 'TRANSFER_OUT', ?, ?, ?, ?)", (src_asset_id, -shares, price, currency, date))
+            execute_sql(cursor, is_postgres, "INSERT INTO transactions (asset_id, type, shares, price, currency, transaction_date) VALUES (?, 'TRANSFER_IN', ?, ?, ?, ?)", (dest_asset_id, shares, price, currency, date))
+        else:
+            execute_sql(cursor, is_postgres, "INSERT INTO transactions (asset_id, type, shares, price, currency) VALUES (?, 'TRANSFER_OUT', ?, ?, ?)", (src_asset_id, -shares, price, currency))
+            execute_sql(cursor, is_postgres, "INSERT INTO transactions (asset_id, type, shares, price, currency) VALUES (?, 'TRANSFER_IN', ?, ?, ?)", (dest_asset_id, shares, price, currency))
+            
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/transaction', methods=['PUT'])
+def edit_transaction():
+    tx_id = request.args.get('id')
+    if not tx_id:
+        return jsonify({"error": "Transaction id required"}), 400
+        
+    try:
+        data = request.get_json(force=True)
+        tx_type = data.get('type')
+        shares = float(data.get('shares', 0))
+        price = float(data.get('price', 0))
+        currency = data.get('currency', 'USD')
+        tx_date = data.get('transactionDate')
+        
+        if not tx_type or shares == 0 or price <= 0:
+            raise ValueError("Missing required fields")
+            
+        if tx_type in ('SELL', 'TRANSFER_OUT'):
+            shares = -abs(shares)
+        else:
+            shares = abs(shares)
+            
+        conn, is_postgres = get_db_connection()
+        cursor = conn.cursor()
+        
+        if tx_date:
+            execute_sql(cursor, is_postgres, "UPDATE transactions SET type=?, shares=?, price=?, currency=?, transaction_date=? WHERE id=?", (tx_type, shares, price, currency, tx_date, tx_id))
+        else:
+            execute_sql(cursor, is_postgres, "UPDATE transactions SET type=?, shares=?, price=?, currency=? WHERE id=?", (tx_type, shares, price, currency, tx_id))
+            
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/transaction', methods=['DELETE'])
+def delete_transaction():
+    tx_id = request.args.get('id')
+    if not tx_id:
+        return jsonify({"error": "Transaction id required"}), 400
+        
+    try:
+        conn, is_postgres = get_db_connection()
+        cursor = conn.cursor()
+        execute_sql(cursor, is_postgres, "DELETE FROM transactions WHERE id=?", (tx_id,))
         conn.commit()
         conn.close()
         return jsonify({"success": True})
