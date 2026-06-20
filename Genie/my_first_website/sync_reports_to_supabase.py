@@ -56,8 +56,8 @@ try:
     # 4. Upsert all reports into Supabase
     query = """
         INSERT INTO research_reports (
-            report_key, ticker, company_name, subtitle, prepared_by, audited_by, rating, is_positive, en_overview, th_overview, en_dcf, th_dcf, sector
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            report_key, ticker, company_name, subtitle, prepared_by, audited_by, rating, is_positive, price_target, analysis_price, en_overview, th_overview, en_dcf, th_dcf, sector
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         ON CONFLICT (report_key) DO UPDATE SET
             ticker = EXCLUDED.ticker,
             company_name = EXCLUDED.company_name,
@@ -66,6 +66,8 @@ try:
             audited_by = EXCLUDED.audited_by,
             rating = EXCLUDED.rating,
             is_positive = EXCLUDED.is_positive,
+            price_target = EXCLUDED.price_target,
+            analysis_price = EXCLUDED.analysis_price,
             en_overview = EXCLUDED.en_overview,
             th_overview = EXCLUDED.th_overview,
             en_dcf = EXCLUDED.en_dcf,
@@ -77,6 +79,7 @@ try:
         cursor_pg.execute(query, (
             r['report_key'], r['ticker'], r['company_name'], r['subtitle'],
             r['prepared_by'], r['audited_by'], r['rating'], bool(r['is_positive']),
+            r['price_target'], r['analysis_price'],
             r['en_overview'], r['th_overview'], r['en_dcf'], r['th_dcf'], r['sector']
         ))
         print(f" - Upserted report: {r['report_key']}")
