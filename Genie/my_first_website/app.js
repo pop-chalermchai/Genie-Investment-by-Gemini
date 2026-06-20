@@ -498,8 +498,12 @@ function updateDashboard() {
         row.style.cursor = "pointer";
         row.title = "Click to view detailed chart & stats";
         row.onclick = () => openStockDetail(pos.ticker);
+        const logoHtml = pos.domain
+            ? `<img src="https://icon.horse/icon/${pos.domain}" width="24" height="24" loading="lazy" style="border-radius:5px;object-fit:contain;display:block;margin:0 auto 4px;" onerror="this.style.display='none'">`
+            : '';
+
         row.innerHTML = `
-            <td style="text-align:center;"><span class="ticker-badge">${pos.ticker}</span>${researchLink}</td>
+            <td style="text-align:center;">${logoHtml}<span style="font-family:var(--font-mono);font-weight:700;font-size:0.82rem;color:var(--accent-neon);letter-spacing:0.5px;">${pos.ticker}</span>${researchLink}</td>
             <td><strong>${pos.companyName}</strong><br><span style="font-size: 0.72rem; color: var(--text-secondary);">${pos.sector}</span></td>
             <td><span class="portfolio-badge badge-${badgeName}">${subName}</span></td>
             <td class="text-right table-shares">${formatShares(pos.shares)}</td>
@@ -919,6 +923,9 @@ function renderReportList() {
             const ptLine = report.priceTarget
                 ? `<span style="font-size:0.68rem;color:var(--text-secondary);font-family:var(--font-mono);">PT: $${parseFloat(report.priceTarget).toFixed(2)}</span>`
                 : '';
+            const rowEl = document.createElement("div");
+            rowEl.style.cssText = "display:flex;align-items:stretch;gap:4px;";
+
             btn.innerHTML = `
                 <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
                     <span style="font-size:0.68rem;font-weight:700;padding:1px 5px;border-radius:3px;background:${recBg};color:${recColor};white-space:nowrap;">${recLabel}</span>
@@ -927,7 +934,24 @@ function renderReportList() {
                 </div>
                 <span class="report-name" style="font-size:0.78rem;">${report.companyName}</span>
             `;
-            buttonsWrapper.appendChild(btn);
+            btn.style.flex = "1";
+
+            const editBtn = document.createElement("button");
+            editBtn.title = "Edit report";
+            editBtn.innerHTML = "✏️";
+            editBtn.onclick = (e) => { e.stopPropagation(); openEditReportModal(report.key); };
+            editBtn.style.cssText = "padding:0 8px;border:1px solid var(--border-dim);background:none;border-radius:5px;cursor:pointer;font-size:0.8rem;color:var(--text-secondary);flex-shrink:0;";
+
+            const delBtn = document.createElement("button");
+            delBtn.title = "Delete report";
+            delBtn.innerHTML = "🗑";
+            delBtn.onclick = (e) => { e.stopPropagation(); deleteReport(report.key); };
+            delBtn.style.cssText = "padding:0 8px;border:1px solid var(--border-dim);background:none;border-radius:5px;cursor:pointer;font-size:0.8rem;color:var(--color-negative);flex-shrink:0;";
+
+            rowEl.appendChild(btn);
+            rowEl.appendChild(editBtn);
+            rowEl.appendChild(delBtn);
+            buttonsWrapper.appendChild(rowEl);
         });
         
         container.appendChild(buttonsWrapper);
@@ -936,6 +960,147 @@ function renderReportList() {
 
 function filterReports() {
     renderReportList();
+}
+
+// ── Research Report Modal ──────────────────────────────────────────
+
+async function loadResearchReports() {
+    const data = await fetch('/api/reports').then(r => r.json());
+    researchReports = data;
+    renderReportList();
+}
+
+let reportModalMode = 'add'; // 'add' | 'edit'
+let reportModalEditKey = null;
+
+function openAddReportModal() {
+    reportModalMode = 'add';
+    reportModalEditKey = null;
+    document.getElementById('report-modal-title').textContent = 'New Research Report';
+    document.getElementById('report-form').reset();
+    document.getElementById('rform-edit-key').value = '';
+    document.getElementById('rform-key').readOnly = false;
+    document.getElementById('rform-key').style.opacity = '1';
+    document.getElementById('rform-error').style.display = 'none';
+    setReportFormTab('info');
+    document.getElementById('report-modal').classList.add('active');
+}
+
+function openEditReportModal(key) {
+    const r = researchReports[key];
+    if (!r) return;
+    reportModalMode = 'edit';
+    reportModalEditKey = key;
+    document.getElementById('report-modal-title').textContent = `Edit Report — ${key}`;
+    document.getElementById('rform-edit-key').value = key;
+    document.getElementById('rform-key').value = key;
+    document.getElementById('rform-key').readOnly = true;
+    document.getElementById('rform-key').style.opacity = '0.5';
+    document.getElementById('rform-ticker').value = r.ticker || '';
+    document.getElementById('rform-company').value = r.companyName || '';
+    document.getElementById('rform-subtitle').value = r.subtitle || '';
+    document.getElementById('rform-sector').value = r.sector || '';
+    document.getElementById('rform-rating').value = r.rating || '';
+    document.getElementById('rform-prepared-by').value = r.preparedBy || '';
+    document.getElementById('rform-audited-by').value = r.auditedBy || '';
+    document.getElementById('rform-price-target').value = r.priceTarget || '';
+    document.getElementById('rform-analysis-price').value = r.analysisPrice || '';
+    document.getElementById('rform-is-positive').checked = !!r.isPositive;
+    document.getElementById('rform-en-overview').value = r.en_overview || '';
+    document.getElementById('rform-th-overview').value = r.th_overview || '';
+    document.getElementById('rform-en-dcf').value = r.en_dcf || '';
+    document.getElementById('rform-th-dcf').value = r.th_dcf || '';
+    document.getElementById('rform-error').style.display = 'none';
+    setReportFormTab('info');
+    document.getElementById('report-modal').classList.add('active');
+}
+
+function closeReportModal() {
+    document.getElementById('report-modal').classList.remove('active');
+}
+
+function setReportFormTab(tab) {
+    const panels = { info: 'rform-panel-info', content: 'rform-panel-content' };
+    const tabBtns = { info: 'rform-tab-info', content: 'rform-tab-content' };
+    Object.keys(panels).forEach(t => {
+        document.getElementById(panels[t]).style.display = t === tab ? '' : 'none';
+        const btn = document.getElementById(tabBtns[t]);
+        if (t === tab) {
+            btn.style.color = 'var(--accent-neon)';
+            btn.style.borderBottomColor = 'var(--accent-neon)';
+        } else {
+            btn.style.color = 'var(--text-secondary)';
+            btn.style.borderBottomColor = 'transparent';
+        }
+    });
+}
+
+async function saveReport(event) {
+    event.preventDefault();
+    const errEl = document.getElementById('rform-error');
+    errEl.style.display = 'none';
+
+    const payload = {
+        report_key: document.getElementById('rform-key').value.trim(),
+        ticker: document.getElementById('rform-ticker').value.trim().toUpperCase(),
+        company_name: document.getElementById('rform-company').value.trim(),
+        subtitle: document.getElementById('rform-subtitle').value.trim(),
+        sector: document.getElementById('rform-sector').value.trim() || 'Other Sectors',
+        rating: document.getElementById('rform-rating').value.trim(),
+        prepared_by: document.getElementById('rform-prepared-by').value.trim(),
+        audited_by: document.getElementById('rform-audited-by').value.trim(),
+        price_target: parseFloat(document.getElementById('rform-price-target').value) || null,
+        analysis_price: parseFloat(document.getElementById('rform-analysis-price').value) || null,
+        is_positive: document.getElementById('rform-is-positive').checked,
+        en_overview: document.getElementById('rform-en-overview').value,
+        th_overview: document.getElementById('rform-th-overview').value,
+        en_dcf: document.getElementById('rform-en-dcf').value,
+        th_dcf: document.getElementById('rform-th-dcf').value,
+    };
+
+    if (!payload.report_key || !payload.ticker || !payload.company_name) {
+        errEl.textContent = 'Report Key, Ticker, and Company Name are required.';
+        errEl.style.display = 'block';
+        return;
+    }
+
+    try {
+        let res;
+        if (reportModalMode === 'add') {
+            res = await fetch('/api/research-report', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        } else {
+            res = await fetch(`/api/research-report?key=${encodeURIComponent(reportModalEditKey)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        }
+        const data = await res.json();
+        if (!res.ok || data.error) throw new Error(data.error || 'Server error');
+        closeReportModal();
+        await loadResearchReports();
+        if (reportModalMode === 'add') {
+            selectReport(payload.report_key);
+        } else {
+            renderReport();
+        }
+    } catch (err) {
+        errEl.textContent = err.message;
+        errEl.style.display = 'block';
+    }
+}
+
+async function deleteReport(key) {
+    if (!confirm(`Delete research report "${key}"? This cannot be undone.`)) return;
+    try {
+        const res = await fetch(`/api/research-report?key=${encodeURIComponent(key)}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (!res.ok || data.error) throw new Error(data.error || 'Server error');
+        if (activeReport === key) {
+            const remaining = Object.keys(researchReports).filter(k => k !== key);
+            activeReport = remaining.length > 0 ? remaining[0] : null;
+        }
+        await loadResearchReports();
+        renderReport();
+    } catch (err) {
+        alert('Delete failed: ' + err.message);
+    }
 }
 
 function renderReport() {

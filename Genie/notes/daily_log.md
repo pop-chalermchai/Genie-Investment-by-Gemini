@@ -1,5 +1,11 @@
 # Daily Log
 
+## 2026-06-20 (session 6)
+- Implemented Task #12: Add/Edit Research Report UI
+  - **server.py**: Added POST `/api/research-report` (INSERT), PUT `/api/research-report?key=` (UPDATE), DELETE `/api/research-report?key=` endpoints.
+  - **index.html**: Added "+ New" button in research sidebar header. Added `#report-modal` — a large 2-tab modal (Info: key/ticker/company/sector/subtitle/preparedBy/auditedBy/rating/isPositive/priceTarget/analysisPrice; Content: en_overview/th_overview/en_dcf/th_dcf textareas). Bumped app.js to v=13.
+  - **app.js**: Added `loadResearchReports()` to re-fetch `/api/reports` and re-render sidebar. Added `openAddReportModal()`, `openEditReportModal(key)`, `closeReportModal()`, `setReportFormTab(tab)`, `saveReport(event)`, `deleteReport(key)`. Updated `renderReportList()` to render ✏️ Edit and 🗑 Delete icon buttons alongside each report row. After delete, auto-selects first remaining report.
+
 ## 2026-06-20 (session 5)
 - Completed tasks #8–11 from the feature roadmap:
   - **#8 Portfolio weight %**: added pre-pass to calculate totalMarketValue before rendering, new "Weight ↕" column with mini progress bar + % number per holding row, sortable.

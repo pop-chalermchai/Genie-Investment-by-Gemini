@@ -25,7 +25,7 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 # Fetch holdings joined across tables with parent portfolio info
                 query = '''
                     SELECT 
-                        a.ticker, a.company_name as companyName, a.sector, 
+                        a.ticker, a.company_name as companyName, a.sector, a.domain,
                         p.name as portfolio, p.id as portfolioId, p.parent_id as parentId,
                         (SELECT name FROM portfolios WHERE id = p.parent_id) as parentPortfolio,
                         t.currency, SUM(t.shares) as shares, 
@@ -538,6 +538,49 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": str(e)}).encode())
+        elif parsed_url.path == '/api/research-report':
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            try:
+                data = json.loads(post_data.decode('utf-8'))
+                report_key = data.get('report_key', '').strip()
+                ticker = data.get('ticker', '').strip().upper()
+                company_name = data.get('company_name', '').strip()
+                subtitle = data.get('subtitle', '')
+                prepared_by = data.get('prepared_by', '')
+                audited_by = data.get('audited_by', '')
+                rating = data.get('rating', '')
+                is_positive = 1 if data.get('is_positive') else 0
+                price_target = data.get('price_target') or None
+                analysis_price = data.get('analysis_price') or None
+                sector = data.get('sector', 'Other Sectors')
+                en_overview = data.get('en_overview', '')
+                th_overview = data.get('th_overview', '')
+                en_dcf = data.get('en_dcf', '')
+                th_dcf = data.get('th_dcf', '')
+                if not report_key or not ticker or not company_name:
+                    raise ValueError("report_key, ticker, and company_name are required")
+                db_path = os.path.join(DIRECTORY, 'portfolio.db')
+                conn = sqlite3.connect(db_path)
+                cursor = conn.cursor()
+                cursor.execute(
+                    '''INSERT INTO research_reports (report_key, ticker, company_name, subtitle, prepared_by, audited_by, rating, is_positive, price_target, analysis_price, sector, en_overview, th_overview, en_dcf, th_dcf)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                    (report_key, ticker, company_name, subtitle, prepared_by, audited_by, rating, is_positive, price_target, analysis_price, sector, en_overview, th_overview, en_dcf, th_dcf)
+                )
+                conn.commit()
+                conn.close()
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": True}).encode())
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode())
 
     def do_PUT(self):
         parsed_url = urllib.parse.urlparse(self.path)
@@ -584,6 +627,55 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                         "UPDATE transactions SET type=?, shares=?, price=?, currency=? WHERE id=?",
                         (tx_type, shares, price, currency, tx_id)
                     )
+                conn.commit()
+                conn.close()
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": True}).encode())
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode())
+        elif parsed_url.path == '/api/research-report':
+            query = urllib.parse.parse_qs(parsed_url.query)
+            report_key = query.get('key', [None])[0]
+            if not report_key:
+                self.send_response(400)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": "report_key required"}).encode())
+                return
+            try:
+                length = int(self.headers.get('Content-Length', 0))
+                body = self.rfile.read(length)
+                data = json.loads(body)
+                ticker = data.get('ticker', '').strip().upper()
+                company_name = data.get('company_name', '').strip()
+                subtitle = data.get('subtitle', '')
+                prepared_by = data.get('prepared_by', '')
+                audited_by = data.get('audited_by', '')
+                rating = data.get('rating', '')
+                is_positive = 1 if data.get('is_positive') else 0
+                price_target = data.get('price_target') or None
+                analysis_price = data.get('analysis_price') or None
+                sector = data.get('sector', 'Other Sectors')
+                en_overview = data.get('en_overview', '')
+                th_overview = data.get('th_overview', '')
+                en_dcf = data.get('en_dcf', '')
+                th_dcf = data.get('th_dcf', '')
+                db_path = os.path.join(DIRECTORY, 'portfolio.db')
+                conn = sqlite3.connect(db_path)
+                cursor = conn.cursor()
+                cursor.execute(
+                    '''UPDATE research_reports SET ticker=?, company_name=?, subtitle=?, prepared_by=?, audited_by=?, rating=?, is_positive=?, price_target=?, analysis_price=?, sector=?, en_overview=?, th_overview=?, en_dcf=?, th_dcf=?
+                       WHERE report_key=?''',
+                    (ticker, company_name, subtitle, prepared_by, audited_by, rating, is_positive, price_target, analysis_price, sector, en_overview, th_overview, en_dcf, th_dcf, report_key)
+                )
                 conn.commit()
                 conn.close()
                 self.send_response(200)
@@ -671,6 +763,34 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 conn.commit()
                 conn.close()
                 
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": True}).encode())
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode())
+        elif parsed_url.path == '/api/research-report':
+            query = urllib.parse.parse_qs(parsed_url.query)
+            report_key = query.get('key', [None])[0]
+            if not report_key:
+                self.send_response(400)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": "report_key required"}).encode())
+                return
+            try:
+                db_path = os.path.join(DIRECTORY, 'portfolio.db')
+                conn = sqlite3.connect(db_path)
+                cursor = conn.cursor()
+                cursor.execute("DELETE FROM research_reports WHERE report_key=?", (report_key,))
+                conn.commit()
+                conn.close()
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.send_header('Access-Control-Allow-Origin', '*')

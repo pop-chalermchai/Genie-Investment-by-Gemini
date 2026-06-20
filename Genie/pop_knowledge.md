@@ -46,6 +46,10 @@
   - **ความรับผิดชอบของ Mateo (Visual & Presentation Lead):** มอบหมายหน้าที่การออกแบบรูปภาพหน้าปกงานวิจัย (HBM Cover Art), การจัดทำสไลด์นำเสนอสำหรับผู้บริหาร (C-suite Slide Deck) และงานออกแบบเชิงทัศนศิลป์ด้านความสวยงามทั้งหมดให้กับ **Mateo (The Creative Alchemist)** โดยตรง
   - **การถือกำเนิดของ Christian (The Forensic Auditor):** เปิดตัวและบรรจุ **Christian (เดอะ ฟอเรนสิก ออดิเตอร์)** เข้าสู่ทีม เพื่อทำหน้าที่ตรวจสอบทาน (Audit) ข้อมูลตัวเลขงบการเงิน อัตราส่วนทางการเงิน และสูตรคำนวณประเมินมูลค่า (Reverse DCF/WACC) ทั้งหมดที่จัดทำโดย Valerie เพื่อความถูกต้อง 100% ไร้ข้อผิดพลาด ก่อนส่งให้ถึงมือคุณ Pop โดยยึดหลักความเป็นอิสระในการตรวจสอบ (Audit Independence)
 
+* **2026-06-20:**
+  - **การถือกำเนิดของ Lex (The Code Sentinel):** เปิดตัวและบรรจุ **Lex (เดอะ โค้ด เซนทิเนล)** เข้าสู่ทีม เพื่อทำหน้าที่ตรวจสอบโค้ดทั้งหมด (Code Review) ก่อนที่จะมีการ git commit ทุกครั้ง ครอบคลุมการตรวจ Security Vulnerabilities, Logic Bugs, Performance Issues และ SOP Compliance โดยออกผล ✅ APPROVED หรือ 🚫 REJECTED พร้อมอ้างอิง file:line ที่ชัดเจน
+  - **อัปเดต SOP_Web_Development.md:** เพิ่ม Phase 2 (Code Review Gate — Lex) เข้าไปในขั้นตอน ทำให้ pipeline ขยายจาก 4 ขั้นตอน เป็น **5 ขั้นตอน**
+
 * **2026-06-07:**
   - **การจัดตั้งโครงสร้างโฟลเดอร์พอร์ตย่อย:** สร้างโฟลเดอร์สำหรับจัดเก็บเอกสารและประวัติสินทรัพย์ย่อยภายใต้ [holding_position](file:///Users/popular/Desktop/Genie/holding_position) ได้แก่ [Dime](file:///Users/popular/Desktop/Genie/holding_position/Dime), [WeBull](file:///Users/popular/Desktop/Genie/holding_position/WeBull), [Tax Saving Fund](file:///Users/popular/Desktop/Genie/holding_position/Tax Saving Fund), และ [Provident Fund](file:///Users/popular/Desktop/Genie/holding_position/Provident Fund)
   - **กำหนดขั้นตอนการอัปเดตประจำเดือน:** เริ่มบังคับใช้กฎการอัปเดตข้อมูลพอร์ตรายเดือนร่วมกับคุณ Pop โดยผมจะทำการอัปเดตไฟล์โค้ดหน้าบ้านและทวนสอบราคาหุ้นจาก Yahoo Finance

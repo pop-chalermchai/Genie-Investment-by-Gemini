@@ -47,13 +47,13 @@
                     <svg class="tab-icon" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
                     Transactions
                 </button>
-                <button class="nav-tab" id="tab-team" onclick="switchTab('team')">
-                    <svg class="tab-icon" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 1.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-                    Genie Team
-                </button>
                 <button class="nav-tab" id="tab-research" onclick="switchTab('research')">
                     <svg class="tab-icon" viewBox="0 0 24 24"><path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09L12 3zm6.8 9.18L12 15.9l-6.8-3.72V10.1l6.8 3.71 6.8-3.71v2.08zM12 11.9L5.2 8.18 12 4.45l6.8 3.73L12 11.9z"/></svg>
                     Equity Research
+                </button>
+                <button class="nav-tab" id="tab-team" onclick="switchTab('team')">
+                    <svg class="tab-icon" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 1.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                    Genie Team
                 </button>
             </nav>
         </header>
@@ -634,8 +634,11 @@
                 <div class="research-layout">
                     <!-- REPORT LIST & CONTROLS -->
                     <div class="research-sidebar glass-panel">
-                        <h2 class="sidebar-title">Research Reports</h2>
-                        
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <h2 class="sidebar-title" style="margin:0;">Research Reports</h2>
+                            <button onclick="openAddReportModal()" style="padding:5px 12px;font-size:0.78rem;font-weight:700;background:linear-gradient(90deg,var(--accent-neon),#0088FF);color:#030712;border:none;border-radius:5px;cursor:pointer;letter-spacing:0.3px;">+ New</button>
+                        </div>
+
                         <!-- Search Box for Reports -->
                         <div class="report-search-box" style="padding: 0 15px 12px 15px; border-bottom: 1px solid var(--border-dim); margin-bottom: 8px;">
                             <div style="position: relative; width: 100%;">
@@ -1030,8 +1033,105 @@
         </div>
     </div>
 
+    <!-- ADD / EDIT RESEARCH REPORT MODAL -->
+    <div id="report-modal" class="modal-overlay">
+        <div class="modal-content glass-panel" style="max-width:780px;width:95%;padding:0;overflow:hidden;max-height:92vh;display:flex;flex-direction:column;">
+            <div style="padding:22px 28px 0 28px;">
+                <button class="modal-close" onclick="closeReportModal()" style="top:16px;right:20px;">×</button>
+                <h3 id="report-modal-title" style="color:var(--text-primary);font-size:1.1rem;font-weight:700;margin:0 0 16px 0;">New Research Report</h3>
+                <!-- Form tabs -->
+                <div style="display:flex;gap:0;border-bottom:1px solid var(--border-dim);margin-bottom:0;">
+                    <button id="rform-tab-info" onclick="setReportFormTab('info')" style="padding:8px 20px;font-size:0.82rem;font-weight:700;border:none;background:none;cursor:pointer;color:var(--accent-neon);border-bottom:2px solid var(--accent-neon);margin-bottom:-1px;transition:color 0.15s;">Info</button>
+                    <button id="rform-tab-content" onclick="setReportFormTab('content')" style="padding:8px 20px;font-size:0.82rem;font-weight:700;border:none;background:none;cursor:pointer;color:var(--text-secondary);border-bottom:2px solid transparent;margin-bottom:-1px;transition:color 0.15s;">Content</button>
+                </div>
+            </div>
+            <form id="report-form" onsubmit="saveReport(event)" style="overflow-y:auto;flex:1;padding:20px 28px 24px 28px;">
+                <input type="hidden" id="rform-edit-key">
+
+                <!-- TAB: Info -->
+                <div id="rform-panel-info">
+                    <div class="form-grid" style="grid-template-columns:1fr 1fr;gap:14px;">
+                        <div class="form-group">
+                            <label>Report Key <span style="color:#EF4444;">*</span></label>
+                            <input type="text" id="rform-key" placeholder="e.g. NVDA_2026" required style="font-family:var(--font-mono);font-size:0.85rem;">
+                            <small style="color:var(--text-secondary);font-size:0.72rem;">Unique ID. Cannot change after saving.</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Ticker <span style="color:#EF4444;">*</span></label>
+                            <input type="text" id="rform-ticker" placeholder="e.g. NVDA" required style="text-transform:uppercase;font-family:var(--font-mono);">
+                        </div>
+                        <div class="form-group span-2">
+                            <label>Company Name <span style="color:#EF4444;">*</span></label>
+                            <input type="text" id="rform-company" placeholder="e.g. NVIDIA Corporation" required>
+                        </div>
+                        <div class="form-group span-2">
+                            <label>Subtitle / Tagline</label>
+                            <input type="text" id="rform-subtitle" placeholder="e.g. Advanced Fundamental Dissection…">
+                        </div>
+                        <div class="form-group">
+                            <label>Sector</label>
+                            <input type="text" id="rform-sector" placeholder="e.g. Technology">
+                        </div>
+                        <div class="form-group">
+                            <label>Rating</label>
+                            <input type="text" id="rform-rating" placeholder="e.g. BUY / ACCUMULATE / AVOID">
+                        </div>
+                        <div class="form-group">
+                            <label>Prepared By</label>
+                            <input type="text" id="rform-prepared-by" placeholder="e.g. Valerie">
+                        </div>
+                        <div class="form-group">
+                            <label>Audited By</label>
+                            <input type="text" id="rform-audited-by" placeholder="e.g. Christian">
+                        </div>
+                        <div class="form-group">
+                            <label>Price Target ($)</label>
+                            <input type="number" id="rform-price-target" step="any" min="0" placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label>Analysis Price ($)</label>
+                            <input type="number" id="rform-analysis-price" step="any" min="0" placeholder="0.00">
+                        </div>
+                        <div class="form-group span-2" style="display:flex;align-items:center;gap:10px;padding-top:4px;">
+                            <input type="checkbox" id="rform-is-positive" style="width:16px;height:16px;cursor:pointer;accent-color:var(--color-positive);">
+                            <label for="rform-is-positive" style="cursor:pointer;margin:0;font-size:0.85rem;">Positive Recommendation (shows green badge)</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: Content -->
+                <div id="rform-panel-content" style="display:none;">
+                    <div style="display:flex;flex-direction:column;gap:16px;">
+                        <div class="form-group">
+                            <label>Overview (English)</label>
+                            <textarea id="rform-en-overview" rows="6" placeholder="Paste English overview markdown here…" style="font-family:var(--font-mono);font-size:0.8rem;resize:vertical;width:100%;background:var(--bg-card-solid);border:1px solid var(--border-dim);border-radius:4px;padding:8px 10px;color:var(--text-primary);"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Overview (Thai)</label>
+                            <textarea id="rform-th-overview" rows="6" placeholder="วางข้อมูล Thai overview ที่นี่…" style="font-family:var(--font-mono);font-size:0.8rem;resize:vertical;width:100%;background:var(--bg-card-solid);border:1px solid var(--border-dim);border-radius:4px;padding:8px 10px;color:var(--text-primary);"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>DCF Analysis (English)</label>
+                            <textarea id="rform-en-dcf" rows="6" placeholder="Paste English DCF markdown here…" style="font-family:var(--font-mono);font-size:0.8rem;resize:vertical;width:100%;background:var(--bg-card-solid);border:1px solid var(--border-dim);border-radius:4px;padding:8px 10px;color:var(--text-primary);"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>DCF Analysis (Thai)</label>
+                            <textarea id="rform-th-dcf" rows="6" placeholder="วางข้อมูล Thai DCF ที่นี่…" style="font-family:var(--font-mono);font-size:0.8rem;resize:vertical;width:100%;background:var(--bg-card-solid);border:1px solid var(--border-dim);border-radius:4px;padding:8px 10px;color:var(--text-primary);"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="rform-error" style="color:#EF4444;font-size:0.82rem;margin-top:10px;display:none;"></div>
+                <div style="display:flex;gap:10px;margin-top:20px;">
+                    <button type="submit" id="rform-save-btn" class="btn btn-primary" style="flex:1;padding:12px;font-weight:700;border-radius:6px;border:none;cursor:pointer;background:linear-gradient(90deg,#00F0FF 0%,#0088FF 100%);color:#030712;">Save Report</button>
+                    <button type="button" onclick="closeReportModal()" style="padding:12px 20px;font-weight:600;border-radius:6px;border:1px solid var(--border-dim);background:none;color:var(--text-secondary);cursor:pointer;">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="xlsx.full.min.js"></script>
     <script src="marked.min.js"></script>
-    <script src="app.js?v=11"></script>
+    <script src="app.js?v=13"></script>
 </body>
 </html>
