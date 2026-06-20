@@ -144,6 +144,9 @@ const teamProfiles = {
 // RESEARCH REPORTS DATABASE (ENGLISH & THAI)
 // ==========================================================================
 let researchReports = {};
+let researchFilterMode = 'all'; // 'all' | 'positive' | 'negative'
+let researchSortBy = 'sector';  // 'sector' | 'ticker' | 'upside'
+let researchViewMode = 'list';  // 'list' | 'table'
 
 // === PORTFOLIO DRILL-DOWN NAVIGATION ===
 function navigateToPortfolio(parentName) {
@@ -318,10 +321,10 @@ document.addEventListener("DOMContentLoaded", () => {
         updateDashboard();
         renderReportList();
 
-        // Auto-select first report if any
-        const reportKeys = Object.keys(researchReports);
-        if (reportKeys.length > 0 && !activeReport) {
-            activeReport = reportKeys[0];
+        // Restore last viewed report from localStorage
+        const lastReport = localStorage.getItem('genie-last-report');
+        if (lastReport && researchReports[lastReport]) {
+            activeReport = lastReport;
         }
 
         renderReport();
@@ -824,6 +827,7 @@ let collapsedSectors = {}; // Remember collapsed states client-side
 
 function selectReport(reportId) {
     activeReport = reportId;
+    localStorage.setItem('genie-last-report', reportId);
     renderReport();
     renderReportList();
 }
@@ -844,122 +848,159 @@ function setReportTab(tab) {
     renderReport();
 }
 
+function getUpsidePct(report) {
+    if (!report.priceTarget || !report.analysisPrice || report.analysisPrice === 0) return null;
+    return ((report.priceTarget - report.analysisPrice) / report.analysisPrice) * 100;
+}
+
+function getFilteredSortedReports() {
+    const query = (document.getElementById("report-search-input")?.value || '').toLowerCase().trim();
+    let reports = Object.keys(researchReports).map(key => ({ key, ...researchReports[key] }));
+    if (query) reports = reports.filter(r => r.ticker.toLowerCase().includes(query) || r.companyName.toLowerCase().includes(query));
+    if (researchFilterMode === 'positive') reports = reports.filter(r => r.isPositive);
+    if (researchFilterMode === 'negative') reports = reports.filter(r => !r.isPositive);
+    if (researchSortBy === 'ticker') {
+        reports.sort((a, b) => a.ticker.localeCompare(b.ticker));
+    } else if (researchSortBy === 'upside') {
+        reports.sort((a, b) => (getUpsidePct(b) ?? -Infinity) - (getUpsidePct(a) ?? -Infinity));
+    } else {
+        reports.sort((a, b) => (a.sector || 'Other').localeCompare(b.sector || 'Other') || a.ticker.localeCompare(b.ticker));
+    }
+    return { reports, query };
+}
+
+function makeReportRow(report) {
+    const recColor = report.isPositive ? 'var(--color-positive)' : 'var(--color-negative)';
+    const recBg    = report.isPositive ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)';
+    const recLabel = (report.rating || 'N/A').split(' ')[0].replace(/[^A-Z/]/gi, '') || 'N/A';
+    const ptLine   = report.priceTarget
+        ? `<span style="font-size:0.68rem;color:var(--text-secondary);font-family:var(--font-mono);">PT: $${parseFloat(report.priceTarget).toFixed(2)}</span>`
+        : '';
+    const btn = document.createElement("button");
+    btn.className = "report-list-item " + (activeReport === report.key ? "active" : "");
+    btn.id = "report-item-" + report.key;
+    btn.style.flex = "1";
+    btn.onclick = () => selectReport(report.key);
+    btn.innerHTML = `
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+            <span style="font-size:0.68rem;font-weight:700;padding:1px 5px;border-radius:3px;background:${recBg};color:${recColor};white-space:nowrap;">${recLabel}</span>
+            <span class="report-ticker">${report.ticker}</span>
+            ${ptLine}
+        </div>
+        <span class="report-name" style="font-size:0.78rem;">${report.companyName}</span>
+    `;
+    const actions = document.createElement("div");
+    actions.className = "report-row-actions";
+    const editBtn = document.createElement("button");
+    editBtn.title = "Edit"; editBtn.innerHTML = "✏️";
+    editBtn.onclick = (e) => { e.stopPropagation(); openEditReportModal(report.key); };
+    editBtn.style.cssText = "padding:2px 6px;border:1px solid var(--border-dim);background:var(--bg-card-solid);border-radius:4px;cursor:pointer;font-size:0.75rem;line-height:1;";
+    const delBtn = document.createElement("button");
+    delBtn.title = "Delete"; delBtn.innerHTML = "🗑";
+    delBtn.onclick = (e) => { e.stopPropagation(); deleteReport(report.key); };
+    delBtn.style.cssText = "padding:2px 6px;border:1px solid var(--border-dim);background:var(--bg-card-solid);border-radius:4px;cursor:pointer;font-size:0.75rem;line-height:1;";
+    actions.appendChild(editBtn); actions.appendChild(delBtn);
+    const rowEl = document.createElement("div");
+    rowEl.className = "report-row";
+    rowEl.appendChild(btn); rowEl.appendChild(actions);
+    return rowEl;
+}
+
 function renderReportList() {
     const container = document.getElementById("report-list-container");
     if (!container) return;
-    
-    const searchInput = document.getElementById("report-search-input");
-    const query = searchInput ? searchInput.value.toLowerCase().trim() : "";
-    
     container.innerHTML = "";
-    
-    // Group reports by sector and filter by query
-    const groups = {};
-    Object.keys(researchReports).forEach(key => {
-        const report = researchReports[key];
-        
-        if (query) {
-            const matchesTicker = report.ticker.toLowerCase().includes(query);
-            const matchesName = report.companyName.toLowerCase().includes(query);
-            if (!matchesTicker && !matchesName) {
-                return; // filter out
-            }
-        }
-        
-        const sector = report.sector || "Other Sectors";
-        if (!groups[sector]) {
-            groups[sector] = [];
-        }
-        groups[sector].push({ key, ...report });
-    });
-    
-    // Render groups
-    Object.keys(groups).forEach(sector => {
-        const reportsInSector = groups[sector];
-        if (reportsInSector.length === 0) return;
-        
-        // Auto-expand if searching, otherwise use remembered state (default expanded)
-        const isCollapsed = collapsedSectors[sector] === true && !query;
-        
-        // Sector Header Component
-        const groupHeader = document.createElement("div");
-        groupHeader.className = "report-sector-header";
-        groupHeader.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--bg-card-solid); border: 1px solid var(--border-dim); border-radius: 6px; margin-top: 10px; cursor: pointer; font-size: 0.78rem; font-weight: 700; color: var(--text-primary); user-select: none; transition: var(--transition);";
-        
-        // Hover effects
-        groupHeader.onmouseover = () => { groupHeader.style.background = "rgba(147, 161, 161, 0.15)"; };
-        groupHeader.onmouseout = () => { groupHeader.style.background = "var(--bg-card-solid)"; };
-        
-        groupHeader.onclick = () => {
-            if (query) return; // Disable toggle during active search
-            collapsedSectors[sector] = !isCollapsed;
-            renderReportList();
-        };
-        
-        groupHeader.innerHTML = `
-            <span>📁 ${sector} (${reportsInSector.length})</span>
-            <span style="font-size: 0.65rem; transition: transform 0.2s; transform: ${isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)'};">▼</span>
-        `;
-        container.appendChild(groupHeader);
-        
-        // Wrapper for buttons inside sector
-        const buttonsWrapper = document.createElement("div");
-        buttonsWrapper.className = "report-sector-wrapper";
-        buttonsWrapper.style.cssText = "display: flex; flex-direction: column; gap: 6px; margin-top: 6px; padding-left: 8px;";
-        if (isCollapsed) {
-            buttonsWrapper.style.display = "none";
-        }
-        
-        reportsInSector.forEach(report => {
-            const btn = document.createElement("button");
-            btn.className = "report-list-item " + (activeReport === report.key ? "active" : "");
-            btn.id = "report-item-" + report.key;
-            btn.style.width = "100%";
-            btn.onclick = () => selectReport(report.key);
-            
-            const recColor = report.isPositive ? 'var(--color-positive)' : 'var(--color-negative)';
-            const recBg   = report.isPositive ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)';
-            const recLabel = (report.rating || 'N/A').split(' ')[0].replace(/[^A-Z/]/gi,'') || 'N/A';
-            const ptLine = report.priceTarget
-                ? `<span style="font-size:0.68rem;color:var(--text-secondary);font-family:var(--font-mono);">PT: $${parseFloat(report.priceTarget).toFixed(2)}</span>`
-                : '';
-            const rowEl = document.createElement("div");
-            rowEl.style.cssText = "display:flex;align-items:stretch;gap:4px;";
+    const { reports, query } = getFilteredSortedReports();
 
-            btn.innerHTML = `
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
-                    <span style="font-size:0.68rem;font-weight:700;padding:1px 5px;border-radius:3px;background:${recBg};color:${recColor};white-space:nowrap;">${recLabel}</span>
-                    <span class="report-ticker">${report.ticker}</span>
-                    ${ptLine}
-                </div>
-                <span class="report-name" style="font-size:0.78rem;">${report.companyName}</span>
-            `;
-            btn.style.flex = "1";
-
-            const editBtn = document.createElement("button");
-            editBtn.title = "Edit report";
-            editBtn.innerHTML = "✏️";
-            editBtn.onclick = (e) => { e.stopPropagation(); openEditReportModal(report.key); };
-            editBtn.style.cssText = "padding:0 8px;border:1px solid var(--border-dim);background:none;border-radius:5px;cursor:pointer;font-size:0.8rem;color:var(--text-secondary);flex-shrink:0;";
-
-            const delBtn = document.createElement("button");
-            delBtn.title = "Delete report";
-            delBtn.innerHTML = "🗑";
-            delBtn.onclick = (e) => { e.stopPropagation(); deleteReport(report.key); };
-            delBtn.style.cssText = "padding:0 8px;border:1px solid var(--border-dim);background:none;border-radius:5px;cursor:pointer;font-size:0.8rem;color:var(--color-negative);flex-shrink:0;";
-
-            rowEl.appendChild(btn);
-            rowEl.appendChild(editBtn);
-            rowEl.appendChild(delBtn);
-            buttonsWrapper.appendChild(rowEl);
+    if (researchSortBy === 'sector' && !query) {
+        // Grouped by sector
+        const groups = {};
+        reports.forEach(r => { const s = r.sector || "Other Sectors"; if (!groups[s]) groups[s] = []; groups[s].push(r); });
+        Object.keys(groups).forEach(sector => {
+            const isCollapsed = collapsedSectors[sector] === true;
+            const groupHeader = document.createElement("div");
+            groupHeader.className = "report-sector-header";
+            groupHeader.style.cssText = "display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg-card-solid);border:1px solid var(--border-dim);border-radius:6px;margin-top:10px;cursor:pointer;font-size:0.78rem;font-weight:700;color:var(--text-primary);user-select:none;transition:var(--transition);";
+            groupHeader.onmouseover = () => { groupHeader.style.background = "rgba(147,161,161,0.15)"; };
+            groupHeader.onmouseout  = () => { groupHeader.style.background = "var(--bg-card-solid)"; };
+            groupHeader.onclick = () => { collapsedSectors[sector] = !isCollapsed; renderReportList(); };
+            groupHeader.innerHTML = `<span>📁 ${sector} (${groups[sector].length})</span><span style="font-size:0.65rem;display:inline-block;transform:${isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)'};">▼</span>`;
+            container.appendChild(groupHeader);
+            const wrapper = document.createElement("div");
+            wrapper.style.cssText = "display:flex;flex-direction:column;gap:6px;margin-top:6px;padding-left:8px;";
+            if (isCollapsed) wrapper.style.display = "none";
+            groups[sector].forEach(r => wrapper.appendChild(makeReportRow(r)));
+            container.appendChild(wrapper);
         });
-        
-        container.appendChild(buttonsWrapper);
-    });
+    } else {
+        // Flat sorted list
+        const wrapper = document.createElement("div");
+        wrapper.style.cssText = "display:flex;flex-direction:column;gap:6px;margin-top:6px;";
+        if (reports.length === 0) wrapper.innerHTML = `<div style="color:var(--text-secondary);font-size:0.82rem;text-align:center;padding:20px 0;">No reports match.</div>`;
+        reports.forEach(r => wrapper.appendChild(makeReportRow(r)));
+        container.appendChild(wrapper);
+    }
 }
 
 function filterReports() {
     renderReportList();
+    if (researchViewMode === 'table') renderResearchTable();
+}
+
+function setResearchFilter(mode) {
+    researchFilterMode = mode;
+    ['all', 'pos', 'neg'].forEach(id => document.getElementById('rf-' + id)?.classList.remove('rf-active'));
+    const map = { all: 'rf-all', positive: 'rf-pos', negative: 'rf-neg' };
+    document.getElementById(map[mode])?.classList.add('rf-active');
+    renderReportList();
+    if (researchViewMode === 'table') renderResearchTable();
+}
+
+function setResearchSort(by) {
+    researchSortBy = by;
+    renderReportList();
+    if (researchViewMode === 'table') renderResearchTable();
+}
+
+function setResearchViewMode(mode) {
+    researchViewMode = mode;
+    document.getElementById('research-list-mode').style.display  = mode === 'list'  ? '' : 'none';
+    document.getElementById('research-table-mode').style.display = mode === 'table' ? '' : 'none';
+    document.getElementById('rv-btn-list').classList.toggle('rv-active',  mode === 'list');
+    document.getElementById('rv-btn-table').classList.toggle('rv-active', mode === 'table');
+    if (mode === 'table') renderResearchTable();
+}
+
+function renderResearchTable() {
+    const tbody = document.getElementById('research-table-body');
+    if (!tbody) return;
+    const { reports } = getFilteredSortedReports();
+    tbody.innerHTML = '';
+    if (reports.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-secondary);padding:30px 0;">No reports match the current filter.</td></tr>`;
+        return;
+    }
+    reports.forEach(r => {
+        const upside = getUpsidePct(r);
+        const upsideStr   = upside !== null ? `${upside >= 0 ? '+' : ''}${upside.toFixed(1)}%` : '—';
+        const upsideColor = upside === null ? 'var(--text-secondary)' : upside >= 0 ? 'var(--color-positive)' : 'var(--color-negative)';
+        const recColor    = r.isPositive ? 'var(--color-positive)' : 'var(--color-negative)';
+        const recBg       = r.isPositive ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)';
+        const recLabel    = (r.rating || 'N/A').split(' ')[0].replace(/[^A-Z/]/gi, '') || 'N/A';
+        const tr = document.createElement('tr');
+        tr.style.cursor = 'pointer';
+        tr.onclick = () => { setResearchViewMode('list'); selectReport(r.key); };
+        tr.innerHTML = `
+            <td style="font-family:var(--font-mono);font-weight:700;color:var(--accent-neon);">${r.ticker}</td>
+            <td style="color:var(--text-primary);font-size:0.85rem;">${r.companyName}</td>
+            <td style="color:var(--text-secondary);font-size:0.82rem;">${r.sector || '—'}</td>
+            <td><span style="font-size:0.72rem;font-weight:700;padding:2px 7px;border-radius:3px;background:${recBg};color:${recColor};white-space:nowrap;">${recLabel}</span></td>
+            <td style="text-align:right;font-family:var(--font-mono);color:var(--text-secondary);">${r.analysisPrice ? '$' + parseFloat(r.analysisPrice).toFixed(2) : '—'}</td>
+            <td style="text-align:right;font-family:var(--font-mono);color:var(--text-primary);">${r.priceTarget ? '$' + parseFloat(r.priceTarget).toFixed(2) : '—'}</td>
+            <td style="text-align:right;font-family:var(--font-mono);font-weight:700;color:${upsideColor};">${upsideStr}</td>
+        `;
+        tbody.appendChild(tr);
+    });
 }
 
 // ── Research Report Modal ──────────────────────────────────────────
@@ -1105,7 +1146,14 @@ async function deleteReport(key) {
 
 function renderReport() {
     const reportData = researchReports[activeReport];
-    if (!reportData) return;
+    if (!reportData) {
+        document.getElementById("report-article-content").innerHTML =
+            `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;gap:12px;opacity:0.5;">
+                <svg viewBox="0 0 24 24" style="width:40px;height:40px;fill:var(--text-secondary);"><path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09L12 3zm6.8 9.18L12 15.9l-6.8-3.72V10.1l6.8 3.71 6.8-3.71v2.08zM12 11.9L5.2 8.18 12 4.45l6.8 3.73L12 11.9z"/></svg>
+                <p style="color:var(--text-secondary);font-size:0.88rem;margin:0;">Select a report from the sidebar to begin reading.</p>
+            </div>`;
+        return;
+    }
 
     // Update Ribbon values
     document.getElementById("viewer-main-title").innerText = `${reportData.companyName} (${reportData.ticker})`;

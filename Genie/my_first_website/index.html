@@ -631,7 +631,13 @@
 
             <!-- SECTION 3: EQUITY RESEARCH (REPORT VIEWER) -->
             <section id="section-research" class="tab-content">
-                <div class="research-layout">
+                <!-- View Mode Toggle -->
+                <div style="display:flex;justify-content:flex-end;gap:6px;margin-bottom:14px;">
+                    <button id="rv-btn-list" onclick="setResearchViewMode('list')" class="rv-toggle-btn rv-active">📋 Report View</button>
+                    <button id="rv-btn-table" onclick="setResearchViewMode('table')" class="rv-toggle-btn">📊 Summary Table</button>
+                </div>
+
+                <div class="research-layout" id="research-list-mode">
                     <!-- REPORT LIST & CONTROLS -->
                     <div class="research-sidebar glass-panel">
                         <div style="display:flex;align-items:center;justify-content:space-between;">
@@ -645,6 +651,20 @@
                                 <svg class="search-icon" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; fill: var(--text-muted);" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
                                 <input type="text" id="report-search-input" placeholder="Search reports..." onkeyup="filterReports()" style="width: 100%; background: var(--bg-card-solid); border: 1px solid var(--border-dim); border-radius: 4px; padding: 6px 10px 6px 32px; color: var(--text-primary); font-family: var(--font-sans); font-size: 0.82rem; outline: none; transition: var(--transition);">
                             </div>
+                        </div>
+
+                        <!-- Filter + Sort Controls -->
+                        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 0 10px 0;border-bottom:1px solid var(--border-dim);margin-bottom:8px;">
+                            <div style="display:flex;gap:5px;">
+                                <button id="rf-all" onclick="setResearchFilter('all')" class="rf-btn rf-active">All</button>
+                                <button id="rf-pos" onclick="setResearchFilter('positive')" class="rf-btn rf-pos">BUY</button>
+                                <button id="rf-neg" onclick="setResearchFilter('negative')" class="rf-btn rf-neg">AVOID</button>
+                            </div>
+                            <select id="research-sort" onchange="setResearchSort(this.value)" style="font-size:0.75rem;padding:4px 7px;border-radius:4px;border:1px solid var(--border-dim);background:var(--bg-card-solid);color:var(--text-secondary);cursor:pointer;outline:none;">
+                                <option value="sector">By Sector</option>
+                                <option value="ticker">A → Z</option>
+                                <option value="upside">Upside ↑</option>
+                            </select>
                         </div>
 
                         <div class="report-list" id="report-list-container">
@@ -704,7 +724,29 @@
                             <!-- Rendered report content from app.js -->
                         </article>
                     </div>
-                </div>
+                </div><!-- /research-list-mode -->
+
+                <!-- SUMMARY TABLE MODE -->
+                <div id="research-table-mode" style="display:none;">
+                    <div class="glass-panel" style="padding:24px;">
+                        <div class="positions-container" style="overflow-x:auto;">
+                            <table class="positions-table" id="research-summary-table" style="min-width:700px;">
+                                <thead>
+                                    <tr>
+                                        <th>Ticker</th>
+                                        <th>Company</th>
+                                        <th>Sector</th>
+                                        <th>Rating</th>
+                                        <th style="text-align:right;">Analysis Price</th>
+                                        <th style="text-align:right;">Price Target</th>
+                                        <th style="text-align:right;">Upside %</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="research-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div><!-- /research-table-mode -->
             </section>
 
             <!-- SECTION 4: TRANSACTIONS (ACTIVITY LOG) -->
@@ -1132,6 +1174,6 @@
 
     <script src="xlsx.full.min.js"></script>
     <script src="marked.min.js"></script>
-    <script src="app.js?v=13"></script>
+    <script src="app.js?v=14"></script>
 </body>
 </html>

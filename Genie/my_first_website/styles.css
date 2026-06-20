@@ -992,6 +992,68 @@ header::before {
     text-transform: uppercase;
 }
 
+/* Research view toggle (Report View / Summary Table) */
+.rv-toggle-btn {
+    padding: 6px 14px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border: 1px solid var(--border-dim);
+    border-radius: 5px;
+    background: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition);
+}
+.rv-toggle-btn.rv-active {
+    background: var(--bg-card-solid);
+    color: var(--accent-neon);
+    border-color: var(--accent-neon);
+}
+
+/* Research sidebar filter buttons (All / BUY / AVOID) */
+.rf-btn {
+    padding: 3px 10px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    border: 1px solid var(--border-dim);
+    border-radius: 4px;
+    background: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    transition: var(--transition);
+}
+.rf-btn.rf-active     { background: var(--bg-card-solid); color: var(--text-primary); border-color: var(--text-secondary); }
+.rf-btn.rf-pos.rf-active { color: var(--color-positive); border-color: var(--color-positive); background: rgba(16,185,129,0.08); }
+.rf-btn.rf-neg.rf-active { color: var(--color-negative); border-color: var(--color-negative); background: rgba(239,68,68,0.08); }
+
+/* Report row hover-reveal actions */
+.report-row {
+    position: relative;
+}
+.report-row .report-list-item {
+    width: 100%;
+}
+.report-row-actions {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 0 5px 0 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+    background: linear-gradient(to right, transparent, var(--bg-card-solid) 35%);
+    border-radius: 0 5px 5px 0;
+}
+.report-row:hover .report-row-actions {
+    opacity: 1;
+    pointer-events: auto;
+}
+
 .report-list {
     display: flex;
     flex-direction: column;
@@ -999,7 +1061,7 @@ header::before {
 }
 
 .report-list-item {
-    background: rgba(15, 23, 42, 0.4);
+    background: transparent;
     border: 1px solid var(--border-dim);
     border-radius: 10px;
     padding: 12px 16px;
@@ -1012,13 +1074,14 @@ header::before {
 }
 
 .report-list-item:hover {
-    background: rgba(30, 41, 59, 0.4);
-    border-color: rgba(148, 163, 184, 0.2);
+    background: rgba(38, 139, 210, 0.05);
+    border-color: rgba(38, 139, 210, 0.3);
 }
 
 .report-list-item.active {
-    background: rgba(38, 139, 210, 0.04);
+    background: var(--bg-card-solid);
     border-color: var(--accent-neon);
+    box-shadow: 0 2px 8px rgba(38, 139, 210, 0.12);
 }
 
 .report-status-badge {
