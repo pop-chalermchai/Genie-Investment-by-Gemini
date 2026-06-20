@@ -1,5 +1,22 @@
 # Daily Log
 
+## 2026-06-20 (session 7)
+- Equity Research page UX improvements (3 features):
+  - **Filter bar**: All / BUY / AVOID buttons in sidebar, shared state with table view
+  - **Sort dropdown**: By Sector (grouped/collapsible), A→Z (flat), Upside ↑ (by PT vs analysis price)
+  - **Summary Table view**: toggle 📋/📊, full-width table with Ticker/Company/Sector/Rating/Analysis Price/PT/Upside%, clicking row switches back to Report View and opens report
+- **Hover-reveal edit/delete**: buttons hidden by default on report rows, fade in on hover via absolute-positioned overlay with gradient — sidebar stays lean
+- **Last viewed report** persisted to `localStorage`; restored on next visit; empty state shown on first visit instead of defaulting to MU
+- **Report card color**: default transparent (light/at rest), selected = solid bg + blue border + shadow
+- **Nav reorder fix** confirmed: Dashboard → Transactions → Equity Research → Genie Team
+- Fixed extra `</div>` in research section HTML that pushed Summary Table outside its section (causing excess whitespace)
+- **Research pipeline** initiated for RKLB, CIFR, OKLO:
+  - Phase 1 (Valerie × 3): SPECULATIVE BUY on all three — RKLB PT $130, CIFR PT $32, OKLO PT $88
+  - Phase 2 (Christian × 3): audit running in background
+  - Phase 3 (Serene + Mateo): pending
+  - Phase 4 (Deploy via API): pending
+- Updated `SOP_Stock_Research.md` Phase 4: replaced Python script approach with direct `POST /api/research-report` curl call by Genie — no manual copy-paste, no separate script needed. Added new required fields: `sector`, `price_target`, `analysis_price`
+
 ## 2026-06-20 (session 6)
 - Implemented Task #12: Add/Edit Research Report UI
   - **server.py**: Added POST `/api/research-report` (INSERT), PUT `/api/research-report?key=` (UPDATE), DELETE `/api/research-report?key=` endpoints.

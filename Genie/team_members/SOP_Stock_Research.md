@@ -15,11 +15,32 @@ Once Christian successfully passes the audit (and outputs the finalized artifact
 * **Prompt to Serene:** "Translate the two audited financial reports for `TICKER` into elegant, formal Thai. Output the translations as markdown artifacts, ensuring flawless formatting continuity with the original English files."
 * **Prompt to Mateo:** "Read the audited financial reports for `TICKER`. Based on the core insights and execution risks, use your `generate_image` tool to create a high-impact infographic cover art for this research report. Save it as `[ticker]_infographic`."
 
-## Phase 4: Database Injection & Deployment
-Once Serene and Mateo complete their tasks:
-1. Write a custom Python database migration script (e.g., `insert_[ticker].py`).
-2. Read the 4 markdown files (2 English from Christian, 2 Thai from Serene).
-3. Execute an SQLite `INSERT OR REPLACE INTO research_reports` query to insert the data into `/Users/popular/Desktop/Genie/my_first_website/portfolio.db`.
-   * **Required Columns:** `report_key`, `ticker`, `company_name`, `subtitle`, `prepared_by`, `audited_by`, `rating`, `is_positive`, `en_overview`, `th_overview`, `en_dcf`, `th_dcf`.
-4. Run the Python script via terminal to commit the data.
-5. Inform the user to refresh `http://localhost:8000` to view the finalized, fully localized report.
+## Phase 4: Database Injection & Deployment (Genie)
+Once Serene and Mateo complete their tasks, **Genie** handles deployment directly — no Python script required, no manual copy-paste.
+
+1. Read the 4 finalized markdown files (2 English from Christian, 2 Thai from Serene).
+2. Call `POST http://127.0.0.1:8000/api/research-report` via curl with a JSON payload containing all required fields.
+3. Confirm `{"success": true}` response.
+4. Inform Pop to refresh `http://localhost:8000` to view the report live.
+
+**Required fields in the JSON payload:**
+
+| Field | Description |
+|---|---|
+| `report_key` | Unique ID e.g. `NVDA_2026` |
+| `ticker` | Stock ticker e.g. `NVDA` |
+| `company_name` | Full company name |
+| `subtitle` | Report tagline |
+| `sector` | Sector e.g. `Technology` |
+| `prepared_by` | e.g. `Valerie (Quantitative Oracle)` |
+| `audited_by` | e.g. `Christian (Forensic Auditor)` |
+| `rating` | e.g. `BUY`, `ACCUMULATE`, `AVOID` |
+| `is_positive` | `true` / `false` |
+| `price_target` | Target price (number) |
+| `analysis_price` | Price at time of analysis (number) |
+| `en_overview` | English overview markdown (full text) |
+| `th_overview` | Thai overview markdown (full text) |
+| `en_dcf` | English DCF markdown (full text) |
+| `th_dcf` | Thai DCF markdown (full text) |
+
+> **Note:** The web modal (`+ New` button on the Equity Research page) is available for quick edits or minor updates to existing reports. For full report injection after the pipeline, always use the API method above.
