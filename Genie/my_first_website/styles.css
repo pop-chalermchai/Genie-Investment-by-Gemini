@@ -370,7 +370,7 @@ header::before {
    ========================================================================== */
 .workspace-layout {
     display: grid;
-    grid-template-columns: 1fr 400px;
+    grid-template-columns: minmax(0, 1fr) 400px;
     gap: 20px;
 }
 
