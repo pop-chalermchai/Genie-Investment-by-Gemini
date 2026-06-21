@@ -316,6 +316,11 @@ def add_portfolio():
             else:
                 cat_id = cursor.lastrowid
 
+        # Check for duplicates
+        execute_sql(cursor, is_postgres, "SELECT id FROM portfolios WHERE name=?", (portfolio_name,))
+        if fetch_all_as_dict(cursor, is_postgres):
+            raise ValueError(f"Portfolio name '{portfolio_name}' already exists. Please choose a different name.")
+
         execute_sql(cursor, is_postgres, "INSERT INTO portfolios (name, category_id, parent_id) VALUES (?, ?, ?)", (portfolio_name, cat_id, parent_id))
 
         conn.commit()
@@ -649,10 +654,11 @@ def get_portfolios():
         cursor = conn.cursor()
         query = """
             SELECT 
-                p.id, p.name, p.category_id as "categoryId", c.name as category, p.parent_id as "parentId",
+                MIN(p.id) as id, p.name, p.category_id as "categoryId", c.name as category, p.parent_id as "parentId",
                 (SELECT name FROM portfolios WHERE id = p.parent_id) as "parentName"
             FROM portfolios p
             LEFT JOIN categories c ON p.category_id = c.id
+            GROUP BY p.name, p.category_id, c.name, p.parent_id
         """
         execute_sql(cursor, is_postgres, query)
         ports = fetch_all_as_dict(cursor, is_postgres)

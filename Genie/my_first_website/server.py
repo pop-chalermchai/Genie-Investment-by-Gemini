@@ -268,10 +268,11 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 # Fetch all portfolios, left joining categories and sub-querying parent portfolio names
                 query = '''
                     SELECT 
-                        p.id, p.name, p.category_id as categoryId, c.name as category, p.parent_id as parentId,
+                        MIN(p.id) as id, p.name, p.category_id as categoryId, c.name as category, p.parent_id as parentId,
                         (SELECT name FROM portfolios WHERE id = p.parent_id) as parentName
                     FROM portfolios p
                     LEFT JOIN categories c ON p.category_id = c.id
+                    GROUP BY p.name, p.category_id, c.name, p.parent_id
                 '''
                 cursor.execute(query)
                 rows = cursor.fetchall()
@@ -378,6 +379,10 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 else:
                     cursor.execute("INSERT INTO categories (name) VALUES (?)", (category_name,))
                     cat_id = cursor.lastrowid
+                
+                cursor.execute("SELECT id FROM portfolios WHERE name=?", (portfolio_name,))
+                if cursor.fetchone():
+                    raise ValueError(f"Portfolio name '{portfolio_name}' already exists. Please choose a different name.")
                 
                 cursor.execute("INSERT INTO portfolios (name, category_id, parent_id) VALUES (?, ?, ?)", (portfolio_name, cat_id, parent_id))
                 conn.commit()
