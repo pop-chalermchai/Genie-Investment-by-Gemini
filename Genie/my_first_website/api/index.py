@@ -129,6 +129,72 @@ def get_stock_chart():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/init-data', methods=['GET'])
+def get_init_data():
+    try:
+        conn, is_postgres = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 1. Holdings
+        holdings_query = '''
+            SELECT 
+                a.ticker, a.company_name as "companyName", a.sector, a.domain,
+                p.name as portfolio, p.id as "portfolioId", p.parent_id as "parentId",
+                (SELECT name FROM portfolios WHERE id = p.parent_id) as "parentPortfolio",
+                t.currency, SUM(t.shares) as shares, 
+                SUM(CASE WHEN t.type IN ('BUY', 'TRANSFER_IN') THEN t.shares * t.price ELSE 0 END) / 
+                NULLIF(SUM(CASE WHEN t.type IN ('BUY', 'TRANSFER_IN') THEN t.shares ELSE 0 END), 0) as "avgCost"
+            FROM assets a
+            JOIN portfolios p ON a.portfolio_id = p.id
+            JOIN transactions t ON t.asset_id = a.id
+            GROUP BY a.id, p.id, t.currency
+            HAVING SUM(t.shares) > 0
+        '''
+        execute_sql(cursor, is_postgres, holdings_query)
+        holdings = fetch_all_as_dict(cursor, is_postgres)
+        
+        # 2. Reports
+        execute_sql(cursor, is_postgres, 'SELECT * FROM research_reports')
+        rows = fetch_all_as_dict(cursor, is_postgres)
+        reports = {}
+        for r in rows:
+            reports[r['report_key']] = {
+                "ticker": r['ticker'],
+                "companyName": r['company_name'],
+                "subtitle": r['subtitle'],
+                "preparedBy": r['prepared_by'],
+                "auditedBy": r['audited_by'],
+                "rating": r['rating'],
+                "isPositive": bool(r['is_positive']),
+                "priceTarget": r.get('price_target'),
+                "analysisPrice": r.get('analysis_price'),
+                "en_overview": r['en_overview'],
+                "th_overview": r['th_overview'],
+                "en_dcf": r['en_dcf'],
+                "th_dcf": r['th_dcf'],
+                "sector": r.get('sector')
+            }
+            
+        # 3. Portfolios
+        portfolios_query = """
+            SELECT 
+                p.id, p.name, p.category_id as "categoryId", c.name as category, p.parent_id as "parentId",
+                (SELECT name FROM portfolios WHERE id = p.parent_id) as "parentName"
+            FROM portfolios p
+            LEFT JOIN categories c ON p.category_id = c.id
+        """
+        execute_sql(cursor, is_postgres, portfolios_query)
+        ports = fetch_all_as_dict(cursor, is_postgres)
+        
+        conn.close()
+        return jsonify({
+            "holdings": holdings,
+            "reports": reports,
+            "portfolios": ports
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/holdings', methods=['GET'])
 def get_holdings():
     try:

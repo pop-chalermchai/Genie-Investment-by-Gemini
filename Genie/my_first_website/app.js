@@ -296,15 +296,12 @@ function deleteParentPortfolio(pName) {
 // CORE WORKSPACE INITIALIZATION & LOGIC FLOW
 // ==========================================================================
 document.addEventListener("DOMContentLoaded", () => {
-    Promise.all([
-        fetch('/api/holdings').then(res => res.json()),
-        fetch('/api/reports').then(res => res.json()),
-        fetch('/api/portfolios').then(res => res.json())
-    ])
-    .then(([holdingsData, reportsData, portfoliosData]) => {
-        holdings = holdingsData.map(h => ({...h, currentPrice: h.avgCost}));
-        researchReports = reportsData;
-        portfoliosList = portfoliosData;
+    fetch('/api/init-data')
+    .then(res => res.json())
+    .then(data => {
+        holdings = data.holdings.map(h => ({...h, currentPrice: h.avgCost}));
+        researchReports = data.reports;
+        portfoliosList = data.portfolios;
         
         populateDropdowns();
 

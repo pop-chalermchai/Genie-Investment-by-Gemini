@@ -58,6 +58,82 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": str(e)}).encode())
             return
+        elif parsed_url.path == '/api/init-data':
+            db_path = os.path.join(DIRECTORY, 'portfolio.db')
+            try:
+                conn = sqlite3.connect(db_path)
+                conn.row_factory = sqlite3.Row
+                cursor = conn.cursor()
+                
+                # 1. Holdings
+                holdings_query = '''
+                    SELECT 
+                        a.ticker, a.company_name as companyName, a.sector, a.domain,
+                        p.name as portfolio, p.id as portfolioId, p.parent_id as parentId,
+                        (SELECT name FROM portfolios WHERE id = p.parent_id) as parentPortfolio,
+                        t.currency, SUM(t.shares) as shares, 
+                        SUM(CASE WHEN t.type IN ('BUY', 'TRANSFER_IN') THEN t.shares * t.price ELSE 0 END) / 
+                        NULLIF(SUM(CASE WHEN t.type IN ('BUY', 'TRANSFER_IN') THEN t.shares ELSE 0 END), 0) as avgCost
+                    FROM assets a
+                    JOIN portfolios p ON a.portfolio_id = p.id
+                    JOIN transactions t ON t.asset_id = a.id
+                    GROUP BY a.id, p.id
+                    HAVING SUM(t.shares) > 0
+                '''
+                cursor.execute(holdings_query)
+                holdings = [dict(r) for r in cursor.fetchall()]
+                
+                # 2. Reports
+                cursor.execute('SELECT * FROM research_reports')
+                reports_rows = cursor.fetchall()
+                reports = {}
+                for r in reports_rows:
+                    reports[r['report_key']] = {
+                        "ticker": r['ticker'],
+                        "companyName": r['company_name'],
+                        "subtitle": r['subtitle'],
+                        "preparedBy": r['prepared_by'],
+                        "auditedBy": r['audited_by'],
+                        "rating": r['rating'],
+                        "isPositive": bool(r['is_positive']),
+                        "priceTarget": r['price_target'],
+                        "analysisPrice": r['analysis_price'],
+                        "en_overview": r['en_overview'],
+                        "th_overview": r['th_overview'],
+                        "en_dcf": r['en_dcf'],
+                        "th_dcf": r['th_dcf'],
+                        "sector": r['sector'] if 'sector' in r.keys() else 'Other Sectors'
+                    }
+                    
+                # 3. Portfolios
+                portfolios_query = """
+                    SELECT 
+                        p.id, p.name, p.category_id as categoryId, c.name as category, p.parent_id as parentId,
+                        (SELECT name FROM portfolios WHERE id = p.parent_id) as parentName
+                    FROM portfolios p
+                    LEFT JOIN categories c ON p.category_id = c.id
+                """
+                cursor.execute(portfolios_query)
+                ports = [dict(r) for r in cursor.fetchall()]
+                
+                conn.close()
+                
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({
+                    "holdings": holdings,
+                    "reports": reports,
+                    "portfolios": ports
+                }).encode())
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode())
+            return
         elif parsed_url.path == '/api/transactions':
             db_path = os.path.join(DIRECTORY, 'portfolio.db')
             try:
