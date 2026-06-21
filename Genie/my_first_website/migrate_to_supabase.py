@@ -88,7 +88,8 @@ tables_schemas = {
         CREATE TABLE IF NOT EXISTS portfolios (
             id SERIAL PRIMARY KEY,
             name VARCHAR(255) NOT NULL,
-            category_id INTEGER REFERENCES categories (id)
+            category_id INTEGER REFERENCES categories (id),
+            parent_id INTEGER REFERENCES portfolios (id)
         );
     """,
     "assets": """
@@ -133,10 +134,18 @@ tables_schemas = {
 
 try:
     for table_name, schema in tables_schemas.items():
-        print(f" - Table '{table_name}'...")
-        cursor_pg.execute(schema)
-    conn_pg.commit()
-    print("✅ Schema created successfully.")
+        try:
+            cursor_pg.execute(schema)
+            # Add parent_id to portfolios if missing
+            if table_name == "portfolios":
+                try:
+                    cursor_pg.execute("ALTER TABLE portfolios ADD COLUMN parent_id INTEGER REFERENCES portfolios (id)")
+                except Exception:
+                    conn_pg.rollback() # column might already exist
+            conn_pg.commit()
+            print(f"✅ Created table: {table_name}")
+        except Exception as e:
+            raise e
 except Exception as e:
     print(f"❌ Error creating schema on Supabase: {e}")
     conn_sqlite.close()
