@@ -324,8 +324,8 @@ function deleteParentPortfolio(pName) {
 // ==========================================================================
 // CORE WORKSPACE INITIALIZATION & LOGIC FLOW
 // ==========================================================================
-document.addEventListener("DOMContentLoaded", () => {
-    fetch('/api/init-data')
+function fetchInitData(onComplete = null) {
+    return fetch('/api/init-data')
     .then(res => res.json())
     .then(data => {
         holdings = data.holdings.map(h => ({...h, currentPrice: h.avgCost}));
@@ -333,7 +333,20 @@ document.addEventListener("DOMContentLoaded", () => {
         portfoliosList = data.portfolios;
         
         populateDropdowns();
+        updateDashboard();
+        renderReportList();
+        
+        if (activeParentPortfolio) {
+            renderPortfolioPage();
+        }
+        
+        if (onComplete) onComplete();
+    })
+    .catch(err => console.error("Error fetching init data:", err));
+}
 
+document.addEventListener("DOMContentLoaded", () => {
+    fetchInitData(() => {
         // Apply cached prices from localStorage for instant first render
         try {
             const cached = JSON.parse(localStorage.getItem('genie-price-cache') || '{}');
@@ -345,7 +358,6 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) { /* ignore corrupt cache */ }
 
         updateDashboard();
-        renderReportList();
 
         // Restore last viewed report from localStorage
         const lastReport = localStorage.getItem('genie-last-report');
@@ -366,8 +378,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         fetchLivePrices(); // runs in background, silently updates prices
         setupDragAndDrop();
-    })
-    .catch(err => console.error("Error fetching data:", err));
+    });
 });
 
 // TAB SWITCHER
