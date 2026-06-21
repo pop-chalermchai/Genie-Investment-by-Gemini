@@ -556,6 +556,13 @@ function updateDashboard() {
         valPortPct.className = "metric-change negative";
     }
 
+    // Also include empty parent portfolios (no holdings yet) so they show on dashboard
+    portfoliosList
+        .filter(p => p.parentId === null && !parentTotals[p.name])
+        .forEach(p => {
+            parentTotals[p.name] = { value: 0, cost: 0, subPorts: {}, isEmpty: true };
+        });
+
     // Cache parentTotals for portfolio drill-down page
     cachedParentTotals = parentTotals;
 
@@ -582,6 +589,7 @@ function updateDashboard() {
             const pGainLossPct = data.cost > 0 ? (pGainLoss / data.cost) * 100 : 0;
             const isPos = pGainLoss >= 0;
             const subPortCount = Object.keys(data.subPorts).length;
+            const isEmpty = data.isEmpty === true;
 
             const lowerName = parentName.toLowerCase();
             const color = parentColors[lowerName] || colors[colorIdx % colors.length];
@@ -589,7 +597,7 @@ function updateDashboard() {
 
             const card = document.createElement("div");
             card.className = "metric-card glass-panel parent-portfolio-card";
-            card.style.cssText = `padding:15px; border-left:3px solid ${color}; display:flex; flex-direction:column; cursor:pointer; position:relative; transition:var(--transition);`;
+            card.style.cssText = `padding:15px; border-left:3px solid ${color}; display:flex; flex-direction:column; cursor:pointer; position:relative; transition:var(--transition);${isEmpty ? 'opacity:0.7;' : ''}`;
             card.onclick = (e) => {
                 if (e.target.tagName === "BUTTON") return;
                 navigateToPortfolio(parentName);
@@ -597,14 +605,16 @@ function updateDashboard() {
             card.onmouseover = () => { card.style.transform = "translateY(-2px)"; card.style.boxShadow = `0 4px 20px ${color}33`; };
             card.onmouseout = () => { card.style.transform = ""; card.style.boxShadow = ""; };
 
+            const bottomRow = isEmpty
+                ? `<span style="font-size:0.75rem;color:var(--text-secondary);font-style:italic;">No holdings yet — add a transaction to start</span>`
+                : `<span style="font-size:0.78rem;font-weight:600;color:${isPos ? 'var(--color-positive)' : 'var(--color-negative)'};">${isPos ? '+' : ''}${pGainLossPct.toFixed(1)}% (${symbol}${formatNumber(Math.abs(pGainLoss), 0)})</span>
+                   <span style="font-size:0.72rem;color:var(--text-secondary);">${subPortCount} sub-port${subPortCount > 1 ? 's' : ''} →</span>`;
+
             card.innerHTML = `
                 <button onclick="deleteParentPortfolio('${parentName}')" title="Delete Portfolio" style="position:absolute;top:10px;right:10px;background:none;border:none;color:var(--color-negative);cursor:pointer;font-size:1.2rem;padding:0;line-height:1;opacity:0.5;transition:opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.5">&times;</button>
                 <div style="font-size:1.2rem;font-weight:700;color:var(--text-emphasis);margin:0 0 2px 0;">${parentName}</div>
                 <span style="font-size:1.1rem;font-weight:700;color:var(--text-primary);">${symbol}${formatNumber(data.value, 2)}</span>
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
-                    <span style="font-size:0.78rem;font-weight:600;color:${isPos ? 'var(--color-positive)' : 'var(--color-negative)'};">${isPos ? '+' : ''}${pGainLossPct.toFixed(1)}% (${symbol}${formatNumber(Math.abs(pGainLoss), 0)})</span>
-                    <span style="font-size:0.72rem;color:var(--text-secondary);">${subPortCount} sub-port${subPortCount > 1 ? 's' : ''} →</span>
-                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">${bottomRow}</div>
             `;
             gridEl.appendChild(card);
         });
