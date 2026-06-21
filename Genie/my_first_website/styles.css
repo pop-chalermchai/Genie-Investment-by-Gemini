@@ -830,6 +830,11 @@ header::before {
     color: var(--text-emphasis);
 }
 
+.member-front-info .member-name {
+    color: #FFFFFF;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
 .member-role {
     font-size: 0.78rem;
     color: var(--accent-gold);
