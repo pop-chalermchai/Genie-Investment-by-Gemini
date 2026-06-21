@@ -769,7 +769,14 @@ function toggleIngestType() {
 async function autoFillCompanyName() {
     const tickerInput = document.getElementById("ingest-ticker");
     const nameInput = document.getElementById("ingest-name");
-    const ticker = tickerInput.value.trim().toUpperCase();
+    let ticker = tickerInput.value.trim().toUpperCase();
+    
+    // Auto-append -USD for popular crypto if not present
+    const cryptoList = ['BTC', 'ETH', 'SOL', 'ADA', 'XRP', 'DOGE', 'BNB', 'DOT', 'LTC', 'LINK'];
+    if (cryptoList.includes(ticker)) {
+        ticker = ticker + '-USD';
+        tickerInput.value = ticker; // Update the UI
+    }
     
     if (!ticker || nameInput.value.trim() !== "") return;
     
@@ -791,6 +798,12 @@ async function autoFillCompanyName() {
         const costInput = document.getElementById("ingest-avg-cost");
         if (data.price && !costInput.value) {
             costInput.value = data.price.toFixed(2);
+        }
+        
+        // Auto-select Cryptocurrency sector if applicable
+        const sectorInput = document.getElementById("ingest-sector");
+        if (ticker.endsWith("-USD") && sectorInput) {
+            sectorInput.value = "Cryptocurrency";
         }
     } catch (err) {
         console.warn("Failed to auto-fill name for", ticker, err);
