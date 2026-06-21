@@ -45,7 +45,7 @@ try:
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         'eose', 'EOSE', 'Eos Energy Enterprises, Inc.', 'Zinc-Based Utility-Scale Battery Energy Storage Systems',
-        'Valerie', 'Christian', 'BUY', True, en_overview, th_overview, en_dcf, th_dcf, 'Technology & Semiconductors'
+        'Valerie', 'Christian', 'BUY', True, en_overview, th_overview, en_dcf, th_dcf, 'Energy'
     ))
     conn_sqlite.commit()
     print("✅ Successfully inserted EOSE reports into local SQLite!")
@@ -109,7 +109,7 @@ if db_url:
 
         cursor_pg.execute(query, (
             'eose', 'EOSE', 'Eos Energy Enterprises, Inc.', 'Zinc-Based Utility-Scale Battery Energy Storage Systems',
-            'Valerie', 'Christian', 'BUY', True, en_overview, th_overview, en_dcf, th_dcf, 'Technology & Semiconductors'
+            'Valerie', 'Christian', 'BUY', True, en_overview, th_overview, en_dcf, th_dcf, 'Energy'
         ))
         conn_pg.commit()
         print("✅ Successfully inserted EOSE reports into Supabase!")

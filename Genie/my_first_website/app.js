@@ -457,6 +457,28 @@ function updateDashboard() {
     // Group totals by parent portfolio and nested sub-portfolio
     const parentTotals = {}; // { "US Stock": { value: 0, cost: 0, subPorts: { "Dime": { value: 0, cost: 0 }, "WeBull": { value: 0, cost: 0 } } } }
     
+    // Initialize parentTotals with all parent and sub-portfolios from portfoliosList
+    if (typeof portfoliosList !== 'undefined' && portfoliosList) {
+        portfoliosList.forEach(p => {
+            if (p.parentId === null) {
+                if (!parentTotals[p.name]) {
+                    parentTotals[p.name] = { value: 0, cost: 0, subPorts: {}, isEmpty: true };
+                }
+            }
+        });
+        
+        portfoliosList.forEach(p => {
+            if (p.parentId !== null) {
+                const parentName = p.parentName;
+                if (parentTotals[parentName]) {
+                    if (!parentTotals[parentName].subPorts[p.name]) {
+                        parentTotals[parentName].subPorts[p.name] = { value: 0, cost: 0 };
+                    }
+                }
+            }
+        });
+    }
+    
     const tableBody = document.getElementById("positions-table-body");
     tableBody.innerHTML = ""; // Clear table
 
@@ -501,6 +523,7 @@ function updateDashboard() {
         if (!parentTotals[parentName]) {
             parentTotals[parentName] = { value: 0, cost: 0, subPorts: {} };
         }
+        parentTotals[parentName].isEmpty = false;
         parentTotals[parentName].value += marketValue;
         parentTotals[parentName].cost += costBasis;
 
@@ -582,12 +605,7 @@ function updateDashboard() {
         valPortPct.className = "metric-change negative";
     }
 
-    // Also include empty parent portfolios (no holdings yet) so they show on dashboard
-    portfoliosList
-        .filter(p => p.parentId === null && !parentTotals[p.name])
-        .forEach(p => {
-            parentTotals[p.name] = { value: 0, cost: 0, subPorts: {}, isEmpty: true };
-        });
+    // Empty parent portfolios are already pre-populated from portfoliosList in parentTotals
 
     // Cache parentTotals for portfolio drill-down page
     cachedParentTotals = parentTotals;

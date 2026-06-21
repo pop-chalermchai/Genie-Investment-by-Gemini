@@ -30,7 +30,7 @@ try:
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         'bmnr', 'BMNR', 'BitMine Immersion Technologies', 'Ethereum Proxy Vault & Asymmetric Risk',
-        'Valerie', 'Christian', 'AVOID / Speculative', False, en_overview, th_overview, en_dcf, th_dcf, 'Technology & Semiconductors'
+        'Valerie', 'Christian', 'AVOID / Speculative', False, en_overview, th_overview, en_dcf, th_dcf, 'Digital Assets & Infrastructure'
     ))
     conn.commit()
     print("Successfully inserted BMNR reports into the new database schema!")

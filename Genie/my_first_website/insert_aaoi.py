@@ -45,7 +45,7 @@ try:
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         'aaoi', 'AAOI', 'Applied Optoelectronics, Inc.', 'High-Speed Optical Transceivers, Active Optical Cables & AI Data Center Networking',
-        'Valerie', 'Christian', 'HOLD', False, en_overview, th_overview, en_dcf, th_dcf, 'Technology & Semiconductors'
+        'Valerie', 'Christian', 'HOLD', False, en_overview, th_overview, en_dcf, th_dcf, 'Technology'
     ))
     conn_sqlite.commit()
     print("✅ Successfully inserted AAOI reports into local SQLite!")
@@ -109,7 +109,7 @@ if db_url:
 
         cursor_pg.execute(query, (
             'aaoi', 'AAOI', 'Applied Optoelectronics, Inc.', 'High-Speed Optical Transceivers, Active Optical Cables & AI Data Center Networking',
-            'Valerie', 'Christian', 'HOLD', False, en_overview, th_overview, en_dcf, th_dcf, 'Technology & Semiconductors'
+            'Valerie', 'Christian', 'HOLD', False, en_overview, th_overview, en_dcf, th_dcf, 'Technology'
         ))
         conn_pg.commit()
         print("✅ Successfully inserted AAOI reports into Supabase!")

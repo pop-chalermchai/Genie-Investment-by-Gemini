@@ -127,7 +127,9 @@ tables_schemas = {
             th_overview TEXT,
             en_dcf TEXT,
             th_dcf TEXT,
-            sector VARCHAR(255)
+            sector VARCHAR(255),
+            price_target FLOAT,
+            analysis_price FLOAT
         );
     """
 }
@@ -139,9 +141,18 @@ try:
             # Add parent_id to portfolios if missing
             if table_name == "portfolios":
                 try:
-                    cursor_pg.execute("ALTER TABLE portfolios ADD COLUMN parent_id INTEGER REFERENCES portfolios (id)")
+                    cursor_pg.execute("ALTER TABLE portfolios ADD COLUMN IF NOT EXISTS parent_id INTEGER REFERENCES portfolios (id)")
                 except Exception:
                     conn_pg.rollback() # column might already exist
+            if table_name == "research_reports":
+                try:
+                    cursor_pg.execute("ALTER TABLE research_reports ADD COLUMN IF NOT EXISTS price_target FLOAT;")
+                except Exception:
+                    conn_pg.rollback()
+                try:
+                    cursor_pg.execute("ALTER TABLE research_reports ADD COLUMN IF NOT EXISTS analysis_price FLOAT;")
+                except Exception:
+                    conn_pg.rollback()
             conn_pg.commit()
             print(f"✅ Created table: {table_name}")
         except Exception as e:
@@ -173,7 +184,10 @@ def migrate_table(table_name, columns, pg_placeholders):
 
     # Get data from SQLite
     cols_str = ", ".join(columns)
-    cursor_sqlite.execute(f"SELECT {cols_str} FROM {table_name}")
+    select_query = f"SELECT {cols_str} FROM {table_name}"
+    if table_name == "portfolios":
+        select_query += " ORDER BY parent_id ASC"
+    cursor_sqlite.execute(select_query)
     rows = cursor_sqlite.fetchall()
     
     if not rows:
@@ -199,8 +213,8 @@ try:
     )
     migrate_table(
         "portfolios", 
-        ["id", "name", "category_id"], 
-        "%s, %s, %s"
+        ["id", "name", "category_id", "parent_id"], 
+        "%s, %s, %s, %s"
     )
     migrate_table(
         "assets", 
@@ -214,8 +228,8 @@ try:
     )
     migrate_table(
         "research_reports", 
-        ["id", "report_key", "ticker", "company_name", "subtitle", "prepared_by", "audited_by", "rating", "is_positive", "en_overview", "th_overview", "en_dcf", "th_dcf", "sector"], 
-        "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
+        ["id", "report_key", "ticker", "company_name", "subtitle", "prepared_by", "audited_by", "rating", "is_positive", "en_overview", "th_overview", "en_dcf", "th_dcf", "sector", "price_target", "analysis_price"], 
+        "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
     )
 
     # 6. Reset Sequences for Auto-Increment

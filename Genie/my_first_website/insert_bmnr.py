@@ -36,7 +36,7 @@ try:
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         'bmnr', 'BMNR', 'BitMine Immersion Technologies', 'Crypto Infrastructure & ETH Treasury',
-        'Mateo & Valerie', 'Christian (Forensic)', 'HOLD / Speculative', False, en_content, th_content, 'Technology & Semiconductors'
+        'Mateo & Valerie', 'Christian (Forensic)', 'HOLD / Speculative', False, en_content, th_content, 'Digital Assets & Infrastructure'
     ))
 except Exception as e:
     print("Error:", e)

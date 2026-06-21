@@ -30,7 +30,7 @@ try:
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         'lite', 'LITE', 'Lumentum Holdings Inc.', 'High-Speed EML Lasers & Optical Circuit Switching for AI Infrastructure',
-        'Valerie', 'Christian', 'BUY', True, en_overview, th_overview, en_dcf, th_dcf, 'Technology & Semiconductors'
+        'Valerie', 'Christian', 'BUY', True, en_overview, th_overview, en_dcf, th_dcf, 'Semiconductors'
     ))
     conn_sqlite.commit()
     print("✅ Successfully inserted LITE reports into local SQLite!")
@@ -94,7 +94,7 @@ if db_url:
 
         cursor_pg.execute(query, (
             'lite', 'LITE', 'Lumentum Holdings Inc.', 'High-Speed EML Lasers & Optical Circuit Switching for AI Infrastructure',
-            'Valerie', 'Christian', 'BUY', True, en_overview, th_overview, en_dcf, th_dcf, 'Technology & Semiconductors'
+            'Valerie', 'Christian', 'BUY', True, en_overview, th_overview, en_dcf, th_dcf, 'Semiconductors'
         ))
         conn_pg.commit()
         print("✅ Successfully inserted LITE reports into Supabase!")

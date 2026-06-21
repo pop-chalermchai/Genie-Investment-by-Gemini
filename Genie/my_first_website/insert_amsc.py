@@ -30,7 +30,7 @@ try:
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         'amsc', 'AMSC', 'American Superconductor Corporation', 'High-Temperature Superconductors & Power Grid Resiliency Solutions',
-        'Valerie', 'Christian', 'BUY', True, en_overview, th_overview, en_dcf, th_dcf, 'Technology & Semiconductors'
+        'Valerie', 'Christian', 'BUY', True, en_overview, th_overview, en_dcf, th_dcf, 'Technology'
     ))
     conn_sqlite.commit()
     print("✅ Successfully inserted AMSC reports into local SQLite!")
@@ -94,7 +94,7 @@ if db_url:
 
         cursor_pg.execute(query, (
             'amsc', 'AMSC', 'American Superconductor Corporation', 'High-Temperature Superconductors & Power Grid Resiliency Solutions',
-            'Valerie', 'Christian', 'BUY', True, en_overview, th_overview, en_dcf, th_dcf, 'Technology & Semiconductors'
+            'Valerie', 'Christian', 'BUY', True, en_overview, th_overview, en_dcf, th_dcf, 'Technology'
         ))
         conn_pg.commit()
         print("✅ Successfully inserted AMSC reports into Supabase!")

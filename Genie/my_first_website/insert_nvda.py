@@ -30,7 +30,7 @@ try:
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         'nvda', 'NVDA', 'NVIDIA Corporation', 'CUDA Lock-In, Blackwell Scaling & Valuation Audits',
-        'Valerie', 'Christian', 'BUY (ON PULLBACKS)', True, en_overview, th_overview, en_dcf, th_dcf, 'Technology & Semiconductors'
+        'Valerie', 'Christian', 'BUY (ON PULLBACKS)', True, en_overview, th_overview, en_dcf, th_dcf, 'Semiconductors'
     ))
     conn_sqlite.commit()
     print("✅ Successfully inserted NVDA reports into local SQLite!")
@@ -94,7 +94,7 @@ if db_url:
 
         cursor_pg.execute(query, (
             'nvda', 'NVDA', 'NVIDIA Corporation', 'CUDA Lock-In, Blackwell Scaling & Valuation Audits',
-            'Valerie', 'Christian', 'BUY (ON PULLBACKS)', True, en_overview, th_overview, en_dcf, th_dcf, 'Technology & Semiconductors'
+            'Valerie', 'Christian', 'BUY (ON PULLBACKS)', True, en_overview, th_overview, en_dcf, th_dcf, 'Semiconductors'
         ))
         conn_pg.commit()
         print("✅ Successfully inserted NVDA reports into Supabase!")

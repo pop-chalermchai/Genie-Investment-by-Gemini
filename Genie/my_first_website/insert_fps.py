@@ -30,7 +30,7 @@ try:
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         'fps', 'FPS', 'Forgent Power Solutions, Inc.', 'Critical Grid Hardware & AI Data Center Power Infrastructure',
-        'Valerie', 'Christian', 'STRONG BUY', True, en_overview, th_overview, en_dcf, th_dcf, 'Technology & Semiconductors'
+        'Valerie', 'Christian', 'STRONG BUY', True, en_overview, th_overview, en_dcf, th_dcf, 'Energy'
     ))
     conn_sqlite.commit()
     print("✅ Successfully inserted FPS reports into local SQLite!")
@@ -94,7 +94,7 @@ if db_url:
 
         cursor_pg.execute(query, (
             'fps', 'FPS', 'Forgent Power Solutions, Inc.', 'Critical Grid Hardware & AI Data Center Power Infrastructure',
-            'Valerie', 'Christian', 'STRONG BUY', True, en_overview, th_overview, en_dcf, th_dcf, 'Technology & Semiconductors'
+            'Valerie', 'Christian', 'STRONG BUY', True, en_overview, th_overview, en_dcf, th_dcf, 'Energy'
         ))
         conn_pg.commit()
         print("✅ Successfully inserted FPS reports into Supabase!")

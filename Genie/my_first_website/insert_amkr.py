@@ -30,7 +30,7 @@ try:
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         'amkr', 'AMKR', 'Amkor Technology, Inc.', 'Advanced Semiconductor Packaging & Chiplet Integration',
-        'Valerie', 'Christian', 'BUY', True, en_overview, th_overview, en_dcf, th_dcf, 'Technology & Semiconductors'
+        'Valerie', 'Christian', 'BUY', True, en_overview, th_overview, en_dcf, th_dcf, 'Semiconductors'
     ))
     conn_sqlite.commit()
     print("✅ Successfully inserted AMKR reports into local SQLite!")
@@ -94,7 +94,7 @@ if db_url:
 
         cursor_pg.execute(query, (
             'amkr', 'AMKR', 'Amkor Technology, Inc.', 'Advanced Semiconductor Packaging & Chiplet Integration',
-            'Valerie', 'Christian', 'BUY', True, en_overview, th_overview, en_dcf, th_dcf, 'Technology & Semiconductors'
+            'Valerie', 'Christian', 'BUY', True, en_overview, th_overview, en_dcf, th_dcf, 'Semiconductors'
         ))
         conn_pg.commit()
         print("✅ Successfully inserted AMKR reports into Supabase!")

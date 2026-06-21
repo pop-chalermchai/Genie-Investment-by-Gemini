@@ -26,7 +26,7 @@ try:
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         'fly', 'FLY', 'Firefly Aerospace, Inc.', 'Northrop Partnership & High-Hurdle Growth Scaling',
-        'Valerie', 'Christian', 'SPECULATIVE BUY', True, en_overview, th_overview, en_dcf, th_dcf, 'Aerospace & Defense'
+        'Valerie', 'Christian', 'SPECULATIVE BUY', True, en_overview, th_overview, en_dcf, th_dcf, 'Aerospace'
     ))
     conn.commit()
     print("Successfully inserted FLY reports into the database!")
