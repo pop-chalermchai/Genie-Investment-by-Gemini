@@ -226,37 +226,33 @@ def add_portfolio():
         data = request.get_json(force=True)
         portfolio_name = data.get('name')
         category_name = data.get('category', 'Stocks')
-        
+        parent_id = data.get('parentId')
+        if parent_id == '' or parent_id == 'null':
+            parent_id = None
+
         if not portfolio_name:
             raise ValueError("Portfolio name is required")
-        
+
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
-        
+
         # Get category id
         execute_sql(cursor, is_postgres, "SELECT id FROM categories WHERE name=?", (category_name,))
         cat_rows = fetch_all_as_dict(cursor, is_postgres)
-        
+
         if cat_rows:
             cat_id = cat_rows[0]['id']
         else:
             execute_sql(cursor, is_postgres, "INSERT INTO categories (name) VALUES (?)", (category_name,))
             if is_postgres:
-                # In pg8000, we retrieve last inserted ID differently if needed,
-                # but standard returning or querying max ID can be done, or we can use cursor.lastrowid fallback.
-                # Actually, pg8000 doesn't populate cursor.lastrowid by default.
-                # So we can use INSERT INTO ... RETURNING id
                 execute_sql(cursor, is_postgres, "SELECT MAX(id) FROM categories")
                 cat_id = cursor.fetchone()[0]
             else:
                 cat_id = cursor.lastrowid
-        
-        execute_sql(cursor, is_postgres, "INSERT INTO portfolios (name, category_id) VALUES (?, ?)", (portfolio_name, cat_id))
-        
-        if is_postgres:
-            conn.commit()
-        else:
-            conn.commit()
+
+        execute_sql(cursor, is_postgres, "INSERT INTO portfolios (name, category_id, parent_id) VALUES (?, ?, ?)", (portfolio_name, cat_id, parent_id))
+
+        conn.commit()
         conn.close()
         return jsonify({"success": True})
     except Exception as e:
@@ -384,27 +380,30 @@ def delete_portfolio():
     p_name = request.args.get('name')
     if not p_name:
         return jsonify({"error": "Portfolio name required"}), 400
-        
+
     try:
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
-        
+
         # Find portfolio ID
         execute_sql(cursor, is_postgres, "SELECT id FROM portfolios WHERE name=?", (p_name,))
         p_rows = fetch_all_as_dict(cursor, is_postgres)
         if not p_rows:
             raise ValueError(f"Portfolio '{p_name}' not found")
         p_id = p_rows[0]['id']
-        
-        # Delete transactions related to assets in this portfolio
-        execute_sql(cursor, is_postgres, "DELETE FROM transactions WHERE asset_id IN (SELECT id FROM assets WHERE portfolio_id=?)", (p_id,))
-        
-        # Delete assets in this portfolio
-        execute_sql(cursor, is_postgres, "DELETE FROM assets WHERE portfolio_id=?", (p_id,))
-        
-        # Delete portfolio
-        execute_sql(cursor, is_postgres, "DELETE FROM portfolios WHERE id=?", (p_id,))
-        
+
+        # Find all sub-portfolios under this parent
+        execute_sql(cursor, is_postgres, "SELECT id FROM portfolios WHERE parent_id=?", (p_id,))
+        sub_rows = fetch_all_as_dict(cursor, is_postgres)
+        sub_ids = [r['id'] for r in sub_rows]
+
+        # Delete parent + all sub-portfolios
+        all_ids = [p_id] + sub_ids
+        for curr_id in all_ids:
+            execute_sql(cursor, is_postgres, "DELETE FROM transactions WHERE asset_id IN (SELECT id FROM assets WHERE portfolio_id=?)", (curr_id,))
+            execute_sql(cursor, is_postgres, "DELETE FROM assets WHERE portfolio_id=?", (curr_id,))
+            execute_sql(cursor, is_postgres, "DELETE FROM portfolios WHERE id=?", (curr_id,))
+
         conn.commit()
         conn.close()
         return jsonify({"success": True})
