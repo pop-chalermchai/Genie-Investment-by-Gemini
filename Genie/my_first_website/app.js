@@ -300,8 +300,8 @@ function deleteParentPortfolio(pName) {
             if (data.success) {
                 // Re-fetch holdings and portfolios
                 Promise.all([
-                    fetch('/api/holdings').then(res => res.json()),
-                    fetch('/api/portfolios').then(res => res.json())
+                    fetch('/api/holdings?t=' + Date.now()).then(res => res.json()),
+                    fetch('/api/portfolios?t=' + Date.now()).then(res => res.json())
                 ])
                 .then(([hData, pData]) => {
                     holdings = hData.map(h => ({...h, currentPrice: h.avgCost}));
@@ -325,7 +325,7 @@ function deleteParentPortfolio(pName) {
 // CORE WORKSPACE INITIALIZATION & LOGIC FLOW
 // ==========================================================================
 function fetchInitData(onComplete = null) {
-    return fetch('/api/init-data')
+    return fetch('/api/init-data?t=' + Date.now())
     .then(res => res.json())
     .then(data => {
         holdings = data.holdings.map(h => ({...h, currentPrice: h.avgCost}));
@@ -1948,6 +1948,10 @@ function editSubPortfolio(subName) {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
+            const formattedNewName = newName.trim();
+            if (activeSubPortfolio === subName) {
+                activeSubPortfolio = formattedNewName;
+            }
             fetchInitData();
         } else {
             alert("Failed to rename sub-portfolio: " + data.error);
