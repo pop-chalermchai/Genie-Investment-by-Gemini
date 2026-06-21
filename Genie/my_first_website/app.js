@@ -1932,7 +1932,7 @@ function editSubPortfolio(subName) {
     fetch('/api/portfolio', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ oldName: subName, newName: newName.trim() })
+        body: JSON.stringify({ oldName: subName, newName: newName.trim(), parentName: activeParentPortfolio })
     })
     .then(r => r.json())
     .then(data => {

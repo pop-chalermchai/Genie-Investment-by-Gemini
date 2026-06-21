@@ -784,13 +784,25 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 data = json.loads(post_data.decode('utf-8'))
                 old_name = data.get('oldName')
                 new_name = data.get('newName')
+                parent_name = data.get('parentName')
                 if not old_name or not new_name:
                     raise ValueError("oldName and newName required")
                 
                 db_path = os.path.join(DIRECTORY, 'portfolio.db')
                 conn = sqlite3.connect(db_path)
                 cursor = conn.cursor()
-                cursor.execute("UPDATE portfolios SET name=? WHERE name=?", (new_name, old_name))
+                
+                if parent_name:
+                    cursor.execute("SELECT id FROM portfolios WHERE name=? AND parent_id IS NULL", (parent_name,))
+                    p_row = cursor.fetchone()
+                    if p_row:
+                        p_id = p_row[0]
+                        cursor.execute("UPDATE portfolios SET name=? WHERE name=? AND parent_id=?", (new_name, old_name, p_id))
+                    else:
+                        cursor.execute("UPDATE portfolios SET name=? WHERE name=?", (new_name, old_name))
+                else:
+                    cursor.execute("UPDATE portfolios SET name=? WHERE name=?", (new_name, old_name))
+                    
                 conn.commit()
                 conn.close()
                 self.send_response(200)

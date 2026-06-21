@@ -452,12 +452,25 @@ def edit_portfolio():
         data = request.get_json(force=True)
         old_name = data.get('oldName')
         new_name = data.get('newName')
+        parent_name = data.get('parentName')
         if not old_name or not new_name:
             raise ValueError("oldName and newName are required")
             
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
-        execute_sql(cursor, is_postgres, "UPDATE portfolios SET name=? WHERE name=?", (new_name, old_name))
+        
+        if parent_name:
+            # Find parent portfolio ID
+            execute_sql(cursor, is_postgres, "SELECT id FROM portfolios WHERE name=? AND parent_id IS NULL", (parent_name,))
+            rows = fetch_all_as_dict(cursor, is_postgres)
+            if rows:
+                p_id = rows[0]['id']
+                execute_sql(cursor, is_postgres, "UPDATE portfolios SET name=? WHERE name=? AND parent_id=?", (new_name, old_name, p_id))
+            else:
+                execute_sql(cursor, is_postgres, "UPDATE portfolios SET name=? WHERE name=?", (new_name, old_name))
+        else:
+            execute_sql(cursor, is_postgres, "UPDATE portfolios SET name=? WHERE name=?", (new_name, old_name))
+            
         conn.commit()
         conn.close()
         return jsonify({"success": True})
