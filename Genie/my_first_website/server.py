@@ -769,6 +769,87 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
             self.send_response(404)
             self.end_headers()
 
+    def do_PUT(self):
+        parsed_url = urllib.parse.urlparse(self.path)
+        content_length = int(self.headers.get('Content-Length', 0))
+        post_data = self.rfile.read(content_length)
+        
+        if parsed_url.path == '/api/portfolio':
+            try:
+                data = json.loads(post_data.decode('utf-8'))
+                old_name = data.get('oldName')
+                new_name = data.get('newName')
+                if not old_name or not new_name:
+                    raise ValueError("oldName and newName required")
+                
+                db_path = os.path.join(DIRECTORY, 'portfolio.db')
+                conn = sqlite3.connect(db_path)
+                cursor = conn.cursor()
+                cursor.execute("UPDATE portfolios SET name=? WHERE name=?", (new_name, old_name))
+                conn.commit()
+                conn.close()
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": True}).encode())
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode())
+            return
+            
+        elif parsed_url.path == '/api/asset-adjustment':
+            try:
+                data = json.loads(post_data.decode('utf-8'))
+                ticker = data.get('ticker')
+                portfolio_name = data.get('portfolio')
+                new_shares = float(data.get('shares', 0))
+                new_price = float(data.get('price', 0))
+                currency = data.get('currency', 'USD')
+                
+                db_path = os.path.join(DIRECTORY, 'portfolio.db')
+                conn = sqlite3.connect(db_path)
+                conn.row_factory = sqlite3.Row
+                cursor = conn.cursor()
+                
+                cursor.execute("SELECT id FROM portfolios WHERE name=?", (portfolio_name,))
+                p_row = cursor.fetchone()
+                if not p_row:
+                    raise ValueError("Portfolio not found")
+                p_id = p_row['id']
+                
+                cursor.execute("SELECT id FROM assets WHERE ticker=? AND portfolio_id=?", (ticker, p_id))
+                a_row = cursor.fetchone()
+                if not a_row:
+                    raise ValueError("Asset not found")
+                asset_id = a_row['id']
+                
+                cursor.execute("DELETE FROM transactions WHERE asset_id=?", (asset_id,))
+                if new_shares > 0:
+                    cursor.execute("INSERT INTO transactions (asset_id, type, shares, price, currency) VALUES (?, 'BUY', ?, ?, ?)", (asset_id, new_shares, new_price, currency))
+                
+                conn.commit()
+                conn.close()
+                
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": True}).encode())
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode())
+            return
+        else:
+            self.send_response(404)
+            self.end_headers()
+
     def do_DELETE(self):
         parsed_url = urllib.parse.urlparse(self.path)
         if parsed_url.path == '/api/transaction':

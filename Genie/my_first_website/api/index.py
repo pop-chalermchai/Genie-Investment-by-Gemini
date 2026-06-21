@@ -441,6 +441,62 @@ def bulk_ingest():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/portfolio', methods=['PUT'])
+def edit_portfolio():
+    try:
+        data = request.get_json(force=True)
+        old_name = data.get('oldName')
+        new_name = data.get('newName')
+        if not old_name or not new_name:
+            raise ValueError("oldName and newName are required")
+            
+        conn, is_postgres = get_db_connection()
+        cursor = conn.cursor()
+        execute_sql(cursor, is_postgres, "UPDATE portfolios SET name=? WHERE name=?", (new_name, old_name))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/asset-adjustment', methods=['PUT'])
+def adjust_asset():
+    try:
+        data = request.get_json(force=True)
+        ticker = data.get('ticker')
+        portfolio_name = data.get('portfolio')
+        new_shares = float(data.get('shares', 0))
+        new_price = float(data.get('price', 0))
+        currency = data.get('currency', 'USD')
+        
+        if not all([ticker, portfolio_name, new_shares >= 0, new_price >= 0]):
+            raise ValueError("Missing or invalid fields")
+            
+        conn, is_postgres = get_db_connection()
+        cursor = conn.cursor()
+        
+        execute_sql(cursor, is_postgres, "SELECT id FROM portfolios WHERE name=?", (portfolio_name,))
+        p_rows = fetch_all_as_dict(cursor, is_postgres)
+        if not p_rows:
+            raise ValueError("Portfolio not found")
+        p_id = p_rows[0]['id']
+        
+        execute_sql(cursor, is_postgres, "SELECT id FROM assets WHERE ticker=? AND portfolio_id=?", (ticker, p_id))
+        a_rows = fetch_all_as_dict(cursor, is_postgres)
+        if not a_rows:
+            raise ValueError("Asset not found")
+        asset_id = a_rows[0]['id']
+        
+        execute_sql(cursor, is_postgres, "DELETE FROM transactions WHERE asset_id=?", (asset_id,))
+        if new_shares > 0:
+            execute_sql(cursor, is_postgres, "INSERT INTO transactions (asset_id, type, shares, price, currency) VALUES (?, 'BUY', ?, ?, ?)", (asset_id, new_shares, new_price, currency))
+            
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/portfolio', methods=['DELETE'])
 def delete_portfolio():
     p_name = request.args.get('name')

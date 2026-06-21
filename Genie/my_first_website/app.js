@@ -198,11 +198,37 @@ function renderPortfolioPage() {
         const subData = data.subPorts[subName];
         const subGainLoss = subData.value - subData.cost;
         const subGainLossPct = subData.cost > 0 ? (subGainLoss / subData.cost) * 100 : 0;
+        
+        const wrapper = document.createElement("div");
+        wrapper.style.display = "inline-flex";
+        wrapper.style.alignItems = "center";
+        wrapper.style.gap = "4px";
+        
         const chip = document.createElement("button");
         chip.className = "subport-chip" + (activeSubPortfolio === subName ? " active" : "");
         chip.innerHTML = `<span class="chip-name">${subName}</span><span class="chip-value">${symbol}${formatNumber(subData.value, 0)}</span><span class="chip-pl" style="color:${subGainLoss >= 0 ? 'var(--color-positive)' : 'var(--color-negative)'}">${subGainLoss >= 0 ? '+' : ''}${subGainLossPct.toFixed(1)}%</span>`;
         chip.onclick = () => selectSubPortfolio(subName);
-        chipsEl.appendChild(chip);
+        wrapper.appendChild(chip);
+        
+        const editBtn = document.createElement("button");
+        editBtn.innerHTML = "✎";
+        editBtn.title = "Edit Sub-Portfolio";
+        editBtn.style.cssText = "background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:0.9rem;padding:2px 4px;opacity:0.6;transition:0.2s;";
+        editBtn.onmouseover = () => editBtn.style.opacity = 1;
+        editBtn.onmouseout = () => editBtn.style.opacity = 0.6;
+        editBtn.onclick = () => editSubPortfolio(subName);
+        wrapper.appendChild(editBtn);
+
+        const delBtn = document.createElement("button");
+        delBtn.innerHTML = "🗑️";
+        delBtn.title = "Delete Sub-Portfolio";
+        delBtn.style.cssText = "background:none;border:none;color:var(--color-negative);cursor:pointer;font-size:0.9rem;padding:2px 4px;opacity:0.6;transition:0.2s;";
+        delBtn.onmouseover = () => delBtn.style.opacity = 1;
+        delBtn.onmouseout = () => delBtn.style.opacity = 0.6;
+        delBtn.onclick = () => deleteSubPortfolio(subName);
+        wrapper.appendChild(delBtn);
+
+        chipsEl.appendChild(wrapper);
     });
 
     // Build filtered holdings table
@@ -254,7 +280,10 @@ function renderPortfolioPage() {
             <td class="text-right table-currency">${symbol}${currentPrice.toFixed(2)}</td>
             <td class="text-right table-currency" style="font-weight:500;">${symbol}${formatNumber(marketValue, 2)}</td>
             <td class="text-right ${gainLoss >= 0 ? 'cell-positive' : 'cell-negative'}">
-                ${symbol}${formatNumber(gainLoss, 2)} (${gainLossPct >= 0 ? '+' : ''}${gainLossPct.toFixed(1)}%)
+                <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px;">
+                    <span>${symbol}${formatNumber(gainLoss, 2)} (${gainLossPct >= 0 ? '+' : ''}${gainLossPct.toFixed(1)}%)</span>
+                    <button onclick="event.stopPropagation(); openEditAssetModal('${pos.ticker}', '${pos.portfolio}', '${pos.currency}', ${pos.shares}, ${pos.avgCost})" title="Edit Asset" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:1rem;padding:0;">✎</button>
+                </div>
             </td>
         `;
         tbody.appendChild(row);
@@ -1876,6 +1905,119 @@ async function fetchStockChartData() {
     } catch (err) {
         console.error("Error loading stock chart:", err);
     }
+}
+
+function editSubPortfolio(subName) {
+    const newName = prompt(`Enter new name for sub-portfolio "${subName}":`, subName);
+    if (!newName || newName.trim() === "" || newName === subName) return;
+    
+    fetch('/api/portfolio', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ oldName: subName, newName: newName.trim() })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            fetchInitData();
+        } else {
+            alert("Failed to rename sub-portfolio: " + data.error);
+        }
+    });
+}
+
+function deleteSubPortfolio(subName) {
+    if (confirm(`Delete sub-portfolio "${subName}" and all its assets/transactions?`)) {
+        fetch('/api/portfolio?name=' + encodeURIComponent(subName), { method: 'DELETE' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                activeSubPortfolio = null;
+                fetchInitData();
+            } else {
+                alert("Failed to delete sub-portfolio: " + data.error);
+            }
+        });
+    }
+}
+
+// ---------------------------------------------
+// ADD SUB-PORTFOLIO MODAL
+// ---------------------------------------------
+function openAddSubPortfolioModal() {
+    const pInfo = portfoliosList.find(p => p.name === activeParentPortfolio);
+    if (pInfo) {
+        document.getElementById("new-subport-parent-id").value = pInfo.id;
+        document.getElementById("add-subportfolio-modal").classList.add("active");
+    }
+}
+
+function closeAddSubPortfolioModal() {
+    document.getElementById("add-subportfolio-modal").classList.remove("active");
+}
+
+function handleAddSubPortfolio(e) {
+    e.preventDefault();
+    const name = document.getElementById("new-subport-name").value.trim();
+    const category = document.getElementById("new-subport-category").value;
+    const parentId = document.getElementById("new-subport-parent-id").value;
+
+    fetch('/api/portfolio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, category, parentId })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            closeAddSubPortfolioModal();
+            document.getElementById("add-subportfolio-form").reset();
+            fetchInitData();
+        } else {
+            alert("Error: " + data.error);
+        }
+    });
+}
+
+// ---------------------------------------------
+// EDIT ASSET MODAL
+// ---------------------------------------------
+function openEditAssetModal(ticker, portfolio, currency, shares, avgCost) {
+    document.getElementById("edit-asset-ticker").value = ticker;
+    document.getElementById("edit-asset-portfolio").value = portfolio;
+    document.getElementById("edit-asset-currency").value = currency;
+    document.getElementById("edit-asset-display").innerText = `${ticker} (in ${portfolio})`;
+    document.getElementById("edit-asset-shares").value = shares;
+    document.getElementById("edit-asset-price").value = avgCost;
+    document.getElementById("edit-asset-modal").classList.add("active");
+}
+
+function closeEditAssetModal() {
+    document.getElementById("edit-asset-modal").classList.remove("active");
+}
+
+function handleEditAsset(e) {
+    e.preventDefault();
+    const ticker = document.getElementById("edit-asset-ticker").value;
+    const portfolio = document.getElementById("edit-asset-portfolio").value;
+    const currency = document.getElementById("edit-asset-currency").value;
+    const shares = parseFloat(document.getElementById("edit-asset-shares").value);
+    const price = parseFloat(document.getElementById("edit-asset-price").value);
+
+    fetch('/api/asset-adjustment', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ticker, portfolio, currency, shares, price })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            closeEditAssetModal();
+            fetchInitData();
+        } else {
+            alert("Failed to adjust asset: " + data.error);
+        }
+    });
 }
 
 function changeStockChartRange(range) {

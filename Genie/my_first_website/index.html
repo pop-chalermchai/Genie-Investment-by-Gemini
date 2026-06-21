@@ -253,7 +253,10 @@
                             <span id="port-detail-value" class="portfolio-detail-value">$0.00</span>
                             <span id="port-detail-pl" class="portfolio-detail-pl">+0.0%</span>
                         </div>
-                        <button onclick="openTransferStockModal()" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.82rem; border-radius: 4px; border: 1px solid var(--border-dim); background: var(--bg-card-solid); color: var(--text-primary); font-weight: 700; cursor: pointer; transition: var(--transition); margin-left: auto;">⇄ Transfer Stock</button>
+                        <div style="margin-left: auto; display: flex; gap: 10px;">
+                            <button onclick="openAddSubPortfolioModal()" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.82rem; border-radius: 4px; border: 1px solid var(--border-dim); background: var(--bg-card-solid); color: var(--text-primary); font-weight: 700; cursor: pointer; transition: var(--transition);">+ Add Sub-Portfolio</button>
+                            <button onclick="openTransferStockModal()" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.82rem; border-radius: 4px; border: 1px solid var(--border-dim); background: var(--bg-card-solid); color: var(--text-primary); font-weight: 700; cursor: pointer; transition: var(--transition);">⇄ Transfer Stock</button>
+                        </div>
                     </div>
 
                     <!-- Sub-portfolio selection chips -->
@@ -900,16 +903,64 @@
                         <option value="Gold">Gold</option>
                     </select>
                 </div>
-                <div class="form-group" style="margin-bottom: 25px;">
-                    <label for="new-port-parent" style="display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 0.85rem;">Parent Portfolio (Optional)</label>
-                    <select id="new-port-parent" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 6px; box-sizing: border-box; appearance: none;">
-                        <option value="">None (Create as Parent Portfolio)</option>
-                    </select>
-                </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: 700; border-radius: 6px; border: none; cursor: pointer; background: linear-gradient(90deg, #00F0FF 0%, #0088FF 100%); color: #030712;">Create Portfolio</button>
             </form>
         </div>
     </div>
+
+    <!-- ADD SUB-PORTFOLIO MODAL -->
+    <div id="add-subportfolio-modal" class="modal-overlay">
+        <div class="modal-content glass-panel" style="max-width: 400px; padding: 30px;">
+            <button class="modal-close" onclick="closeAddSubPortfolioModal()">×</button>
+            <h2 class="card-title" style="margin-bottom: 20px;">Add Sub-Portfolio</h2>
+            <form id="add-subportfolio-form" onsubmit="handleAddSubPortfolio(event)">
+                <input type="hidden" id="new-subport-parent-id">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label for="new-subport-name" style="display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 0.85rem;">Sub-Portfolio Name</label>
+                    <input type="text" id="new-subport-name" required placeholder="e.g., Binance" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 6px; box-sizing: border-box;">
+                </div>
+                <div class="form-group" style="margin-bottom: 25px;">
+                    <label for="new-subport-category" style="display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 0.85rem;">Category</label>
+                    <select id="new-subport-category" required style="width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 6px; box-sizing: border-box; appearance: none;">
+                        <option value="Stocks">Stocks</option>
+                        <option value="Crypto">Crypto</option>
+                        <option value="Real Estate">Real Estate</option>
+                        <option value="Provident Fund">Provident Fund</option>
+                        <option value="Mutual Fund">Mutual Fund</option>
+                        <option value="Gold">Gold</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: 700; border-radius: 6px; border: none; cursor: pointer; background: linear-gradient(90deg, #00F0FF 0%, #0088FF 100%); color: #030712;">Create Sub-Portfolio</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- EDIT ASSET MODAL -->
+    <div id="edit-asset-modal" class="modal-overlay">
+        <div class="modal-content glass-panel" style="max-width: 400px; padding: 30px;">
+            <button class="modal-close" onclick="closeEditAssetModal()">×</button>
+            <h2 class="card-title" style="margin-bottom: 20px;">Edit Asset</h2>
+            <form id="edit-asset-form" onsubmit="handleEditAsset(event)">
+                <input type="hidden" id="edit-asset-ticker">
+                <input type="hidden" id="edit-asset-portfolio">
+                <input type="hidden" id="edit-asset-currency">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 0.85rem;">Asset</label>
+                    <div id="edit-asset-display" style="color: var(--accent-neon); font-weight: bold; font-size: 1.1rem; padding-bottom: 5px;"></div>
+                </div>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label for="edit-asset-shares" style="display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 0.85rem;">Total Shares (Qty)</label>
+                    <input type="number" id="edit-asset-shares" required min="0.00000001" step="any" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 6px; box-sizing: border-box;">
+                </div>
+                <div class="form-group" style="margin-bottom: 25px;">
+                    <label for="edit-asset-price" style="display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 0.85rem;">Average Cost Price</label>
+                    <input type="number" id="edit-asset-price" required min="0.00000001" step="any" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 6px; box-sizing: border-box;">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: 700; border-radius: 6px; border: none; cursor: pointer; background: linear-gradient(90deg, #00F0FF 0%, #0088FF 100%); color: #030712;">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
 
     <!-- STOCK DETAIL MODAL -->
     <div id="stock-detail-modal" class="modal-overlay">
