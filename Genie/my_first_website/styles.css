@@ -650,7 +650,7 @@ header::before {
 }
 
 .team-card {
-    height: 420px;
+    height: 480px;
     perspective: 1000px;
     cursor: pointer;
     background: transparent;
@@ -686,51 +686,68 @@ header::before {
 
 /* Front Card Specifics */
 .team-card-front {
-    justify-content: space-between;
+    justify-content: flex-end;
     background: var(--bg-card);
 }
 
 .member-photo-container {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: 250px;
+    height: 100%;
     overflow: hidden;
-    position: relative;
-    border-bottom: 1px solid var(--border-dim);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: linear-gradient(180deg, rgba(10, 15, 26, 0.4) 0%, rgba(3, 7, 18, 0.6) 100%);
-    padding: 8px;
+    z-index: 0;
+    border-bottom: none;
+    display: block;
+    padding: 0;
+    background: none;
+}
+
+.member-photo-container::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 60%;
+    background: linear-gradient(to top, rgba(3, 7, 18, 1) 0%, rgba(3, 7, 18, 0.8) 40%, transparent 100%);
+    pointer-events: none;
 }
 
 .member-photo {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    border-radius: 8px;
-    transition: var(--transition);
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    border-radius: 0;
+    transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 .team-card:hover .member-photo {
-    transform: scale(1.03);
+    transform: scale(1.06);
 }
 
 .member-front-info {
-    padding: 16px 20px;
+    position: relative;
+    z-index: 1;
+    padding: 16px 20px 4px 20px;
     display: flex;
     flex-direction: column;
     gap: 4px;
 }
 
 .flip-hint {
+    position: relative;
+    z-index: 1;
     font-size: 0.65rem;
     font-weight: 700;
     letter-spacing: 1.5px;
     color: var(--accent-neon);
     text-align: center;
-    padding: 10px;
-    border-top: 1px solid rgba(38, 139, 210, 0.1);
-    background: rgba(38, 139, 210, 0.02);
+    padding: 10px 10px 18px 10px;
+    background: transparent;
+    border-top: none;
 }
 
 /* Back Card Specifics */
