@@ -1978,10 +1978,18 @@ function deleteSubPortfolio(subName) {
 // ADD SUB-PORTFOLIO MODAL
 // ---------------------------------------------
 function openAddSubPortfolioModal() {
-    const pInfo = portfoliosList.find(p => p.name === activeParentPortfolio);
+    if (!activeParentPortfolio) {
+        console.error("openAddSubPortfolioModal error: activeParentPortfolio is not set");
+        alert("Cannot add sub-portfolio: active parent portfolio is not set.");
+        return;
+    }
+    const pInfo = portfoliosList.find(p => p.name && p.name.trim().toLowerCase() === activeParentPortfolio.trim().toLowerCase() && p.parentId === null);
     if (pInfo) {
         document.getElementById("new-subport-parent-id").value = pInfo.id;
         document.getElementById("add-subportfolio-modal").classList.add("active");
+    } else {
+        console.error("openAddSubPortfolioModal error: parent portfolio not found in portfoliosList", activeParentPortfolio, portfoliosList);
+        alert(`Cannot add sub-portfolio: parent portfolio "${activeParentPortfolio}" could not be found.`);
     }
 }
 
@@ -1993,9 +2001,10 @@ function handleAddSubPortfolio(e) {
     e.preventDefault();
     const name = document.getElementById("new-subport-name").value.trim();
     const category = document.getElementById("new-subport-category").value;
-    const parentId = document.getElementById("new-subport-parent-id").value;
+    const parentIdVal = document.getElementById("new-subport-parent-id").value;
+    const parentId = parentIdVal === "" ? null : parseInt(parentIdVal);
 
-    fetch('/api/portfolio', {
+    fetch('/api/portfolios', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, category, parentId })
