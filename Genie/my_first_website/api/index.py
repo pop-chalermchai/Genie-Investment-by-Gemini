@@ -453,11 +453,27 @@ def edit_portfolio():
         old_name = data.get('oldName')
         new_name = data.get('newName')
         parent_name = data.get('parentName')
+        new_category = data.get('newCategory')
         if not old_name or not new_name:
             raise ValueError("oldName and newName are required")
             
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
+        
+        # Get category id if newCategory is provided
+        cat_id = None
+        if new_category:
+            execute_sql(cursor, is_postgres, "SELECT id FROM categories WHERE name=?", (new_category,))
+            cat_rows = fetch_all_as_dict(cursor, is_postgres)
+            if cat_rows:
+                cat_id = cat_rows[0]['id']
+            else:
+                execute_sql(cursor, is_postgres, "INSERT INTO categories (name) VALUES (?)", (new_category,))
+                if is_postgres:
+                    execute_sql(cursor, is_postgres, "SELECT MAX(id) FROM categories")
+                    cat_id = cursor.fetchone()[0]
+                else:
+                    cat_id = cursor.lastrowid
         
         if parent_name:
             # Find parent portfolio ID
@@ -465,12 +481,21 @@ def edit_portfolio():
             rows = fetch_all_as_dict(cursor, is_postgres)
             if rows:
                 p_id = rows[0]['id']
-                execute_sql(cursor, is_postgres, "UPDATE portfolios SET name=? WHERE name=? AND parent_id=?", (new_name, old_name, p_id))
+                if cat_id is not None:
+                    execute_sql(cursor, is_postgres, "UPDATE portfolios SET name=?, category_id=? WHERE name=? AND parent_id=?", (new_name, cat_id, old_name, p_id))
+                else:
+                    execute_sql(cursor, is_postgres, "UPDATE portfolios SET name=? WHERE name=? AND parent_id=?", (new_name, old_name, p_id))
+            else:
+                if cat_id is not None:
+                    execute_sql(cursor, is_postgres, "UPDATE portfolios SET name=?, category_id=? WHERE name=?", (new_name, cat_id, old_name))
+                else:
+                    execute_sql(cursor, is_postgres, "UPDATE portfolios SET name=? WHERE name=?", (new_name, old_name))
+        else:
+            if cat_id is not None:
+                execute_sql(cursor, is_postgres, "UPDATE portfolios SET name=?, category_id=? WHERE name=?", (new_name, cat_id, old_name))
             else:
                 execute_sql(cursor, is_postgres, "UPDATE portfolios SET name=? WHERE name=?", (new_name, old_name))
-        else:
-            execute_sql(cursor, is_postgres, "UPDATE portfolios SET name=? WHERE name=?", (new_name, old_name))
-            
+                
         conn.commit()
         conn.close()
         return jsonify({"success": True})

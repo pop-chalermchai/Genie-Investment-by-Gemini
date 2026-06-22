@@ -1937,20 +1937,55 @@ async function fetchStockChartData() {
 }
 
 function editSubPortfolio(subName) {
-    const newName = prompt(`Enter new name for sub-portfolio "${subName}":`, subName);
-    if (!newName || newName.trim() === "" || newName === subName) return;
-    
+    if (!activeParentPortfolio) {
+        alert("Cannot edit sub-portfolio: active parent portfolio is not set.");
+        return;
+    }
+    const parentPort = portfoliosList.find(p => p.name && p.name.trim().toLowerCase() === activeParentPortfolio.trim().toLowerCase() && p.parentId === null);
+    if (!parentPort) {
+        alert(`Cannot edit sub-portfolio: parent portfolio "${activeParentPortfolio}" could not be found.`);
+        return;
+    }
+    const subPortObj = portfoliosList.find(p => p.name === subName && p.parentId === parentPort.id);
+    const currentCategory = subPortObj ? subPortObj.category : "Stocks";
+
+    document.getElementById("edit-subport-old-name").value = subName;
+    document.getElementById("edit-subport-name").value = subName;
+    document.getElementById("edit-subport-category").value = currentCategory || "Stocks";
+    document.getElementById("edit-subportfolio-modal").classList.add("active");
+}
+
+function closeEditSubPortfolioModal() {
+    document.getElementById("edit-subportfolio-modal").classList.remove("active");
+}
+
+function handleEditSubPortfolioSubmit(e) {
+    e.preventDefault();
+    const oldName = document.getElementById("edit-subport-old-name").value;
+    const newName = document.getElementById("edit-subport-name").value.trim();
+    const newCategory = document.getElementById("edit-subport-category").value;
+
+    if (!newName) {
+        alert("Sub-portfolio name is required.");
+        return;
+    }
+
     fetch('/api/portfolio', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ oldName: subName, newName: newName.trim(), parentName: activeParentPortfolio })
+        body: JSON.stringify({
+            oldName: oldName,
+            newName: newName,
+            parentName: activeParentPortfolio,
+            newCategory: newCategory
+        })
     })
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            const formattedNewName = newName.trim();
-            if (activeSubPortfolio === subName) {
-                activeSubPortfolio = formattedNewName;
+            closeEditSubPortfolioModal();
+            if (activeSubPortfolio === oldName) {
+                activeSubPortfolio = newName;
             }
             fetchInitData();
         } else {

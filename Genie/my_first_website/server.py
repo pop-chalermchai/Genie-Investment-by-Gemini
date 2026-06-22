@@ -785,6 +785,7 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 old_name = data.get('oldName')
                 new_name = data.get('newName')
                 parent_name = data.get('parentName')
+                new_category = data.get('newCategory')
                 if not old_name or not new_name:
                     raise ValueError("oldName and newName required")
                 
@@ -792,16 +793,36 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 conn = sqlite3.connect(db_path)
                 cursor = conn.cursor()
                 
+                # Get category id if newCategory is provided
+                cat_id = None
+                if new_category:
+                    cursor.execute("SELECT id FROM categories WHERE name=?", (new_category,))
+                    cat_row = cursor.fetchone()
+                    if cat_row:
+                        cat_id = cat_row[0]
+                    else:
+                        cursor.execute("INSERT INTO categories (name) VALUES (?)", (new_category,))
+                        cat_id = cursor.lastrowid
+                
                 if parent_name:
                     cursor.execute("SELECT id FROM portfolios WHERE name=? AND parent_id IS NULL", (parent_name,))
                     p_row = cursor.fetchone()
                     if p_row:
                         p_id = p_row[0]
-                        cursor.execute("UPDATE portfolios SET name=? WHERE name=? AND parent_id=?", (new_name, old_name, p_id))
+                        if cat_id is not None:
+                            cursor.execute("UPDATE portfolios SET name=?, category_id=? WHERE name=? AND parent_id=?", (new_name, cat_id, old_name, p_id))
+                        else:
+                            cursor.execute("UPDATE portfolios SET name=? WHERE name=? AND parent_id=?", (new_name, old_name, p_id))
+                    else:
+                        if cat_id is not None:
+                            cursor.execute("UPDATE portfolios SET name=?, category_id=? WHERE name=?", (new_name, cat_id, old_name))
+                        else:
+                            cursor.execute("UPDATE portfolios SET name=? WHERE name=?", (new_name, old_name))
+                else:
+                    if cat_id is not None:
+                        cursor.execute("UPDATE portfolios SET name=?, category_id=? WHERE name=?", (new_name, cat_id, old_name))
                     else:
                         cursor.execute("UPDATE portfolios SET name=? WHERE name=?", (new_name, old_name))
-                else:
-                    cursor.execute("UPDATE portfolios SET name=? WHERE name=?", (new_name, old_name))
                     
                 conn.commit()
                 conn.close()
