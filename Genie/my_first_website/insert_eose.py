@@ -5,6 +5,19 @@ import ssl
 import urllib.parse
 import shutil
 
+import re
+
+def clean_markdown(text):
+    if not text:
+        return ""
+    # Remove frontmatter (YAML block at the top)
+    if text.strip().startswith('---'):
+        text = re.sub(r'^---\s*\n.*?\n---\s*\n', '', text, flags=re.DOTALL)
+    # Remove links block at the bottom
+    text = re.sub(r'\n*---\s*\n\*\*Links:\*\*.*$', '', text, flags=re.DOTALL)
+    return text.strip()
+
+
 # 0. Copy generated cover art to target path
 source_art = "/Users/popular/.gemini/antigravity-cli/brain/513f13ca-2560-487c-bab9-0691eba80622/eose_report_cover_art_1781762635774.jpg"
 dest_art = "/Users/popular/Desktop/Genie/research/EOSE/eose_report_cover_art.png"
@@ -21,16 +34,16 @@ except Exception as e:
 
 # 1. Read files
 with open("/Users/popular/Desktop/Genie/research/EOSE/01_Valerie_EOSE_Analysis.md", "r", encoding="utf-8") as f:
-    en_overview = f.read()
+    en_overview = clean_markdown(f.read())
 
 with open("/Users/popular/Desktop/Genie/research/EOSE/02_Christian_EOSE_Audit.md", "r", encoding="utf-8") as f:
-    en_dcf = f.read()
+    en_dcf = clean_markdown(f.read())
 
 with open("/Users/popular/Desktop/Genie/research/EOSE/01_Valerie_EOSE_Analysis_TH.md", "r", encoding="utf-8") as f:
-    th_overview = f.read()
+    th_overview = clean_markdown(f.read())
 
 with open("/Users/popular/Desktop/Genie/research/EOSE/02_Christian_EOSE_Audit_TH.md", "r", encoding="utf-8") as f:
-    th_dcf = f.read()
+    th_dcf = clean_markdown(f.read())
 
 db_path = "/Users/popular/Desktop/Genie/my_first_website/portfolio.db"
 

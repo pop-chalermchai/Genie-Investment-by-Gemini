@@ -1,21 +1,34 @@
 import sqlite3
 import os
 
+import re
+
+def clean_markdown(text):
+    if not text:
+        return ""
+    # Remove frontmatter (YAML block at the top)
+    if text.strip().startswith('---'):
+        text = re.sub(r'^---\s*\n.*?\n---\s*\n', '', text, flags=re.DOTALL)
+    # Remove links block at the bottom
+    text = re.sub(r'\n*---\s*\n\*\*Links:\*\*.*$', '', text, flags=re.DOTALL)
+    return text.strip()
+
+
 db_path = "/Users/popular/Desktop/Genie/my_first_website/portfolio.db"
 
 # English from Christian
 with open("/Users/popular/.gemini/antigravity-cli/brain/3a79accf-5157-4124-b90b-eb3aaf52ddec/bmnr_stock_analysis_overview.md", "r") as f:
-    en_overview = f.read()
+    en_overview = clean_markdown(f.read())
 
 with open("/Users/popular/.gemini/antigravity-cli/brain/3a79accf-5157-4124-b90b-eb3aaf52ddec/bmnr_reverse_dcf_analysis.md", "r") as f:
-    en_dcf = f.read()
+    en_dcf = clean_markdown(f.read())
 
 # Thai from Serene
 with open("/Users/popular/.gemini/antigravity-cli/brain/775c2c54-8f8f-4769-97e4-60cf9a3a261b/bmnr_stock_analysis_overview_th.md", "r") as f:
-    th_overview = f.read()
+    th_overview = clean_markdown(f.read())
 
 with open("/Users/popular/.gemini/antigravity-cli/brain/775c2c54-8f8f-4769-97e4-60cf9a3a261b/bmnr_reverse_dcf_analysis_th.md", "r") as f:
-    th_dcf = f.read()
+    th_dcf = clean_markdown(f.read())
 
 # Add the image to the top of the English overview
 # (Removed infographic embedding based on user feedback)

@@ -1,13 +1,26 @@
 import sqlite3
 import os
 
+import re
+
+def clean_markdown(text):
+    if not text:
+        return ""
+    # Remove frontmatter (YAML block at the top)
+    if text.strip().startswith('---'):
+        text = re.sub(r'^---\s*\n.*?\n---\s*\n', '', text, flags=re.DOTALL)
+    # Remove links block at the bottom
+    text = re.sub(r'\n*---\s*\n\*\*Links:\*\*.*$', '', text, flags=re.DOTALL)
+    return text.strip()
+
+
 db_path = "/Users/popular/Desktop/Genie/my_first_website/portfolio.db"
 
 with open("/Users/popular/Desktop/Genie/research/BMNR/01_BMNR_Fundamental_Analysis.md", "r") as f:
-    fundamental = f.read()
+    fundamental = clean_markdown(f.read())
 
 with open("/Users/popular/Desktop/Genie/research/BMNR/02_BMNR_Reverse_DCF.md", "r") as f:
-    dcf = f.read()
+    dcf = clean_markdown(f.read())
 
 en_content = fundamental + "\n\n---\n\n" + dcf
 th_content = """# บทวิเคราะห์: BitMine Immersion Technologies, Inc. (BMNR)

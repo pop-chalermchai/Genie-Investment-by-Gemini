@@ -1,20 +1,33 @@
 import sqlite3
 import os
 
+import re
+
+def clean_markdown(text):
+    if not text:
+        return ""
+    # Remove frontmatter (YAML block at the top)
+    if text.strip().startswith('---'):
+        text = re.sub(r'^---\s*\n.*?\n---\s*\n', '', text, flags=re.DOTALL)
+    # Remove links block at the bottom
+    text = re.sub(r'\n*---\s*\n\*\*Links:\*\*.*$', '', text, flags=re.DOTALL)
+    return text.strip()
+
+
 db_path = "/Users/popular/Desktop/Genie/my_first_website/portfolio.db"
 
 # Read localized files from research/FLY
 with open("/Users/popular/Desktop/Genie/research/FLY/01_Valerie_FLY_Analysis.md", "r", encoding="utf-8") as f:
-    en_overview = f.read()
+    en_overview = clean_markdown(f.read())
 
 with open("/Users/popular/Desktop/Genie/research/FLY/02_Christian_FLY_Audit.md", "r", encoding="utf-8") as f:
-    en_dcf = f.read()
+    en_dcf = clean_markdown(f.read())
 
 with open("/Users/popular/Desktop/Genie/research/FLY/01_Valerie_FLY_Analysis_TH.md", "r", encoding="utf-8") as f:
-    th_overview = f.read()
+    th_overview = clean_markdown(f.read())
 
 with open("/Users/popular/Desktop/Genie/research/FLY/02_Christian_FLY_Audit_TH.md", "r", encoding="utf-8") as f:
-    th_dcf = f.read()
+    th_dcf = clean_markdown(f.read())
 
 conn = sqlite3.connect(db_path)
 cursor = conn.cursor()

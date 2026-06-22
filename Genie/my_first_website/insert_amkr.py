@@ -4,18 +4,31 @@ import pg8000
 import ssl
 import urllib.parse
 
+import re
+
+def clean_markdown(text):
+    if not text:
+        return ""
+    # Remove frontmatter (YAML block at the top)
+    if text.strip().startswith('---'):
+        text = re.sub(r'^---\s*\n.*?\n---\s*\n', '', text, flags=re.DOTALL)
+    # Remove links block at the bottom
+    text = re.sub(r'\n*---\s*\n\*\*Links:\*\*.*$', '', text, flags=re.DOTALL)
+    return text.strip()
+
+
 # 1. Read files
 with open("/Users/popular/Desktop/Genie/research/AMKR/01_Valerie_AMKR_Analysis.md", "r", encoding="utf-8") as f:
-    en_overview = f.read()
+    en_overview = clean_markdown(f.read())
 
 with open("/Users/popular/Desktop/Genie/research/AMKR/02_Christian_AMKR_Audit.md", "r", encoding="utf-8") as f:
-    en_dcf = f.read()
+    en_dcf = clean_markdown(f.read())
 
 with open("/Users/popular/Desktop/Genie/research/AMKR/01_Valerie_AMKR_Analysis_TH.md", "r", encoding="utf-8") as f:
-    th_overview = f.read()
+    th_overview = clean_markdown(f.read())
 
 with open("/Users/popular/Desktop/Genie/research/AMKR/02_Christian_AMKR_Audit_TH.md", "r", encoding="utf-8") as f:
-    th_dcf = f.read()
+    th_dcf = clean_markdown(f.read())
 
 db_path = "/Users/popular/Desktop/Genie/my_first_website/portfolio.db"
 

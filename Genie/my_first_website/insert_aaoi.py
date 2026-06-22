@@ -5,6 +5,19 @@ import ssl
 import urllib.parse
 import shutil
 
+import re
+
+def clean_markdown(text):
+    if not text:
+        return ""
+    # Remove frontmatter (YAML block at the top)
+    if text.strip().startswith('---'):
+        text = re.sub(r'^---\s*\n.*?\n---\s*\n', '', text, flags=re.DOTALL)
+    # Remove links block at the bottom
+    text = re.sub(r'\n*---\s*\n\*\*Links:\*\*.*$', '', text, flags=re.DOTALL)
+    return text.strip()
+
+
 # 0. Copy generated cover art to target path
 source_art = "/Users/popular/.gemini/antigravity-cli/brain/8c5d788d-bc40-41ce-9e3c-678a3b1d647f/aaoi_cover_art_1781762657491.jpg"
 dest_art = "/Users/popular/Desktop/Genie/research/AAOI/aaoi_report_cover_art.png"
@@ -21,16 +34,16 @@ except Exception as e:
 
 # 1. Read files
 with open("/Users/popular/Desktop/Genie/research/AAOI/01_Valerie_AAOI_Analysis.md", "r", encoding="utf-8") as f:
-    en_overview = f.read()
+    en_overview = clean_markdown(f.read())
 
 with open("/Users/popular/Desktop/Genie/research/AAOI/02_Christian_AAOI_Audit.md", "r", encoding="utf-8") as f:
-    en_dcf = f.read()
+    en_dcf = clean_markdown(f.read())
 
 with open("/Users/popular/Desktop/Genie/research/AAOI/01_Valerie_AAOI_Analysis_TH.md", "r", encoding="utf-8") as f:
-    th_overview = f.read()
+    th_overview = clean_markdown(f.read())
 
 with open("/Users/popular/Desktop/Genie/research/AAOI/02_Christian_AAOI_Audit_TH.md", "r", encoding="utf-8") as f:
-    th_dcf = f.read()
+    th_dcf = clean_markdown(f.read())
 
 db_path = "/Users/popular/Desktop/Genie/my_first_website/portfolio.db"
 
