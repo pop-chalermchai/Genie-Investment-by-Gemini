@@ -95,7 +95,8 @@
                 <!-- SUB-PORTFOLIOS OVERVIEW GRID -->
                 <div style="display: flex; justify-content: space-between; align-items: center; margin: 25px 0 15px 0;">
                     <h3 style="color: var(--text-primary); font-size: 1.1rem; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin: 0;">Portfolio Summaries</h3>
-                    <div style="display: flex; gap: 10px;">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <button onclick="openManageCategoriesModal()" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 4px; border: 1px solid var(--border-dim); background: var(--bg-card-solid); color: var(--text-primary); font-weight: 700; cursor: pointer; transition: 0.2s;">⚙️ Manage Categories</button>
                         <button onclick="openAddPortfolioModal()" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 4px; border: none; cursor: pointer; background: linear-gradient(90deg, #00F0FF 0%, #0088FF 100%); color: #030712; font-weight: 700; transition: 0.2s;">+ Add Portfolio</button>
                     </div>
                 </div>
@@ -958,6 +959,28 @@
                     </select>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: 700; border-radius: 6px; border: none; cursor: pointer; background: linear-gradient(90deg, #00F0FF 0%, #0088FF 100%); color: #030712;">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MANAGE CATEGORIES MODAL -->
+    <div id="manage-categories-modal" class="modal-overlay">
+        <div class="modal-content glass-panel" style="max-width: 480px; padding: 30px;">
+            <button class="modal-close" onclick="closeManageCategoriesModal()">×</button>
+            <h2 class="card-title" style="margin-bottom: 20px;">Manage Categories</h2>
+            
+            <!-- List of existing categories -->
+            <div style="max-height: 250px; overflow-y: auto; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; background: rgba(0,0,0,0.2);" id="categories-list-container">
+                <!-- Categories list will be loaded dynamically here -->
+            </div>
+
+            <!-- Add new category form -->
+            <h3 style="color: var(--text-primary); font-size: 0.95rem; font-weight: 600; margin-bottom: 10px;">Add New Category</h3>
+            <form id="add-category-form" onsubmit="handleAddCategorySubmit(event)">
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <input type="text" id="new-cat-name" required placeholder="Category Name (e.g., Cash)" style="flex: 1; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 6px; box-sizing: border-box;">
+                    <button type="submit" class="btn btn-primary" style="padding: 10px 20px; font-weight: 700; border-radius: 6px; border: none; cursor: pointer; background: linear-gradient(90deg, #00F0FF 0%, #0088FF 100%); color: #030712;">Add</button>
+                </div>
             </form>
         </div>
     </div>

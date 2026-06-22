@@ -834,3 +834,78 @@ def delete_transaction():
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/api/categories', methods=['GET'])
+def get_categories():
+    try:
+        conn, is_postgres = get_db_connection()
+        cursor = conn.cursor()
+        execute_sql(cursor, is_postgres, "SELECT id, name, description FROM categories ORDER BY name")
+        rows = fetch_all_as_dict(cursor, is_postgres)
+        conn.close()
+        return jsonify(rows)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/categories', methods=['POST'])
+def add_category():
+    try:
+        data = request.get_json(force=True)
+        cat_name = data.get('name')
+        description = data.get('description', '')
+        if not cat_name:
+            raise ValueError("Category name is required")
+            
+        conn, is_postgres = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Check duplicate
+        execute_sql(cursor, is_postgres, "SELECT id FROM categories WHERE name=?", (cat_name,))
+        if fetch_all_as_dict(cursor, is_postgres):
+            raise ValueError(f"Category '{cat_name}' already exists.")
+            
+        execute_sql(cursor, is_postgres, "INSERT INTO categories (name, description) VALUES (?, ?)", (cat_name, description))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/categories', methods=['PUT'])
+def edit_category():
+    try:
+        data = request.get_json(force=True)
+        cat_id = data.get('id')
+        new_name = data.get('name')
+        description = data.get('description', '')
+        if not cat_id or not new_name:
+            raise ValueError("id and name required")
+            
+        conn, is_postgres = get_db_connection()
+        cursor = conn.cursor()
+        execute_sql(cursor, is_postgres, "UPDATE categories SET name = ?, description = ? WHERE id = ?", (new_name, description, cat_id))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/categories', methods=['DELETE'])
+def delete_category():
+    try:
+        cat_id = request.args.get('id')
+        if not cat_id:
+            raise ValueError("Category id required")
+            
+        conn, is_postgres = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Update referencing portfolios
+        execute_sql(cursor, is_postgres, "UPDATE portfolios SET category_id = NULL WHERE category_id = ?", (cat_id,))
+        # Delete category
+        execute_sql(cursor, is_postgres, "DELETE FROM categories WHERE id = ?", (cat_id,))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

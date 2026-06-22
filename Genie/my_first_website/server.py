@@ -291,6 +291,27 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": str(e)}).encode())
             return
+        elif parsed_url.path == '/api/categories':
+            db_path = os.path.join(DIRECTORY, 'portfolio.db')
+            try:
+                conn = sqlite3.connect(db_path)
+                conn.row_factory = sqlite3.Row
+                cursor = conn.cursor()
+                cursor.execute('SELECT id, name, description FROM categories ORDER BY name')
+                cats = [dict(r) for r in cursor.fetchall()]
+                conn.close()
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps(cats).encode())
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode())
+            return
         elif parsed_url.path == '/api/stock':
             # Handle API stock request
             query_params = urllib.parse.parse_qs(parsed_url.query)
@@ -388,6 +409,38 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 conn.commit()
                 conn.close()
                 
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": True}).encode())
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode())
+        elif parsed_url.path == '/api/categories':
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            try:
+                data = json.loads(post_data.decode('utf-8'))
+                cat_name = data.get('name')
+                description = data.get('description', '')
+                if not cat_name:
+                    raise ValueError("Category name is required")
+                
+                db_path = os.path.join(DIRECTORY, 'portfolio.db')
+                conn = sqlite3.connect(db_path)
+                cursor = conn.cursor()
+                
+                cursor.execute("SELECT id FROM categories WHERE name=?", (cat_name,))
+                if cursor.fetchone():
+                    raise ValueError(f"Category '{cat_name}' already exists.")
+                    
+                cursor.execute("INSERT INTO categories (name, description) VALUES (?, ?)", (cat_name, description))
+                conn.commit()
+                conn.close()
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.send_header('Access-Control-Allow-Origin', '*')
@@ -884,6 +937,33 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": str(e)}).encode())
             return
+        elif parsed_url.path == '/api/categories':
+            try:
+                data = json.loads(post_data.decode('utf-8'))
+                cat_id = data.get('id')
+                new_name = data.get('name')
+                description = data.get('description', '')
+                if not cat_id or not new_name:
+                    raise ValueError("id and name required")
+                
+                db_path = os.path.join(DIRECTORY, 'portfolio.db')
+                conn = sqlite3.connect(db_path)
+                cursor = conn.cursor()
+                cursor.execute("UPDATE categories SET name = ?, description = ? WHERE id = ?", (new_name, description, cat_id))
+                conn.commit()
+                conn.close()
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": True}).encode())
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode())
+            return
         else:
             self.send_response(404)
             self.end_headers()
@@ -984,6 +1064,35 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 conn = sqlite3.connect(db_path)
                 cursor = conn.cursor()
                 cursor.execute("DELETE FROM research_reports WHERE report_key=?", (report_key,))
+                conn.commit()
+                conn.close()
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": True}).encode())
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode())
+        elif parsed_url.path == '/api/categories':
+            query = urllib.parse.parse_qs(parsed_url.query)
+            cat_id = query.get('id', [None])[0]
+            if not cat_id:
+                self.send_response(400)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": "Category id required"}).encode())
+                return
+            try:
+                db_path = os.path.join(DIRECTORY, 'portfolio.db')
+                conn = sqlite3.connect(db_path)
+                cursor = conn.cursor()
+                cursor.execute("UPDATE portfolios SET category_id = NULL WHERE category_id = ?", (cat_id,))
+                cursor.execute("DELETE FROM categories WHERE id = ?", (cat_id,))
                 conn.commit()
                 conn.close()
                 self.send_response(200)

@@ -3,6 +3,7 @@
 // ==========================================================================
 let holdings = [];
 let portfoliosList = [];
+let categoriesList = [];
 let cachedParentTotals = {};
 let activeParentPortfolio = null;
 let activeSubPortfolio = null;
@@ -325,12 +326,15 @@ function deleteParentPortfolio(pName) {
 // CORE WORKSPACE INITIALIZATION & LOGIC FLOW
 // ==========================================================================
 function fetchInitData(onComplete = null) {
-    return fetch('/api/init-data?t=' + Date.now())
-    .then(res => res.json())
-    .then(data => {
-        holdings = data.holdings.map(h => ({...h, currentPrice: h.avgCost}));
-        researchReports = data.reports;
-        portfoliosList = data.portfolios;
+    return Promise.all([
+        fetch('/api/init-data?t=' + Date.now()).then(res => res.json()),
+        fetch('/api/categories?t=' + Date.now()).then(res => res.json())
+    ])
+    .then(([initData, catsData]) => {
+        holdings = initData.holdings.map(h => ({...h, currentPrice: h.avgCost}));
+        researchReports = initData.reports;
+        portfoliosList = initData.portfolios;
+        categoriesList = catsData;
         
         populateDropdowns();
         updateDashboard();
@@ -1418,6 +1422,21 @@ function populateDropdowns() {
             newPortParent.appendChild(option);
         });
     }
+    
+    // Populate category dropdowns dynamically
+    const categorySelects = ["new-port-category", "new-subport-category", "edit-subport-category"];
+    categorySelects.forEach(selectId => {
+        const selectEl = document.getElementById(selectId);
+        if (selectEl) {
+            selectEl.innerHTML = '';
+            categoriesList.forEach(cat => {
+                const option = document.createElement("option");
+                option.value = cat.name;
+                option.text = cat.name;
+                selectEl.appendChild(option);
+            });
+        }
+    });
 }
 
 function openAddPortfolioModal() {
@@ -2582,4 +2601,132 @@ function handleTransferStock(event) {
         console.error("Error during transfer:", err);
         alert("Failed to transfer stock.");
     });
+}
+
+// ---------------------------------------------
+// CATEGORY MANAGEMENT MODAL & OPERATIONS
+// ---------------------------------------------
+function openManageCategoriesModal() {
+    renderCategoriesList();
+    document.getElementById("manage-categories-modal").classList.add("active");
+}
+
+function closeManageCategoriesModal() {
+    document.getElementById("manage-categories-modal").classList.remove("active");
+}
+
+function renderCategoriesList() {
+    const container = document.getElementById("categories-list-container");
+    if (!container) return;
+    
+    container.innerHTML = "";
+    
+    if (categoriesList.length === 0) {
+        container.innerHTML = `<div style="color:var(--text-secondary); text-align:center; padding: 20px; font-style:italic;">No categories found. Add one below.</div>`;
+        return;
+    }
+    
+    categoriesList.forEach(cat => {
+        const row = document.createElement("div");
+        row.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); gap: 10px;";
+        row.innerHTML = `
+            <span id="cat-display-${cat.id}" style="color:#fff; font-weight:600; font-size:0.9rem;">${cat.name}</span>
+            <div style="display:flex; gap: 8px;">
+                <button type="button" onclick="editCategoryInline(${cat.id}, '${cat.name.replace(/'/g, "\\'")}')" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.72rem; border-radius: 4px; border: 1px solid var(--border-dim); background: var(--bg-card-solid); color: var(--text-primary); cursor: pointer;">Edit</button>
+                <button type="button" onclick="deleteCategoryInline(${cat.id}, '${cat.name.replace(/'/g, "\\'")}')" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.72rem; border-radius: 4px; border: 1px solid var(--border-dim); background: rgba(239, 68, 68, 0.1); color: var(--color-negative); cursor: pointer;">Delete</button>
+            </div>
+        `;
+        container.appendChild(row);
+    });
+}
+
+function handleAddCategorySubmit(e) {
+    e.preventDefault();
+    const name = document.getElementById("new-cat-name").value.trim();
+    if (!name) return;
+    
+    fetch('/api/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById("add-category-form").reset();
+            // Re-fetch category list and refresh
+            fetch('/api/categories')
+            .then(res => res.json())
+            .then(cats => {
+                categoriesList = cats;
+                renderCategoriesList();
+                populateDropdowns();
+            });
+        } else {
+            alert("Error adding category: " + data.error);
+        }
+    })
+    .catch(err => {
+        console.error("Error adding category:", err);
+        alert("Failed to add category.");
+    });
+}
+
+function editCategoryInline(catId, currentName) {
+    const newName = prompt(`Rename category "${currentName}" to:`, currentName);
+    if (!newName || newName.trim() === "" || newName.trim() === currentName) return;
+    
+    fetch('/api/categories', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: catId, name: newName.trim() })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            // Re-fetch category list and refresh
+            fetch('/api/categories')
+            .then(res => res.json())
+            .then(cats => {
+                categoriesList = cats;
+                renderCategoriesList();
+                populateDropdowns();
+                fetchInitData(); // Fetch whole init data to refresh any name mapping
+            });
+        } else {
+            alert("Error renaming category: " + data.error);
+        }
+    })
+    .catch(err => {
+        console.error("Error renaming category:", err);
+        alert("Failed to rename category.");
+    });
+}
+
+function deleteCategoryInline(catId, catName) {
+    if (confirm(`Are you sure you want to delete category "${catName}"?\nAny portfolios referencing this category will have their category cleared.`)) {
+        fetch('/api/categories?id=' + catId, {
+            method: 'DELETE'
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                // Re-fetch category list and refresh
+                fetch('/api/categories')
+                .then(res => res.json())
+                .then(cats => {
+                    categoriesList = cats;
+                    renderCategoriesList();
+                    populateDropdowns();
+                    fetchInitData(); // Fetch whole init data to refresh database state
+                });
+            } else {
+                alert("Error deleting category: " + data.error);
+            }
+        })
+        .catch(err => {
+            console.error("Error deleting category:", err);
+            alert("Failed to delete category.");
+        });
+    }
 }
