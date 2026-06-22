@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: FLY
+sector: Aerospace
+tags: [aerospace, fly]
+---
+
 # Firefly Aerospace, Inc. (NASDAQ: FLY)
 
 > **RECOMMENDATION: SPECULATIVE BUY** | **REPORT DATE: 06/15/2026** | **TARGET PRICE: $43.50** | **CURRENT PRICE: $31.87** | **UPSIDE: +36.5%**
@@ -102,3 +109,6 @@ Firefly operates at the intersection of commercial launch services, national sec
 * **Secondary Sources & Data Aggregators:**
     * Wall Street Analyst Consensus Ratings & Pricing Database via Bloomberg & Seeking Alpha (Data Fetched: June 15, 2026)
     * Commercial Space Launch Market Reports, McKinsey & Co. / Bryce Space and Technology (Published: Q1 2026)
+
+---
+**Links:** [[sectors/Aerospace|Aerospace Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

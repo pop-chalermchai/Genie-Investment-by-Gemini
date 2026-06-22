@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: JBL
+sector: Technology
+tags: [technology, jbl]
+---
+
 # รายงานการตรวจสอบและการประเมินมูลค่าหลักทรัพย์เชิงลึก: บริษัท เจบิล จำกัด (JABIL INC.) (NYSE: JBL)
 **วันที่:** 2 มิถุนายน 2026  
 **นักวิเคราะห์:** Valerie V2, The Quantitative Oracle  
@@ -160,3 +167,6 @@ $$P \le \$285.00$$
 5. **รายงานบทวิเคราะห์หลักทรัพย์โดย Goldman Sachs Equity Research** สำหรับหุ้น JBL (เผยแพร่เดือนพฤษภาคม 2026 โดยปรับเพิ่มราคาเป้าหมายเป็น 384 ดอลลาร์สหรัฐ)
 6. **รายงานบทวิเคราะห์หลักทรัพย์โดย BofA Securities Equity Research** สำหรับหุ้น JBL (เผยแพร่เดือนเมษายน 2026 โดยคงแนะนำ "ซื้อ" พร้อมเป้าหมาย 354 ดอลลาร์สหรัฐ)
 7. **แหล่งข้อมูลทางเลือกอื่นๆ (Alternative Data Sources):** ข้อมูลกระแสเงินสดอิสระย้อนหลังของ Gurufocus และแบบจำลองการประเมินมูลค่าของ Alpha Spread
+
+---
+**Links:** [[sectors/Technology|Technology Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

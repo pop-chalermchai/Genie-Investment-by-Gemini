@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: FLY
+sector: Aerospace
+tags: [aerospace, fly]
+---
+
 # การวิเคราะห์ประเมินมูลค่าด้วยวิธี Reverse DCF: Firefly Aerospace, Inc. (FLY)
 
 ## การเปิดเผยสมมติฐานที่จำเป็น (Mandatory Assumption Disclosure)
@@ -270,3 +277,6 @@ Firefly Aerospace ดำเนินธุรกิจในกลุ่มโ�
 
 ## กฎเหล็กในการประเมินมูลค่า (Golden Rule)
 หุ้นตัวนี้จะมีความน่าดึงดูดใจในการเข้าลงทุนก็ต่อเมื่อ ผลลัพธ์เชิงธุรกิจที่ประเมินเชิงแฝง (ซึ่งได้แก่การบรรลุอัตราการเติบโตของ FCF ที่ร้อยละ 37 และการขยายฐานรายได้สู่ $2.53 พันล้าน) อยู่บนฐานของความเป็นจริงที่บริษัทสามารถทำได้ด้วยความสมบูรณ์แบบไร้ที่ติในโครงการจรวด Eclipse และโครงการยาน Blue Ghost เท่านั้น
+
+---
+**Links:** [[sectors/Aerospace|Aerospace Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: MU
+sector: Semiconductors
+tags: [semiconductors, mu]
+---
+
 # MICRON TECHNOLOGY, INC. (NASDAQ: MU)
 
 > **RECOMMENDATION: AVOID/HOLD (WAIT & WATCH)** | **TARGET PRICE (BASE CASE): $750.00** | **CURRENT PRICE: $971.00** | **UPSIDE: -22.8%**
@@ -95,3 +102,6 @@ $$\text{Asymmetric Ratio} = \frac{\text{Bull Case Upside}}{\text{Bear Case Downs
 
 **Verdict: FAILED**  
 The calculated payoff ratio is **0.87x** (or **0.85x** at the $971.00 close), which falls critically short of our mandatory **3.0x** threshold. At a $971.00 entry point, the risk-reward skew has reversed completely. The downside risk (-64.0% to the Bear Case) is significantly larger than the optimistic Bull Case upside (+54.5%), making the asset a highly speculative and dangerous hold.
+
+---
+**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

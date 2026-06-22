@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: NVDA
+sector: Semiconductors
+tags: [semiconductors, nvda]
+---
+
 # NVIDIA Corporation (NASDAQ: NVDA)
 
 > **RECOMMENDATION: BUY** | **REPORT DATE: 06/15/2026** | **TARGET PRICE: $305.00** | **CURRENT PRICE: $205.19** | **UPSIDE: +48.6%**
@@ -101,3 +108,6 @@ NVIDIA reported stellar Q1 FY2027 results on May 20, 2026, beating consensus on 
     * Wall Street Analyst Consensus Database via Bloomberg & Seeking Alpha (Data Fetched: June 15, 2026).
     * AMD & Intel Valuation and Industry Multiples via GuruFocus & ValueInvesting (Data Fetched: June 15, 2026).
     * Gartner Data Center & AI Silicon Market Estimates (Published: Q1 2026).
+
+---
+**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

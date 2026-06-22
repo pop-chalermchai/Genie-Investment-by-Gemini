@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: FPS
+sector: Energy
+tags: [energy, fps]
+---
+
 # การตรวจสอบและประเมินมูลค่าตราสารทุน: บริษัท ฟอร์เจนท์ พาวเวอร์ โซลูชันส์ จำกัด (Forgent Power Solutions, Inc. | NYSE: FPS)
 **วันที่ประเมินมูลค่า:** 2 มิถุนายน 2026  
 **นักวิเคราะห์:** วาเลอรี (The Quantitative Oracle)  
@@ -199,3 +206,6 @@ Forgent กำหนดราคาการเสนอขายหุ้นส
 6.  **บทวิเคราะห์ด้านตราสารทุนจาก Jefferies Equity Research:** "Forgent Power Solutions (FPS): Powering the AI Core — Reaffirm Buy and Price Target Revision to $56.00," เผยแพร่เมื่อวันที่ 1 มิถุนายน 2026
 7.  **บทวิเคราะห์ด้านตราสารทุนจาก KeyBanc Capital Markets Equity Research:** "Forgent Power Solutions: Record Backlog Confirming Grid Domination — Raise Target to $60.00," เผยแพร่เมื่อวันที่ 31 พฤษภาคม 2026
 8.  **ฐานข้อมูลราคาซื้อขายหลักทรัพย์จากตลาด Nasdaq และฐานข้อมูลข้อมูลรหัสบริษัทจดทะเบียนของ SEC (SEC CIK 0002080126 Database)** ข้อมูลล่าสุดสืบค้น ณ วันที่ 2 มิถุนายน 2026
+
+---
+**Links:** [[sectors/Energy|Energy Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

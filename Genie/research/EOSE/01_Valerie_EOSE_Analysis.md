@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: EOSE
+sector: Energy
+tags: [energy, eose]
+---
+
 # EOS ENERGY ENTERPRISES, INC. (NASDAQ: EOSE)
 
 > **RECOMMENDATION: BUY** | **REPORT DATE: June 18, 2026** | **TARGET PRICE: $10.00** | **CURRENT PRICE: $7.50** | **UPSIDE: +33.3%**
@@ -97,3 +104,6 @@
 * **Secondary Sources & Data Aggregators:**
     * Wall Street Analyst Rating Database via Bloomberg / Gurufocus / MarketBeat (Data Fetched: June 18, 2026)
     * Lazard's Levelized Cost of Storage (LCOS) reports (Published: 2025)
+
+---
+**Links:** [[sectors/Energy|Energy Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

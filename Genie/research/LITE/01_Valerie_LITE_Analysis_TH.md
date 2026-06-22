@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: LITE
+sector: Semiconductors
+tags: [semiconductors, lite]
+---
+
 # Lumentum Holdings Inc. (NASDAQ: LITE)
 
 > **คำแนะนำ: ซื้อ (BUY)** | **วันที่รายงาน: 18 มิถุนายน 2569** | **ราคาเป้าหมาย: $1,077.38** | **ราคาปัจจุบัน: $869.63** | **โอกาสปรับตัวขึ้น (Upside): +23.9%**
@@ -99,3 +106,6 @@
 * **แหล่งข้อมูลอ้างอิงทุติยภูมิ (Secondary Sources):**
     * ฐานข้อมูลความเห็นนักวิเคราะห์และสถิติตลาดหลักทรัพย์ผ่าน Bloomberg / Zacks / MarketBeat (อัปเดตข้อมูล: 18 มิถุนายน 2569)
     * รายงานภาพรวมและทิศทางอุตสาหกรรมชิ้นส่วนอิเล็กทรอนิกส์และอุปกรณ์โฟโตนิกส์ (จัดทำขึ้นใน: ครึ่งปีแรกของปี 2569)
+
+---
+**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

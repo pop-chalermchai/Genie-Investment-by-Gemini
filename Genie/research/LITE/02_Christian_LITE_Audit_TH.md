@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: LITE
+sector: Semiconductors
+tags: [semiconductors, lite]
+---
+
 # รายงานการตรวจสอบงบการเงินเชิงลึกและอนุมัติมูลค่าหุ้น (Forensic Audit & Valuation Clearance Report)
 
 **วันที่:** 18 มิถุนายน 2569  
@@ -169,3 +176,6 @@ $1200.0            M |              21.1389% | $           8166.12M
 **คริสเตียน (Christian)**  
 *ผู้ตรวจสอบการเงินเชิงลึก (Forensic Auditor)*  
 *Wall Street Purist*
+
+---
+**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

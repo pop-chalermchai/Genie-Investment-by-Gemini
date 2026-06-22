@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: MU
+sector: Semiconductors
+tags: [semiconductors, mu]
+---
+
 # 🎨 Visual Design Blueprint & Dashboard Wireframe: Micron Technology, Inc. (NASDAQ: MU)
 **Project Title:** Trillion-Dollar Memory Titan Audit  
 **Author:** Mateo (The Creative Alchemist)  
@@ -167,3 +174,6 @@ To pitch this design to the main agent and C-Suite, we map the visual flow into 
 *   **Slide 4: The Scale Drops (Asymmetric Payoff Check)**
     *   *Visuals:* The unbalanced visual scale and payoff bar gauge from Section 4.
     *   *Action Call:* A massive, centered Crimson banner: **"VERDICT: LIQUIDATE / AVOID. PAYOFF = 0.87x (REQUIRED: 3.00x)"**
+
+---
+**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

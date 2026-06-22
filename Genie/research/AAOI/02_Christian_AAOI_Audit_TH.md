@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: AAOI
+sector: Technology
+tags: [technology, aaoi]
+---
+
 # รายงานการตรวจสอบทางนิติบัญชีและการอนุมัติการประเมินมูลค่า (FORENSIC AUDIT & VALUATION CLEARANCE REPORT)
 
 **วันที่:** 18 มิถุนายน 2569  
@@ -187,3 +194,6 @@ $400.0             M |              38.6769% | $          10522.09M
 **คริสเตียน (Christian)**  
 *ผู้ตรวจสอบทางนิติบัญชี (Forensic Auditor)*  
 *นักอนุรักษ์นิยมแห่งวอลล์สตรีท (Wall Street Purist)*
+
+---
+**Links:** [[sectors/Technology|Technology Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

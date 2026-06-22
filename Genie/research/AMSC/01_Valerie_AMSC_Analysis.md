@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: AMSC
+sector: Technology
+tags: [technology, amsc]
+---
+
 # AMERICAN SUPERCONDUCTOR CORPORATION (NASDAQ: AMSC)
 
 > **RECOMMENDATION: BUY** | **REPORT DATE: 06/18/2026** | **TARGET PRICE: $65.00** | **CURRENT PRICE: $40.46** | **UPSIDE: +60.7%**
@@ -101,3 +108,6 @@ AMSC provided strong guidance for the first quarter of fiscal 2026 (ending June 
 * **Secondary Sources & Data Aggregators:**
     * Wall Street Consensus Estimates via StockAnalysis / Fintel (Data Fetched: June 18, 2026)
     * Navy Shipbuilding Program Reports & DHS Resilient Electric Grid Project (Published: February 2026)
+
+---
+**Links:** [[sectors/Technology|Technology Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

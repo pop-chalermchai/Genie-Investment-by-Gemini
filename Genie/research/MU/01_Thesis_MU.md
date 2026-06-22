@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: MU
+sector: Semiconductors
+tags: [semiconductors, mu]
+---
+
 # 📈 Stock Thesis: MU (Micron Technology, Inc.)
 
 ภาพรวมย้อนหลังและข้อมูลการวิจัยเชิงลึกของบริษัท Micron Technology, Inc. (MU) ซึ่งเป็นหนึ่งในสามผู้เล่นหลักในอุตสาหกรรมชิปหน่วยความจำ (Memory Semiconductors) ระดับโลก โดยเจาะลึกศักยภาพในยุค AI บูม พร้อมการประเมินความเสี่ยงด้วยสไตล์นักตรวจสอบภายใน (Internal Audit Mindset) ครับ
@@ -81,3 +88,6 @@
 > * **Oversupply (n.):** ภาวะสินค้าล้นตลาด (อุปทานส่วนเกิน)
 > * **Yield (n.):** อัตราผลตอบแทนจากการผลิต (สัดส่วนของชิปที่ผลิตออกมาแล้วใช้งานได้จริงเมื่อเทียบกับชิปทั้งหมดที่สร้างขึ้น)
 > * **Oligopoly (n.):** ตลาดที่มีผู้ขายน้อยราย (มีอิทธิพลในการกำหนดราคาและควบคุมอุตสาหกรรมร่วมกันได้ง่าย)
+
+---
+**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

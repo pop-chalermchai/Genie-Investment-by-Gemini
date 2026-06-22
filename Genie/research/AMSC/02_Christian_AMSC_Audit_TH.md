@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: AMSC
+sector: Technology
+tags: [technology, amsc]
+---
+
 # รายงานการตรวจสอบบัญชีเชิงนิติวิทยาศาสตร์และการอนุมัติการประเมินมูลค่าหลักทรัพย์
 
 **วันที่:** 18 มิถุนายน 2569  
@@ -202,3 +209,6 @@ $80.0              M |              28.1062% | $            952.34M
 **คริสเตียน**  
 *ผู้ตรวจสอบบัญชีเชิงนิติวิทยาศาสตร์*  
 *วิเคราะห์หลักทรัพย์ตามแนวทางวอลล์สตรีทดั้งเดิม*
+
+---
+**Links:** [[sectors/Technology|Technology Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

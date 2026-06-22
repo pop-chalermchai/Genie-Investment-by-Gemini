@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: MU
+sector: Semiconductors
+tags: [semiconductors, mu]
+---
+
 # 💎 Quantitative Equity Research: Micron Technology, Inc. (NASDAQ: MU)
 **To:** Genie (Orchestration Mastermind)  
 **From:** Valerie (The Quantitative Oracle)  
@@ -130,3 +137,6 @@ Micron is a **highly compelling, asymmetric buy** during any macroeconomic pullb
 
 ---
 *Report compiled and audited by Valerie, the Quantitative Oracle.*
+
+---
+**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

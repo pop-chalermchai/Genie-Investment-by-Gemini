@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: NVDA
+sector: Semiconductors
+tags: [semiconductors, nvda]
+---
+
 # NVIDIA Corporation (NASDAQ: NVDA)
 
 > **คำแนะนำ: ซื้อ (BUY)** | **วันที่ออกรายงาน: 15/06/2026** | **ราคาเป้าหมาย: $305.00** | **ราคาปัจจุบัน: $205.19** | **ส่วนต่างราคาเป้าหมาย (UPSIDE): +48.6%**
@@ -101,3 +108,6 @@ NVIDIA รายงานผลการดำเนินงานประจ�
     * ฐานข้อมูลประมาณการตลาดเฉลี่ยโดยนักวิเคราะห์ของวอลล์สตรีท (Wall Street Analyst Consensus Database) ผ่านระบบ Bloomberg และ Seeking Alpha (ดึงข้อมูล ณ วันที่ 15 มิถุนายน 2026)
     * ข้อมูลเปรียบเทียบมูลค่าหุ้นและอัตราส่วนพหุคูณทางการเงินของ AMD และ Intel ผ่านระบบ GuruFocus และ ValueInvesting (ดึงข้อมูล ณ วันที่ 15 มิถุนายน 2026)
     * ตัวเลขคาดการณ์ตลาดอุปกรณ์ศูนย์ข้อมูลและชิปเซ็ตประมวลผล AI โดย Gartner (ตีพิมพ์เผยแพร่: Q1 2026)
+
+---
+**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

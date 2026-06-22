@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: FPS
+sector: Energy
+tags: [energy, fps]
+---
+
 # FORENSIC AUDIT & VALUATION CLEARANCE REPORT
 
 **Date:** June 2, 2026  
@@ -239,3 +246,6 @@ We find **zero mathematical discrepancies, zero structural flaws, and zero logic
 **Christian**  
 *Forensic Auditor*  
 *Wall Street Purist*
+
+---
+**Links:** [[sectors/Energy|Energy Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

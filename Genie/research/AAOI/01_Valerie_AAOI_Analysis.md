@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: AAOI
+sector: Technology
+tags: [technology, aaoi]
+---
+
 # Applied Optoelectronics, Inc. (NASDAQ: AAOI)
 
 > **RECOMMENDATION: HOLD** | **REPORT DATE: June 18, 2026** | **TARGET PRICE: $165.00** | **CURRENT PRICE: $170.00** | **UPSIDE: -2.9%**
@@ -104,3 +111,6 @@
 * **Secondary Sources & Data Aggregators:**
     * Wall Street Analyst Estimates database (Data Fetched: June 18, 2026)
     * Industry Market Research Reports on Optical Transceivers (Published: March 2026)
+
+---
+**Links:** [[sectors/Technology|Technology Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

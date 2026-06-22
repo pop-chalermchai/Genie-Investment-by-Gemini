@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: BMNR
+sector: Digital Assets & Infrastructure
+tags: [digital_assets_infrastructure, bmnr]
+---
+
 # BitMine Immersion Technologies, Inc. (NYSE: BMNR)
 
 > **RECOMMENDATION: HOLD** | **REPORT DATE: 06/10/2026** | **TARGET PRICE: N/A** | **CURRENT PRICE: Volatile** | **UPSIDE: N/A**
@@ -94,3 +101,6 @@
 * **Secondary Sources & Data Aggregators:**
     * Bloomberg / MarketBeat / GuruFocus Market Data (Data Fetched: June 10, 2026)
     * Kerrisdale Capital & Seeking Alpha Analyst Reports (2025-2026)
+
+---
+**Links:** [[sectors/Digital_Assets|Digital Assets & Infrastructure Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

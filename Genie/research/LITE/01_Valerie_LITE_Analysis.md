@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: LITE
+sector: Semiconductors
+tags: [semiconductors, lite]
+---
+
 # Lumentum Holdings Inc. (NASDAQ: LITE)
 
 > **RECOMMENDATION: BUY** | **REPORT DATE: 06/18/2026** | **TARGET PRICE: $1,077.38** | **CURRENT PRICE: $869.63** | **UPSIDE: +23.9%**
@@ -100,3 +107,6 @@
 * **Secondary Sources & Data Aggregators:**
     * Wall Street Analyst Rating Database via Bloomberg / Zacks / MarketBeat (Data Fetched: June 18, 2026)
     * Optical Communications and Photonic Component Market Outlook (Published: H1 2026)
+
+---
+**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

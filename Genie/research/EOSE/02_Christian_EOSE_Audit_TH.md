@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: EOSE
+sector: Energy
+tags: [energy, eose]
+---
+
 # รายงานผลการตรวจสอบเชิงนิติวิทยาศาสตร์และการรับรองมูลค่าหุ้นพื้นฐาน (Forensic Audit & Valuation Clearance Report)
 
 **วันที่:** 18 มิถุนายน 2026  
@@ -201,3 +208,6 @@ Scenario B (Multi-Year):
 **คริสเตียน (Christian)**  
 *ผู้ตรวจสอบบัญชีเชิงนิติวิทยาศาสตร์ (Forensic Auditor)*  
 *Wall Street Purist*
+
+---
+**Links:** [[sectors/Energy|Energy Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

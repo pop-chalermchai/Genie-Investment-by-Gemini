@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: AMKR
+sector: Semiconductors
+tags: [semiconductors, amkr]
+---
+
 # Amkor Technology, Inc. (NASDAQ: AMKR)
 
 > **RECOMMENDATION: BUY** | **REPORT DATE: June 18, 2026** | **TARGET PRICE: $115.00** | **CURRENT PRICE: $86.25** | **UPSIDE: +33.3%**
@@ -104,3 +111,6 @@ Amkor reported strong financial results for Q1 FY2026 on April 27, 2026, beating
     * Bloomberg Analyst Consensus Estimates Database (Fetched: June 18, 2026)
     * Gartner Semiconductor Packaging, Assembly and Test Market Share Report (Published: April 2026)
     * TIKR Terminal Stock Valuation Database (Data Fetched: June 18, 2026)
+
+---
+**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

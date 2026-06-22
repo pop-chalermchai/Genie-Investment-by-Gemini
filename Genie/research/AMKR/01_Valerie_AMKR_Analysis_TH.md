@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: AMKR
+sector: Semiconductors
+tags: [semiconductors, amkr]
+---
+
 # รายงานการวิเคราะห์และประเมินมูลค่าหุ้น บริษัท แอมคอร์ เทคโนโลยี จำกัด (Amkor Technology, Inc.) (NASDAQ: AMKR)
 
 > **คำแนะนำ: ซื้อ (BUY)** | **วันที่รายงาน: 18 มิถุนายน 2569** | **ราคาเป้าหมาย: $115.00** | **ราคาปัจจุบัน: $86.25** | **ส่วนต่างราคา (UPSIDE): +33.3%**
@@ -104,3 +111,6 @@
     * ฐานข้อมูลประมาณการนักวิเคราะห์เฉลี่ยโดย Bloomberg (ข้อมูล ณ วันที่ 18 มิถุนายน 2569)
     * รายงานส่วนแบ่งการตลาดอุตสาหกรรมบรรจุ ประกอบ และทดสอบเซมิคอนดักเตอร์โดย Gartner (เผยแพร่เมื่อ: เมษายน 2569)
     * ฐานข้อมูลการประเมินมูลค่าหุ้นบนระบบ TIKR Terminal (ข้อมูล ณ วันที่ 18 มิถุนายน 2569)
+
+---
+**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

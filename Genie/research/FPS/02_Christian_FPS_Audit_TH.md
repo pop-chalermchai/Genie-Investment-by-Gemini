@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: FPS
+sector: Energy
+tags: [energy, fps]
+---
+
 # รายงานการตรวจสอบบัญชีเชิงนิติวิทยาศาสตร์และการอนุมัติการประเมินมูลค่า (FORENSIC AUDIT & VALUATION CLEARANCE REPORT)
 
 **วันที่:** 2 มิถุนายน 2026  
@@ -239,3 +246,6 @@ Scenario B (Multi-Year):
 **คริสเตียน**  
 *ผู้ตรวจสอบบัญชีเชิงนิติวิทยาศาสตร์*  
 *คอรักความถูกต้องแห่งวอลล์สตรีท*
+
+---
+**Links:** [[sectors/Energy|Energy Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

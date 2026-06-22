@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: FPS
+sector: Energy
+tags: [energy, fps]
+---
+
 # Equity Research Audit: Forgent Power Solutions, Inc. (NYSE: FPS)
 **Valuation Date:** June 2, 2026  
 **Analyst:** Valerie (The Quantitative Oracle)  
@@ -198,3 +205,6 @@ To verify the quantitative viability of our thesis, we perform a strict 3-to-1 a
 6.  **Jefferies Equity Research:** "Forgent Power Solutions (FPS): Powering the AI Core — Reaffirm Buy and Price Target Revision to $56.00," issued June 1, 2026.
 7.  **KeyBanc Capital Markets Equity Research:** "Forgent Power Solutions: Record Backlog Confirming Grid Domination — Raise Target to $60.00," issued May 31, 2026.
 8.  **Nasdaq Market Data & SEC CIK 0002080126 Database**, accessed June 2, 2026.
+
+---
+**Links:** [[sectors/Energy|Energy Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

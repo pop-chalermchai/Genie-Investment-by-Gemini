@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: AMKR
+sector: Semiconductors
+tags: [semiconductors, amkr]
+---
+
 # รายงานการตรวจสอบงบการเงินเชิงลึกและการรับรองมูลค่าหุ้น (FORENSIC AUDIT & VALUATION CLEARANCE REPORT)
 
 **วันที่:** 18 มิถุนายน 2569  
@@ -171,3 +178,6 @@ $800.0             M |              11.2809% | $           2329.67M
 **คริสเตียน**  
 *ผู้ตรวจสอบบัญชีเชิงลึก*  
 *สายอนุรักษ์นิยมแห่งวอลล์สตรีท*
+
+---
+**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

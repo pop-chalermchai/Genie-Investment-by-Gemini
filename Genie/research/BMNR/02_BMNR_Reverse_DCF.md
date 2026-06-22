@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: BMNR
+sector: Digital Assets & Infrastructure
+tags: [digital_assets_infrastructure, bmnr]
+---
+
 # Reverse DCF Analysis: BitMine Immersion Technologies, Inc. (BMNR)
 
 ## Mandatory Assumption Disclosure
@@ -228,3 +235,6 @@ Based on:
 
 **One-Line Insight**
 The narrative around digital asset infrastructure is compelling, but investors are paying today for an exceptional business outcome that does not yet exist and leaves no room for error.
+
+---
+**Links:** [[sectors/Digital_Assets|Digital Assets & Infrastructure Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

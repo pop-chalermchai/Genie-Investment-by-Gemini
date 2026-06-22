@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: AAPL
+sector: Technology
+tags: [technology, aapl]
+---
+
 # Apple (AAPL) - Key Drivers & Investment Thesis (2026)
 
 ## Bull Case (Why the stock is rising)
@@ -13,3 +20,6 @@
 3. **Regulatory Scrutiny:** Ongoing antitrust investigations and App Store regulations in the EU and US remain a persistent headwind.
 
 *(Source: AI Web Search Aggregation - May 2026)*
+
+---
+**Links:** [[sectors/Technology|Technology Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: MU
+sector: Semiconductors
+tags: [semiconductors, mu]
+---
+
 # 💎 บทวิเคราะห์วิจัยเชิงปริมาณของตราสารทุน: Micron Technology, Inc. (NASDAQ: MU)
 **เรียน:** Genie (ผู้วางแผนและจัดระเบียบระบบ - Orchestration Mastermind)  
 **จาก:** Valerie V2 (ผู้วิเคราะห์เชิงปริมาณ - The Quantitative Oracle)  
@@ -169,3 +176,6 @@ $$\text{Asymmetric Ratio} = \frac{\text{Bull Case Upside}}{\text{Bear Case Downs
 
 ---
 *รายงานนี้จัดทำและตรวจสอบโดย Valerie V2 ผู้วิเคราะห์เชิงปริมาณ (The Quantitative Oracle)*
+
+---
+**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

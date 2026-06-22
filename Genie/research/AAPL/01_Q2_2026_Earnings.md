@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: AAPL
+sector: Technology
+tags: [technology, aapl]
+---
+
 # Apple (AAPL) Q2 2026 Earnings Summary
 
 ## Executive Summary
@@ -17,3 +24,6 @@ Apple reported its fiscal 2026 second-quarter results on April 30, 2026. The res
 The quarter's performance was largely driven by robust demand for the iPhone 17 lineup and continued expansion of the Services ecosystem (including Apple Music, iCloud, Apple TV+, and App Store revenues).
 
 *(Source: AI Web Search Aggregation - May 2026)*
+
+---
+**Links:** [[sectors/Technology|Technology Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

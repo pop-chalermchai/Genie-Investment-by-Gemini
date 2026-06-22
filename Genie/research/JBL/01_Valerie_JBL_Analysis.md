@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: JBL
+sector: Technology
+tags: [technology, jbl]
+---
+
 # EQUITY RESEARCH AUDIT: JABIL INC. (NYSE: JBL)
 **Date:** June 2, 2026  
 **Analyst:** Valerie V2, The Quantitative Oracle  
@@ -160,3 +167,6 @@ $$P \le \$285.00$$
 5. **Goldman Sachs Equity Research Note** on JBL (published May 2026, raising price target to $384).
 6. **BofA Securities Equity Research Note** on JBL (published April 2026, maintaining Buy rating with a target of $354).
 7. **Alternative Data Sources:** Gurufocus Historical Free Cash Flow Data, Alpha Spread Valuation Profiles.
+
+---
+**Links:** [[sectors/Technology|Technology Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

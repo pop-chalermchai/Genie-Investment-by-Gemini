@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: NVDA
+sector: Semiconductors
+tags: [semiconductors, nvda]
+---
+
 # บทวิเคราะห์แบบ Reverse DCF รุ่นที่ 2 — ระดับวิเคราะห์หลักทรัพย์สถาบัน (Reverse DCF Analyst v2 — Institutional Grade)
 
 ## บทบาทและหน้าที่
@@ -297,3 +304,6 @@ $$\text{กฎการประเมิน Rule of 40} = \text{อัตรา
 
 ## กฎทองคำ (Golden Rule)
 หุ้นของบริษัทจะมีความน่าสนใจในการลงทุนเฉพาะเมื่อเราเชื่อมั่นว่า ผลการดำเนินงานทางการค้าที่แฝงอยู่ในราคาหุ้น ได้แก่ การรักษาส่วนแบ่งตลาดที่สัดส่วนมากกว่า 70% ของโครงสร้างพื้นฐานศูนย์ข้อมูลที่มีมูลค่า 2.0 ล้านล้านดอลลาร์สหรัฐ และการทำอัตรากำไร FCF ที่สูงกว่า 45% ตลอดรอดฝั่งนั้น จะสามารถบรรลุและเกิดขึ้นได้จริง ผ่านปัจจัยผูกขาดทางซอฟต์แวร์และการเสนอขายระบบเชิงบูรณาการของ NVIDIA
+
+---
+**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

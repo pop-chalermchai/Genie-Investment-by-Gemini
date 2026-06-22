@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: AAOI
+sector: Technology
+tags: [technology, aaoi]
+---
+
 # Applied Optoelectronics, Inc. (NASDAQ: AAOI)
 
 > **คำแนะนำ: ถือ (HOLD)** | **วันที่รายงาน: 18 มิถุนายน 2569** | **ราคาเป้าหมาย: $165.00** | **ราคาปัจจุบัน: $170.00** | **โอกาสในการปรับตัวเพิ่มขึ้น (Upside): -2.9%**
@@ -103,3 +110,6 @@
 * **แหล่งข้อมูลทุติยภูมิและผู้รวบรวมข้อมูลตลาด (Secondary Sources & Data Aggregators):**
     * ฐานข้อมูลคาดการณ์ของนักวิเคราะห์ในวอลล์สตรีท (เรียกค้นข้อมูล ณ วันที่ 18 มิถุนายน 2569)
     * รายงานวิจัยแนวโน้มตลาดอุปกรณ์ออปติคอลทรานซีฟเวอร์ (เผยแพร่ ณ เดือนมีนาคม 2569)
+
+---
+**Links:** [[sectors/Technology|Technology Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

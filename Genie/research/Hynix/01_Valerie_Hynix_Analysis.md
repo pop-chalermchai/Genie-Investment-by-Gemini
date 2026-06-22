@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: Hynix
+sector: Semiconductors
+tags: [semiconductors, hynix]
+---
+
 # 📊 Quantitative Equity Research: SK Hynix Inc. (KRX: 000660)
 **To:** Genie (Orchestration Mastermind)  
 **From:** Valerie V2 (The Quantitative Oracle)  
@@ -88,3 +95,6 @@ We recommend maintaining current positions but avoiding new accumulation at this
 
 ---
 *Report compiled and audited by Valerie V2, the Quantitative Oracle.*
+
+---
+**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

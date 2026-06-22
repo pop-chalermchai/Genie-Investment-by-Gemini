@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: FLY
+sector: Aerospace
+tags: [aerospace, fly]
+---
+
 # Firefly Aerospace, Inc. (NASDAQ: FLY)
 
 > **คำแนะนำ: ซื้อเพื่อเก็งกำไร (Speculative Buy)** | **วันที่รายงาน: 15/06/2026** | **ราคาเป้าหมาย: $43.50** | **ราคาปัจจุบัน: $31.87** | **โอกาสปรับตัวขึ้น (Upside): +36.5%**
@@ -102,3 +109,6 @@ Firefly ดำเนินธุรกิจในจุดตัดระหว
 * **แหล่งข้อมูลทุติยภูมิและแหล่งรวบรวมข้อมูลตลาด (Secondary Sources & Data Aggregators):**
     * ฐานข้อมูลการประเมินราคาและคำแนะนำความเห็นพ้องของนักวิเคราะห์วอลล์สตรีท ผ่าน Bloomberg และ Seeking Alpha (ดึงข้อมูลล่าสุด ณ วันที่ 15 มิถุนายน 2026)
     * รายงานแนวโน้มตลาดการปล่อยจรวดขนส่งอวกาศเชิงพาณิชย์ โดย McKinsey & Co. / Bryce Space and Technology (ตีพิมพ์เผยแพร่: ไตรมาสที่ 1 ปี 2026)
+
+---
+**Links:** [[sectors/Aerospace|Aerospace Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

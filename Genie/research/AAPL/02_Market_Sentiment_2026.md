@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: AAPL
+sector: Technology
+tags: [technology, aapl]
+---
+
 # Apple (AAPL) Market Sentiment & Stock Performance (May 2026)
 
 ## Stock Performance
@@ -12,3 +19,6 @@ As of late May 2026, Apple stock (AAPL) has experienced a robust rally, breaking
 Investors and analysts are looking ahead to the next earnings report, which is projected for **July 30, 2026**. Continued growth is expected to rely heavily on the integration and monetization of expanding AI features, as well as the consistent, high-margin growth of the Services segment.
 
 *(Source: AI Web Search Aggregation - May 2026)*
+
+---
+**Links:** [[sectors/Technology|Technology Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

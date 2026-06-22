@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: FLY
+sector: Aerospace
+tags: [aerospace, fly]
+---
+
 # Reverse DCF Analysis: Firefly Aerospace, Inc. (FLY)
 
 ## Mandatory Assumption Disclosure
@@ -270,3 +277,6 @@ Hedge Fund Memo / Investment Committee Note
 
 ## Golden Rule
 The stock is attractive only if the implied business outcomes (achieving a 37% FCF growth rate and scaling to a $2.53B revenue base) are realistically achievable through the flawless execution of the Eclipse and Blue Ghost programs.
+
+---
+**Links:** [[sectors/Aerospace|Aerospace Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]

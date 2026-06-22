@@ -1,3 +1,10 @@
+---
+type: stock-analysis
+ticker: EOSE
+sector: Energy
+tags: [energy, eose]
+---
+
 # บริษัท อีออส เอนเนอร์ยี่ เอนเตอร์ไพรส์ จำกัด (NASDAQ: EOSE)
 
 > **คำแนะนำ: ซื้อ (BUY)** | **วันที่รายงาน: 18 มิถุนายน 2026** | **ราคาเป้าหมาย: $10.00** | **ราคาปัจจุบัน: $7.50** | **ส่วนต่างราคา (Upside): +33.3%**
@@ -97,3 +104,6 @@
 * **แหล่งข้อมูลทุติยภูมิและแหล่งรวมสถิติการเงิน (Secondary Sources):**
     * ฐานข้อมูลการจัดอันดับและราคาเป้าหมายจากสถาบันการเงินผ่านระบบ Bloomberg / Gurufocus / MarketBeat (ดึงข้อมูลล่าสุด ณ วันที่ 18 มิถุนายน 2026)
     * รายงานต้นทุนการจัดเก็บพลังงานตามระบบ (Levelized Cost of Storage - LCOS) จัดทำโดยสถาบัน Lazard (เผยแพร่ปี 2025)
+
+---
+**Links:** [[sectors/Energy|Energy Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
