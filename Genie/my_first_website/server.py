@@ -867,15 +867,12 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                         else:
                             cursor.execute("UPDATE portfolios SET name=? WHERE name=? AND parent_id=?", (new_name, old_name, p_id))
                     else:
-                        if cat_id is not None:
-                            cursor.execute("UPDATE portfolios SET name=?, category_id=? WHERE name=?", (new_name, cat_id, old_name))
-                        else:
-                            cursor.execute("UPDATE portfolios SET name=? WHERE name=?", (new_name, old_name))
+                        raise ValueError("Parent portfolio not found")
                 else:
                     if cat_id is not None:
-                        cursor.execute("UPDATE portfolios SET name=?, category_id=? WHERE name=?", (new_name, cat_id, old_name))
+                        cursor.execute("UPDATE portfolios SET name=?, category_id=? WHERE name=? AND parent_id IS NULL", (new_name, cat_id, old_name))
                     else:
-                        cursor.execute("UPDATE portfolios SET name=? WHERE name=?", (new_name, old_name))
+                        cursor.execute("UPDATE portfolios SET name=? WHERE name=? AND parent_id IS NULL", (new_name, old_name))
                     
                 conn.commit()
                 conn.close()

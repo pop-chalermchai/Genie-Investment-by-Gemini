@@ -2134,3 +2134,84 @@ select.type-sell {
 }
 .tx-action-btn:hover { border-color: var(--border-dim); color: var(--accent-neon); background: var(--bg-card-solid); }
 .tx-action-btn.tx-action-delete:hover { color: #EF4444; border-color: rgba(239,68,68,0.3); }
+
+/* Sub-Portfolio Hover Actions */
+.subport-chip-row {
+    position: relative;
+    display: inline-flex;
+    align-items: stretch;
+}
+.subport-chip-actions {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 0 4px 0 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+    background: linear-gradient(to right, transparent, var(--bg-card-solid) 30%);
+    border-radius: 0 8px 8px 0;
+}
+.subport-chip-row:hover .subport-chip-actions {
+    opacity: 1;
+    pointer-events: auto;
+}
+.subport-action-btn {
+    padding: 2px 6px;
+    border: 1px solid var(--border-dim);
+    background: var(--bg-card-solid);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    line-height: 1;
+    color: var(--text-primary);
+    transition: all 0.15s;
+}
+.subport-action-btn:hover {
+    border-color: var(--accent-neon);
+    color: var(--accent-neon);
+}
+.subport-action-btn.btn-delete:hover {
+    border-color: rgba(239, 68, 68, 0.4);
+    color: var(--color-negative);
+}
+
+/* Parent Portfolio Card Hover Actions */
+.parent-card-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+.parent-portfolio-card:hover .parent-card-actions {
+    opacity: 1;
+    pointer-events: auto;
+}
+.parent-action-btn {
+    padding: 3px 6px;
+    border: 1px solid var(--border-dim);
+    background: var(--bg-card-solid);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    line-height: 1;
+    color: var(--text-primary);
+    transition: all 0.15s;
+}
+.parent-action-btn:hover {
+    border-color: var(--accent-neon);
+    color: var(--accent-neon);
+}
+.parent-action-btn.btn-delete:hover {
+    border-color: rgba(239, 68, 68, 0.4);
+    color: var(--color-negative);
+}

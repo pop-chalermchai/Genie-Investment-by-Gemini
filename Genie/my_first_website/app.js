@@ -201,9 +201,7 @@ function renderPortfolioPage() {
         const subGainLossPct = subData.cost > 0 ? (subGainLoss / subData.cost) * 100 : 0;
         
         const wrapper = document.createElement("div");
-        wrapper.style.display = "inline-flex";
-        wrapper.style.alignItems = "center";
-        wrapper.style.gap = "4px";
+        wrapper.className = "subport-chip-row";
         
         const chip = document.createElement("button");
         chip.className = "subport-chip" + (activeSubPortfolio === subName ? " active" : "");
@@ -211,24 +209,24 @@ function renderPortfolioPage() {
         chip.onclick = () => selectSubPortfolio(subName);
         wrapper.appendChild(chip);
         
+        const actions = document.createElement("div");
+        actions.className = "subport-chip-actions";
+
         const editBtn = document.createElement("button");
-        editBtn.innerHTML = "✎";
+        editBtn.className = "subport-action-btn";
+        editBtn.innerHTML = "✏️";
         editBtn.title = "Edit Sub-Portfolio";
-        editBtn.style.cssText = "background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:0.9rem;padding:2px 4px;opacity:0.6;transition:0.2s;";
-        editBtn.onmouseover = () => editBtn.style.opacity = 1;
-        editBtn.onmouseout = () => editBtn.style.opacity = 0.6;
-        editBtn.onclick = () => editSubPortfolio(subName);
-        wrapper.appendChild(editBtn);
+        editBtn.onclick = (e) => { e.stopPropagation(); editSubPortfolio(subName); };
+        actions.appendChild(editBtn);
 
         const delBtn = document.createElement("button");
-        delBtn.innerHTML = "🗑️";
+        delBtn.className = "subport-action-btn btn-delete";
+        delBtn.innerHTML = "🗑";
         delBtn.title = "Delete Sub-Portfolio";
-        delBtn.style.cssText = "background:none;border:none;color:var(--color-negative);cursor:pointer;font-size:0.9rem;padding:2px 4px;opacity:0.6;transition:0.2s;";
-        delBtn.onmouseover = () => delBtn.style.opacity = 1;
-        delBtn.onmouseout = () => delBtn.style.opacity = 0.6;
-        delBtn.onclick = () => deleteSubPortfolio(subName);
-        wrapper.appendChild(delBtn);
+        delBtn.onclick = (e) => { e.stopPropagation(); deleteSubPortfolio(subName); };
+        actions.appendChild(delBtn);
 
+        wrapper.appendChild(actions);
         chipsEl.appendChild(wrapper);
     });
 
@@ -670,7 +668,10 @@ function updateDashboard() {
                    <span style="font-size:0.72rem;color:var(--text-secondary);">${subPortCount} sub-port${subPortCount > 1 ? 's' : ''} →</span>`;
 
             card.innerHTML = `
-                <button onclick="deleteParentPortfolio('${parentName}')" title="Delete Portfolio" style="position:absolute;top:10px;right:10px;background:none;border:none;color:var(--color-negative);cursor:pointer;font-size:1.2rem;padding:0;line-height:1;opacity:0.5;transition:opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.5">&times;</button>
+                <div class="parent-card-actions">
+                    <button class="parent-action-btn" onclick="event.stopPropagation(); editParentPortfolio('${parentName.replace(/'/g, "\\'")}')" title="Edit">✏️</button>
+                    <button class="parent-action-btn btn-delete" onclick="event.stopPropagation(); deleteParentPortfolio('${parentName.replace(/'/g, "\\'")}')" title="Delete">🗑</button>
+                </div>
                 <div style="font-size:1.2rem;font-weight:700;color:var(--text-emphasis);margin:0 0 2px 0;">${parentName}</div>
                 <span style="font-size:1.1rem;font-weight:700;color:var(--text-primary);">${symbol}${formatNumber(data.value, 2)}</span>
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">${bottomRow}</div>
@@ -1424,7 +1425,7 @@ function populateDropdowns() {
     }
     
     // Populate category dropdowns dynamically
-    const categorySelects = ["new-port-category", "new-subport-category", "edit-subport-category"];
+    const categorySelects = ["new-port-category", "new-subport-category", "edit-subport-category", "edit-port-category"];
     categorySelects.forEach(selectId => {
         const selectEl = document.getElementById(selectId);
         if (selectEl) {
@@ -1451,7 +1452,8 @@ function handleAddPortfolio(event) {
     event.preventDefault();
     const name = document.getElementById("new-port-name").value.trim();
     const category = document.getElementById("new-port-category").value;
-    const parentIdVal = document.getElementById("new-port-parent").value;
+    const parentEl = document.getElementById("new-port-parent");
+    const parentIdVal = parentEl ? parentEl.value : "";
     const parentId = parentIdVal === "" ? null : parseInt(parentIdVal);
     
     fetch('/api/portfolios', {
@@ -1976,6 +1978,58 @@ function editSubPortfolio(subName) {
 
 function closeEditSubPortfolioModal() {
     document.getElementById("edit-subportfolio-modal").classList.remove("active");
+}
+
+function editParentPortfolio(pName) {
+    const portObj = portfoliosList.find(p => p.name === pName && p.parentId === null);
+    const currentCategory = portObj ? portObj.category : "Stocks";
+
+    document.getElementById("edit-port-old-name").value = pName;
+    document.getElementById("edit-port-name").value = pName;
+    document.getElementById("edit-port-category").value = currentCategory || "Stocks";
+    document.getElementById("edit-portfolio-modal").classList.add("active");
+}
+
+function closeEditPortfolioModal() {
+    document.getElementById("edit-portfolio-modal").classList.remove("active");
+}
+
+function handleEditPortfolioSubmit(e) {
+    e.preventDefault();
+    const oldName = document.getElementById("edit-port-old-name").value;
+    const newName = document.getElementById("edit-port-name").value.trim();
+    const newCategory = document.getElementById("edit-port-category").value;
+
+    if (!newName) {
+        alert("Portfolio name is required.");
+        return;
+    }
+
+    fetch('/api/portfolio', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            oldName: oldName,
+            newName: newName,
+            newCategory: newCategory
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            closeEditPortfolioModal();
+            if (activeParentPortfolio === oldName) {
+                activeParentPortfolio = newName;
+            }
+            fetchInitData();
+        } else {
+            alert("Failed to update portfolio: " + data.error);
+        }
+    })
+    .catch(err => {
+        console.error("Error updating portfolio:", err);
+        alert("Failed to update portfolio.");
+    });
 }
 
 function handleEditSubPortfolioSubmit(e) {

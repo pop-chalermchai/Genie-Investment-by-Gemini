@@ -486,15 +486,12 @@ def edit_portfolio():
                 else:
                     execute_sql(cursor, is_postgres, "UPDATE portfolios SET name=? WHERE name=? AND parent_id=?", (new_name, old_name, p_id))
             else:
-                if cat_id is not None:
-                    execute_sql(cursor, is_postgres, "UPDATE portfolios SET name=?, category_id=? WHERE name=?", (new_name, cat_id, old_name))
-                else:
-                    execute_sql(cursor, is_postgres, "UPDATE portfolios SET name=? WHERE name=?", (new_name, old_name))
+                raise ValueError("Parent portfolio not found")
         else:
             if cat_id is not None:
-                execute_sql(cursor, is_postgres, "UPDATE portfolios SET name=?, category_id=? WHERE name=?", (new_name, cat_id, old_name))
+                execute_sql(cursor, is_postgres, "UPDATE portfolios SET name=?, category_id=? WHERE name=? AND parent_id IS NULL", (new_name, cat_id, old_name))
             else:
-                execute_sql(cursor, is_postgres, "UPDATE portfolios SET name=? WHERE name=?", (new_name, old_name))
+                execute_sql(cursor, is_postgres, "UPDATE portfolios SET name=? WHERE name=? AND parent_id IS NULL", (new_name, old_name))
                 
         conn.commit()
         conn.close()
