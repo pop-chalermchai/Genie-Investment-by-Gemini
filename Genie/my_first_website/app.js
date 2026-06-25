@@ -815,21 +815,77 @@ function handleIngest(event) {
 
 function toggleIngestType() {
     const select = document.getElementById("ingest-type");
-    const label = document.getElementById("label-avg-cost");
-    
+    const labelCost = document.getElementById("label-avg-cost");
+    const labelTicker = document.getElementById("label-ticker");
+    const sharesLabel = document.querySelector("label[for='ingest-shares']");
+    const currencySelect = document.getElementById("ingest-currency");
+    const sectorSelect = document.getElementById("ingest-sector");
+    const tickerInput = document.getElementById("ingest-ticker");
+
+    select.classList.remove("type-buy", "type-sell");
+
     if (select.value === "SELL") {
-        select.classList.remove("type-buy");
         select.classList.add("type-sell");
-        label.innerText = "Selling Price ($)";
-    } else {
-        select.classList.remove("type-sell");
+        labelCost.innerText = "Selling Price ($)";
+        labelTicker.innerText = "Ticker";
+        if (sharesLabel) sharesLabel.innerText = "Shares (Qty)";
+        tickerInput.placeholder = "e.g., TSLA or BTC-USD";
+    } else if (select.value === "THAI_FUND") {
         select.classList.add("type-buy");
-        label.innerText = "Avg Cost ($)";
+        labelCost.innerText = "NAV per Unit (THB)";
+        labelTicker.innerText = "Fund Code";
+        if (sharesLabel) sharesLabel.innerText = "Units";
+        tickerInput.placeholder = "e.g., SCBGROWTH or KF-SEMQ";
+        if (currencySelect) currencySelect.value = "THB";
+        if (sectorSelect) sectorSelect.value = "Thai Mutual Fund";
+    } else {
+        select.classList.add("type-buy");
+        labelCost.innerText = "Avg Cost ($)";
+        labelTicker.innerText = "Ticker";
+        if (sharesLabel) sharesLabel.innerText = "Shares (Qty)";
+        tickerInput.placeholder = "e.g., TSLA or BTC-USD";
+    }
+}
+
+// AUTO-FILL THAI MUTUAL FUND FROM SEC API
+async function autoFillThaiFund() {
+    const tickerInput = document.getElementById("ingest-ticker");
+    const nameInput = document.getElementById("ingest-name");
+    const costInput = document.getElementById("ingest-avg-cost");
+    const code = tickerInput.value.trim().toUpperCase();
+
+    if (!code || nameInput.value.trim() !== "") return;
+
+    nameInput.placeholder = "กำลังค้นหากองทุน...";
+    try {
+        const response = await fetch(`/api/thai-fund?code=${code}`);
+        if (!response.ok) {
+            const err = await response.json();
+            if (response.status === 404) {
+                nameInput.placeholder = "ไม่พบกองทุน — ลอง Sync ก่อน";
+            } else {
+                nameInput.placeholder = "เกิดข้อผิดพลาด";
+            }
+            return;
+        }
+        const data = await response.json();
+        nameInput.value = data.proj_name_th || data.proj_name_en || code;
+        if (data.nav && !costInput.value) {
+            costInput.value = data.nav.toFixed(4);
+        }
+    } catch (err) {
+        console.warn("Thai fund auto-fill failed:", err);
+        nameInput.placeholder = "e.g., กองทุนเปิดไทยพาณิชย์";
     }
 }
 
 // AUTO-FILL COMPANY NAME FROM YAHOO FINANCE
 async function autoFillCompanyName() {
+    const type = document.getElementById("ingest-type").value;
+    if (type === "THAI_FUND") {
+        return autoFillThaiFund();
+    }
+
     const tickerInput = document.getElementById("ingest-ticker");
     const nameInput = document.getElementById("ingest-name");
     let ticker = tickerInput.value.trim().toUpperCase();

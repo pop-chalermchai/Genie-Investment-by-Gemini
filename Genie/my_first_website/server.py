@@ -4,9 +4,13 @@ import json
 import urllib.parse
 import os
 import sqlite3
+from datetime import datetime, timedelta
 
 PORT = 8000
 DIRECTORY = os.path.dirname(os.path.abspath(__file__))
+
+SEC_FACTSHEET_KEY = os.environ.get('SEC_FACTSHEET_KEY', 'eb52da4e4d2c4587a293bbbf6c4f00cb')
+SEC_DAILY_INFO_KEY = os.environ.get('SEC_DAILY_INFO_KEY', '38a6644d289443f4803ceb41132c1c60')
 
 class MyHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -363,6 +367,76 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": str(e)}).encode())
+        elif parsed_url.path == '/api/thai-fund':
+            query_params = urllib.parse.parse_qs(parsed_url.query)
+            code = query_params.get('code', [None])[0]
+            if not code:
+                self.send_response(400)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": "Missing code parameter"}).encode())
+                return
+
+            code = code.upper().strip()
+            db_path = os.path.join(DIRECTORY, 'portfolio.db')
+            try:
+                conn = sqlite3.connect(db_path)
+                conn.row_factory = sqlite3.Row
+                cursor = conn.cursor()
+                cursor.execute('SELECT * FROM thai_funds WHERE UPPER(proj_abbr_name) = ?', (code,))
+                fund = cursor.fetchone()
+                conn.close()
+
+                if not fund:
+                    self.send_response(404)
+                    self.send_header('Content-Type', 'application/json')
+                    self.send_header('Access-Control-Allow-Origin', '*')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({"error": f"Fund '{code}' not found. Try syncing fund list first via POST /api/thai-fund/sync"}).encode())
+                    return
+
+                fund = dict(fund)
+                proj_id = fund['proj_id']
+
+                # Fetch latest NAV — try up to 7 days back to skip weekends/holidays
+                nav = None
+                nav_date = None
+                for i in range(1, 8):
+                    date_str = (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d')
+                    try:
+                        nav_url = f'https://api.sec.or.th/FundDailyInfo/{proj_id}/dailynav/{date_str}'
+                        req = urllib.request.Request(nav_url, headers={'Ocp-Apim-Subscription-Key': SEC_DAILY_INFO_KEY})
+                        with urllib.request.urlopen(req, timeout=5) as resp:
+                            if resp.status == 200:
+                                data = json.loads(resp.read().decode())
+                                if data and len(data) > 0:
+                                    nav = data[0]['last_val']
+                                    nav_date = date_str
+                                    break
+                    except Exception:
+                        continue
+
+                result = {
+                    'proj_abbr_name': fund['proj_abbr_name'],
+                    'proj_name_th': fund['proj_name_th'],
+                    'proj_name_en': fund['proj_name_en'],
+                    'amc_name_en': fund['amc_name_en'],
+                    'nav': nav,
+                    'nav_date': nav_date,
+                }
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps(result).encode())
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode())
+
         else:
             # For Path Routing support:
             # If the path is one of our frontend routes, serve index.html
@@ -374,7 +448,66 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
 
     def do_POST(self):
         parsed_url = urllib.parse.urlparse(self.path)
-        if parsed_url.path == '/api/portfolios':
+        if parsed_url.path == '/api/thai-fund/sync':
+            # Fetch all funds from SEC FundFactsheet API and cache into thai_funds table
+            try:
+                amc_req = urllib.request.Request(
+                    'https://api.sec.or.th/FundFactsheet/fund/amc',
+                    headers={'Ocp-Apim-Subscription-Key': SEC_FACTSHEET_KEY}
+                )
+                with urllib.request.urlopen(amc_req, timeout=10) as resp:
+                    amcs = json.loads(resp.read().decode())
+
+                db_path = os.path.join(DIRECTORY, 'portfolio.db')
+                conn = sqlite3.connect(db_path)
+                cursor = conn.cursor()
+                total = 0
+
+                for amc in amcs:
+                    unique_id = amc['unique_id']
+                    amc_name = amc.get('name_en', '')
+                    try:
+                        fund_req = urllib.request.Request(
+                            f'https://api.sec.or.th/FundFactsheet/fund/amc/{unique_id}',
+                            headers={'Ocp-Apim-Subscription-Key': SEC_FACTSHEET_KEY}
+                        )
+                        with urllib.request.urlopen(fund_req, timeout=10) as resp:
+                            funds = json.loads(resp.read().decode())
+                        for f in funds:
+                            cursor.execute('''
+                                INSERT INTO thai_funds (proj_id, proj_abbr_name, proj_name_th, proj_name_en, fund_status, amc_name_en, unique_id, last_synced)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                                ON CONFLICT(proj_id) DO UPDATE SET
+                                    proj_abbr_name=excluded.proj_abbr_name,
+                                    proj_name_th=excluded.proj_name_th,
+                                    proj_name_en=excluded.proj_name_en,
+                                    fund_status=excluded.fund_status,
+                                    amc_name_en=excluded.amc_name_en,
+                                    last_synced=CURRENT_TIMESTAMP
+                            ''', (
+                                f.get('proj_id'), f.get('proj_abbr_name'), f.get('proj_name_th'),
+                                f.get('proj_name_en'), f.get('fund_status'), amc_name, unique_id
+                            ))
+                            total += 1
+                    except Exception:
+                        continue
+
+                conn.commit()
+                conn.close()
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"synced": total, "amcs": len(amcs)}).encode())
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode())
+            return
+
+        elif parsed_url.path == '/api/portfolios':
             content_length = int(self.headers.get('Content-Length', 0))
             post_data = self.rfile.read(content_length)
             
