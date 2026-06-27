@@ -14,8 +14,8 @@ env/
 .vscode/
 .idea/
 
-# Database files (uncomment if you don't want to track database states)
-# *.db
+# Database files — not tracked in git, use sync_portfolio_to_supabase.py for backup
+*.db
 
 # Local env files
 .env
