@@ -835,7 +835,7 @@ function toggleIngestType() {
         labelCost.innerText = "NAV per Unit (THB)";
         labelTicker.innerText = "Fund Code";
         if (sharesLabel) sharesLabel.innerText = "Units";
-        tickerInput.placeholder = "e.g., SCBGROWTH or KF-SEMQ";
+        tickerInput.placeholder = "e.g., KFGROWTH or K-GROWTH";
         if (currencySelect) currencySelect.value = "THB";
         if (sectorSelect) sectorSelect.value = "Thai Mutual Fund";
     } else {
@@ -856,26 +856,30 @@ async function autoFillThaiFund() {
 
     if (!code || nameInput.value.trim() !== "") return;
 
+    // Reset previous values before new lookup
+    nameInput.value = "";
+    costInput.value = "";
     nameInput.placeholder = "กำลังค้นหากองทุน...";
     try {
-        const response = await fetch(`/api/thai-fund?code=${code}`);
+        let response = await fetch(`/api/thai-fund?code=${encodeURIComponent(code)}`);
+        if (response.status === 404) {
+            // Auto-sync fund list and retry once
+            nameInput.placeholder = "กำลัง Sync ข้อมูลกองทุน (ครั้งแรก)...";
+            await fetch('/api/thai-fund/sync', { method: 'POST' });
+            response = await fetch(`/api/thai-fund?code=${encodeURIComponent(code)}`);
+        }
         if (!response.ok) {
-            const err = await response.json();
-            if (response.status === 404) {
-                nameInput.placeholder = "ไม่พบกองทุน — ลอง Sync ก่อน";
-            } else {
-                nameInput.placeholder = "เกิดข้อผิดพลาด";
-            }
+            nameInput.placeholder = "ไม่พบกองทุน — ตรวจสอบรหัสกองทุน";
             return;
         }
         const data = await response.json();
         nameInput.value = data.proj_name_th || data.proj_name_en || code;
-        if (data.nav && !costInput.value) {
+        if (data.nav) {
             costInput.value = data.nav.toFixed(4);
         }
     } catch (err) {
         console.warn("Thai fund auto-fill failed:", err);
-        nameInput.placeholder = "e.g., กองทุนเปิดไทยพาณิชย์";
+        nameInput.placeholder = "e.g., กองทุนเปิดกรุงศรีโกรทอิควิตี้";
     }
 }
 
@@ -1348,9 +1352,25 @@ async function fetchLivePrices() {
         }
     })();
 
-    // 2. Fetch prices for public stock holdings
+    // 2. Fetch prices for all holdings
     const promises = holdings.map(async (pos) => {
         if (pos.ticker.includes(" ") || pos.ticker.startsWith("KAsset")) return; // Skip custom/private tickers
+
+        // Thai mutual funds — fetch NAV from SEC API instead of Yahoo Finance
+        if (pos.currency === "THB" || pos.sector === "Thai Mutual Fund") {
+            try {
+                const response = await fetch(`/api/thai-fund?code=${encodeURIComponent(pos.ticker)}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.nav) pos.currentPrice = data.nav;
+                    if (data.proj_name_th) pos.companyName = data.proj_name_th;
+                }
+            } catch (err) {
+                console.warn(`Failed to fetch NAV for ${pos.ticker}:`, err);
+            }
+            return;
+        }
+
         try {
             const response = await fetch(`/api/stock?ticker=${pos.ticker}`);
             if (!response.ok) throw new Error("API error");
