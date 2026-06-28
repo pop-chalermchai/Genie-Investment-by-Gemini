@@ -559,8 +559,8 @@ def delete_portfolio():
         sub_rows = fetch_all_as_dict(cursor, is_postgres)
         sub_ids = [r['id'] for r in sub_rows]
 
-        # Delete parent + all sub-portfolios
-        all_ids = [p_id] + sub_ids
+        # Delete children first, then parent (Postgres FK constraint requires this order)
+        all_ids = sub_ids + [p_id]
         for curr_id in all_ids:
             execute_sql(cursor, is_postgres, "DELETE FROM transactions WHERE asset_id IN (SELECT id FROM assets WHERE portfolio_id=?)", (curr_id,))
             execute_sql(cursor, is_postgres, "DELETE FROM assets WHERE portfolio_id=?", (curr_id,))

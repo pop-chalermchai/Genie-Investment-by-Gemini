@@ -948,12 +948,28 @@ function createManageRow(name, id, isChild, parentId, idx, total) {
     const editBtn = document.createElement("button");
     editBtn.className = "manage-tree-btn";
     editBtn.textContent = "Edit";
-    editBtn.onclick = () => isChild ? editSubPortfolio(name) : editParentPortfolio(name);
+    editBtn.onclick = () => {
+        if (isChild) {
+            const parent = portfoliosList.find(p => p.id === parentId);
+            if (parent) activeParentPortfolio = parent.name;
+            editSubPortfolio(name);
+        } else {
+            editParentPortfolio(name);
+        }
+    };
 
     const delBtn = document.createElement("button");
     delBtn.className = "manage-tree-btn btn-delete";
     delBtn.textContent = "Delete";
-    delBtn.onclick = () => isChild ? deleteSubPortfolio(name) : deleteParentPortfolio(name);
+    delBtn.onclick = () => {
+        if (isChild) {
+            const parent = portfoliosList.find(p => p.id === parentId);
+            if (parent) activeParentPortfolio = parent.name;
+            deleteSubPortfolio(name);
+        } else {
+            deleteParentPortfolio(name);
+        }
+    };
 
     row.appendChild(upBtn);
     row.appendChild(downBtn);

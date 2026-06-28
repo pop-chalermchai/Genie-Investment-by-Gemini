@@ -1160,8 +1160,8 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 cursor.execute("SELECT id FROM portfolios WHERE parent_id=?", (p_id,))
                 sub_ids = [row[0] for row in cursor.fetchall()]
                 
-                # Combine parent ID and sub portfolio IDs
-                all_ids = [p_id] + sub_ids
+                # Delete children first, then parent (avoid FK violations)
+                all_ids = sub_ids + [p_id]
                 
                 # Delete transactions related to assets in these portfolios
                 for curr_id in all_ids:
