@@ -1,4 +1,5 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
+from datetime import datetime, timedelta
 import sqlite3
 import os
 import urllib.request
@@ -12,7 +13,20 @@ app = Flask(__name__)
 # Config
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB_PATH = os.path.join(BASE_DIR, 'portfolio.db')
+
+# Load .env for local development (Vercel injects env vars automatically)
+_env_path = os.path.join(BASE_DIR, '.env')
+if os.path.exists(_env_path):
+    with open(_env_path) as _f:
+        for _line in _f:
+            _line = _line.strip()
+            if _line and not _line.startswith('#') and '=' in _line:
+                _k, _v = _line.split('=', 1)
+                os.environ.setdefault(_k.strip(), _v.strip())
+
 DATABASE_URL = os.environ.get('DATABASE_URL')
+SEC_FACTSHEET_KEY = os.environ.get('SEC_FACTSHEET_KEY', 'eb52da4e4d2c4587a293bbbf6c4f00cb')
+SEC_DAILY_INFO_KEY = os.environ.get('SEC_DAILY_INFO_KEY', '38a6644d289443f4803ceb41132c1c60')
 
 def get_db_connection():
     """
@@ -893,10 +907,10 @@ def delete_category():
         cat_id = request.args.get('id')
         if not cat_id:
             raise ValueError("Category id required")
-            
+
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
-        
+
         # Update referencing portfolios
         execute_sql(cursor, is_postgres, "UPDATE portfolios SET category_id = NULL WHERE category_id = ?", (cat_id,))
         # Delete category
@@ -906,3 +920,156 @@ def delete_category():
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/portfolios/reorder', methods=['POST'])
+def reorder_portfolios():
+    try:
+        items = request.get_json()
+        conn, is_postgres = get_db_connection()
+        cursor = conn.cursor()
+        for item in items:
+            execute_sql(cursor, is_postgres, "UPDATE portfolios SET sort_order = ? WHERE id = ?", (item['sortOrder'], item['id']))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/thai-fund', methods=['GET'])
+def get_thai_fund():
+    code = request.args.get('code', '').upper().strip()
+    if not code:
+        return jsonify({"error": "Missing code parameter"}), 400
+    try:
+        conn, is_postgres = get_db_connection()
+        cursor = conn.cursor()
+        execute_sql(cursor, is_postgres, "SELECT * FROM thai_funds WHERE UPPER(proj_abbr_name) = ?", (code,))
+        rows = fetch_all_as_dict(cursor, is_postgres)
+        conn.close()
+        if not rows:
+            return jsonify({"error": f"Fund '{code}' not found. Try syncing fund list first via POST /api/thai-fund/sync"}), 404
+        fund = rows[0]
+        proj_id = fund['proj_id']
+        nav = None
+        nav_date = None
+        for i in range(1, 8):
+            date_str = (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d')
+            try:
+                nav_url = f'https://api.sec.or.th/FundDailyInfo/{proj_id}/dailynav/{date_str}'
+                req = urllib.request.Request(nav_url, headers={'Ocp-Apim-Subscription-Key': SEC_DAILY_INFO_KEY})
+                with urllib.request.urlopen(req, timeout=5) as resp:
+                    if resp.status == 200:
+                        data = json.loads(resp.read().decode())
+                        if data and len(data) > 0:
+                            nav = data[0]['last_val']
+                            nav_date = date_str
+                            break
+            except Exception:
+                continue
+        return jsonify({
+            'proj_abbr_name': fund['proj_abbr_name'],
+            'proj_name_th': fund.get('proj_name_th'),
+            'proj_name_en': fund.get('proj_name_en'),
+            'amc_name_en': fund.get('amc_name_en'),
+            'nav': nav,
+            'nav_date': nav_date,
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/thai-fund/sync', methods=['POST'])
+def sync_thai_funds():
+    try:
+        conn, is_postgres = get_db_connection()
+        cursor = conn.cursor()
+        # Ensure thai_funds table exists
+        if is_postgres:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS thai_funds (
+                    proj_id TEXT PRIMARY KEY,
+                    proj_abbr_name TEXT,
+                    proj_name_th TEXT,
+                    proj_name_en TEXT,
+                    fund_status TEXT,
+                    amc_name_en TEXT,
+                    unique_id TEXT,
+                    last_synced TIMESTAMP
+                )
+            """)
+        else:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS thai_funds (
+                    proj_id TEXT PRIMARY KEY,
+                    proj_abbr_name TEXT,
+                    proj_name_th TEXT,
+                    proj_name_en TEXT,
+                    fund_status TEXT,
+                    amc_name_en TEXT,
+                    unique_id TEXT,
+                    last_synced TIMESTAMP
+                )
+            """)
+        conn.commit()
+
+        amc_req = urllib.request.Request(
+            'https://api.sec.or.th/FundFactsheet/fund/amc',
+            headers={'Ocp-Apim-Subscription-Key': SEC_FACTSHEET_KEY}
+        )
+        with urllib.request.urlopen(amc_req, timeout=10) as resp:
+            amcs = json.loads(resp.read().decode())
+
+        total = 0
+        for amc in amcs:
+            unique_id = amc['unique_id']
+            amc_name = amc.get('name_en', '')
+            try:
+                fund_req = urllib.request.Request(
+                    f'https://api.sec.or.th/FundFactsheet/fund/amc/{unique_id}',
+                    headers={'Ocp-Apim-Subscription-Key': SEC_FACTSHEET_KEY}
+                )
+                with urllib.request.urlopen(fund_req, timeout=10) as resp:
+                    funds = json.loads(resp.read().decode())
+                for f in funds:
+                    execute_sql(cursor, is_postgres, """
+                        INSERT INTO thai_funds (proj_id, proj_abbr_name, proj_name_th, proj_name_en, fund_status, amc_name_en, unique_id, last_synced)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                        ON CONFLICT(proj_id) DO UPDATE SET
+                            proj_abbr_name=EXCLUDED.proj_abbr_name,
+                            proj_name_th=EXCLUDED.proj_name_th,
+                            proj_name_en=EXCLUDED.proj_name_en,
+                            fund_status=EXCLUDED.fund_status,
+                            amc_name_en=EXCLUDED.amc_name_en,
+                            last_synced=CURRENT_TIMESTAMP
+                    """, (f.get('proj_id'), f.get('proj_abbr_name'), f.get('proj_name_th'),
+                          f.get('proj_name_en'), f.get('fund_status'), amc_name, unique_id))
+                    total += 1
+            except Exception:
+                continue
+        conn.commit()
+        conn.close()
+        return jsonify({"synced": total, "amcs": len(amcs)})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ── Static file serving (local dev only) ──────────────────────────────────────
+@app.route('/')
+@app.route('/dashboard')
+@app.route('/team')
+@app.route('/research')
+@app.route('/transactions')
+def serve_index():
+    return send_from_directory(BASE_DIR, 'index.html')
+
+@app.route('/<path:filename>')
+def serve_static(filename):
+    return send_from_directory(BASE_DIR, filename)
+
+
+if __name__ == '__main__':
+    print(f"Starting Flask dev server on http://127.0.0.1:8000")
+    print(f"DB: {'Supabase' if DATABASE_URL else 'Local SQLite'}")
+    app.run(host='127.0.0.1', port=8000, debug=True)
