@@ -861,12 +861,11 @@ function toggleManageMode() {
         if (activeParentPortfolio) renderManageSubportList();
     } else {
         if (treePanel) treePanel.style.display = "none";
-        // Restore sub-port chips
+        if (grid) grid.style.display = "";   // un-hide the card grid
         const chipsEl = document.getElementById("subport-chips");
         const manageList = document.getElementById("manage-subport-list");
         if (chipsEl) chipsEl.style.display = "";
         if (manageList) manageList.style.display = "none";
-        // Rebuild dashboard with updated sort order
         updateDashboard();
         if (activeParentPortfolio) renderPortfolioPage();
     }
