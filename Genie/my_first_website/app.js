@@ -16,6 +16,10 @@ let allocationChart = null;
 let displayCurrency = "USD";
 let exchangeRateUSDTHB = 32.505;
 let currentSort = { column: null, direction: 'asc' };
+let isManageMode = false;
+let dragSrcId = null;
+let dragSrcLevel = null; // 'parent' | 'child'
+let dragSrcParentId = null;
 
 // ==========================================================================
 // THEME STATE MANAGEMENT (Solarized Light / Dark Switcher)
@@ -150,12 +154,13 @@ let researchSortBy = 'sector';  // 'sector' | 'ticker' | 'upside'
 let researchViewMode = 'list';  // 'list' | 'table'
 
 // === PORTFOLIO DRILL-DOWN NAVIGATION ===
-function navigateToPortfolio(parentName) {
+function navigateToPortfolio(parentName, callback) {
     activeParentPortfolio = parentName;
     activeSubPortfolio = null;
     document.getElementById("dashboard-main-view").style.display = "none";
     document.getElementById("portfolio-detail-view").style.display = "block";
     renderPortfolioPage();
+    if (callback) callback();
 }
 
 function navigateBack() {
@@ -185,9 +190,13 @@ function renderPortfolioPage() {
     plEl.innerText = `${pGainLoss >= 0 ? '+' : ''}${pGainLossPct.toFixed(1)}% (${symbol}${formatNumber(Math.abs(pGainLoss), 0)})`;
     plEl.style.color = pGainLoss >= 0 ? 'var(--color-positive)' : 'var(--color-negative)';
 
-    // Build sub-portfolio chips
+    // Build sub-portfolio chips (or manage list in manage mode)
+    if (isManageMode) {
+        renderManageSubportList();
+    }
     const chipsEl = document.getElementById("subport-chips");
     chipsEl.innerHTML = "";
+    if (isManageMode) chipsEl.style.display = "none";
 
     const allChip = document.createElement("button");
     allChip.className = "subport-chip" + (activeSubPortfolio === null ? " active" : "");
@@ -200,34 +209,11 @@ function renderPortfolioPage() {
         const subGainLoss = subData.value - subData.cost;
         const subGainLossPct = subData.cost > 0 ? (subGainLoss / subData.cost) * 100 : 0;
         
-        const wrapper = document.createElement("div");
-        wrapper.className = "subport-chip-row";
-        
         const chip = document.createElement("button");
         chip.className = "subport-chip" + (activeSubPortfolio === subName ? " active" : "");
         chip.innerHTML = `<span class="chip-name">${subName}</span><span class="chip-value">${symbol}${formatNumber(subData.value, 0)}</span><span class="chip-pl" style="color:${subGainLoss >= 0 ? 'var(--color-positive)' : 'var(--color-negative)'}">${subGainLoss >= 0 ? '+' : ''}${subGainLossPct.toFixed(1)}%</span>`;
         chip.onclick = () => selectSubPortfolio(subName);
-        wrapper.appendChild(chip);
-        
-        const actions = document.createElement("div");
-        actions.className = "subport-chip-actions";
-
-        const editBtn = document.createElement("button");
-        editBtn.className = "subport-action-btn";
-        editBtn.innerHTML = "✏️";
-        editBtn.title = "Edit Sub-Portfolio";
-        editBtn.onclick = (e) => { e.stopPropagation(); editSubPortfolio(subName); };
-        actions.appendChild(editBtn);
-
-        const delBtn = document.createElement("button");
-        delBtn.className = "subport-action-btn btn-delete";
-        delBtn.innerHTML = "🗑";
-        delBtn.title = "Delete Sub-Portfolio";
-        delBtn.onclick = (e) => { e.stopPropagation(); deleteSubPortfolio(subName); };
-        actions.appendChild(delBtn);
-
-        wrapper.appendChild(actions);
-        chipsEl.appendChild(wrapper);
+        chipsEl.appendChild(chip);
     });
 
     // Build filtered holdings table
@@ -668,10 +654,6 @@ function updateDashboard() {
                    <span style="font-size:0.72rem;color:var(--text-secondary);">${subPortCount} sub-port${subPortCount > 1 ? 's' : ''} →</span>`;
 
             card.innerHTML = `
-                <div class="parent-card-actions">
-                    <button class="parent-action-btn" onclick="event.stopPropagation(); editParentPortfolio('${parentName.replace(/'/g, "\\'")}')" title="Edit">✏️</button>
-                    <button class="parent-action-btn btn-delete" onclick="event.stopPropagation(); deleteParentPortfolio('${parentName.replace(/'/g, "\\'")}')" title="Delete">🗑</button>
-                </div>
                 <div style="font-size:1.2rem;font-weight:700;color:var(--text-emphasis);margin:0 0 2px 0;">${parentName}</div>
                 <span style="font-size:1.1rem;font-weight:700;color:var(--text-primary);">${symbol}${formatNumber(data.value, 2)}</span>
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">${bottomRow}</div>
@@ -858,6 +840,290 @@ function toggleTxType() {
     txSelect.classList.add(txSelect.value === "SELL" ? "type-sell" : "type-buy");
     // Update cost label to reflect sell vs buy
     toggleAssetType();
+}
+
+// ========== MANAGE MODE ==========
+
+function toggleManageMode() {
+    isManageMode = !isManageMode;
+    const btn = document.getElementById("btn-manage-portfolios");
+    const grid = document.getElementById("sub-portfolios-grid");
+    const treePanel = document.getElementById("manage-tree-panel");
+
+    if (btn) {
+        btn.textContent = isManageMode ? "✓ Done" : "⚙ Manage";
+        btn.classList.toggle("active", isManageMode);
+    }
+
+    if (isManageMode) {
+        if (grid) grid.style.display = "none";
+        if (treePanel) treePanel.style.display = "block";
+        renderManageTree();
+        // Also update sub-port view if we're in a portfolio detail
+        if (activeParentPortfolio) renderManageSubportList();
+    } else {
+        if (grid) grid.style.display = "";
+        if (treePanel) treePanel.style.display = "none";
+        // Restore sub-port chips
+        const chipsEl = document.getElementById("subport-chips");
+        const manageList = document.getElementById("manage-subport-list");
+        if (chipsEl) chipsEl.style.display = "";
+        if (manageList) manageList.style.display = "none";
+    }
+}
+
+function renderManageTree() {
+    const panel = document.getElementById("manage-tree-panel");
+    if (!panel) return;
+    panel.innerHTML = "";
+
+    const parents = portfoliosList
+        .filter(p => p.parentId === null)
+        .sort((a, b) => (a.sortOrder ?? a.id) - (b.sortOrder ?? b.id));
+
+    if (parents.length === 0) {
+        panel.innerHTML = '<div style="padding:16px;color:var(--text-secondary);text-align:center;font-size:0.85rem;">No portfolios yet.</div>';
+        return;
+    }
+
+    parents.forEach((parent, pIdx) => {
+        if (pIdx > 0) {
+            const div = document.createElement("div");
+            div.className = "manage-tree-divider";
+            panel.appendChild(div);
+        }
+
+        // Parent row
+        const row = createManageRow(parent.name, parent.id, false, null);
+        panel.appendChild(row);
+
+        // Children
+        const children = portfoliosList
+            .filter(p => p.parentId === parent.id)
+            .sort((a, b) => (a.sortOrder ?? a.id) - (b.sortOrder ?? b.id));
+
+        children.forEach(child => {
+            const childRow = createManageRow(child.name, child.id, true, parent.id);
+            panel.appendChild(childRow);
+        });
+
+        // Add sub-port button
+        const addRow = document.createElement("div");
+        addRow.style.cssText = "padding:6px 16px 6px 44px;";
+        const addBtn = document.createElement("button");
+        addBtn.className = "manage-tree-btn btn-add";
+        addBtn.textContent = "+ Add Sub-Portfolio";
+        addBtn.onclick = () => {
+            isManageMode = false;
+            toggleManageMode();
+            navigateToPortfolio(parent.name, () => openAddSubPortfolioModal());
+        };
+        addRow.appendChild(addBtn);
+        panel.appendChild(addRow);
+    });
+}
+
+function createManageRow(name, id, isChild, parentId) {
+    const row = document.createElement("div");
+    row.className = "manage-tree-row" + (isChild ? " is-child" : "");
+    row.dataset.id = id;
+    row.dataset.level = isChild ? "child" : "parent";
+    row.draggable = true;
+
+    row.addEventListener("dragstart", e => {
+        dragSrcId = id;
+        dragSrcLevel = isChild ? "child" : "parent";
+        dragSrcParentId = parentId;
+        row.classList.add("dragging");
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", String(id));
+    });
+    row.addEventListener("dragend", () => row.classList.remove("dragging"));
+    row.addEventListener("dragover", e => {
+        e.preventDefault();
+        if (dragSrcLevel === row.dataset.level) row.classList.add("drag-over");
+    });
+    row.addEventListener("dragleave", () => row.classList.remove("drag-over"));
+    row.addEventListener("drop", e => {
+        e.preventDefault();
+        row.classList.remove("drag-over");
+        if (dragSrcId == null || dragSrcId === id) return;
+        if (dragSrcLevel !== row.dataset.level) return;
+        reorderPortfolios(dragSrcId, id, dragSrcLevel, dragSrcParentId);
+    });
+
+    const handle = document.createElement("span");
+    handle.className = "drag-handle";
+    handle.textContent = "⠿";
+    handle.title = "Drag to reorder";
+
+    const nameEl = document.createElement("span");
+    nameEl.className = "manage-tree-name";
+    nameEl.textContent = name;
+
+    const actions = document.createElement("div");
+    actions.className = "manage-tree-actions";
+
+    const editBtn = document.createElement("button");
+    editBtn.className = "manage-tree-btn";
+    editBtn.textContent = "Edit";
+    editBtn.onclick = () => {
+        if (isChild) {
+            editSubPortfolio(name);
+        } else {
+            editParentPortfolio(name);
+        }
+    };
+
+    const delBtn = document.createElement("button");
+    delBtn.className = "manage-tree-btn btn-delete";
+    delBtn.textContent = "Delete";
+    delBtn.onclick = () => {
+        if (isChild) {
+            deleteSubPortfolio(name);
+        } else {
+            deleteParentPortfolio(name);
+        }
+    };
+
+    actions.appendChild(editBtn);
+    actions.appendChild(delBtn);
+    row.appendChild(handle);
+    row.appendChild(nameEl);
+    row.appendChild(actions);
+    return row;
+}
+
+function renderManageSubportList() {
+    const chipsEl = document.getElementById("subport-chips");
+    const manageList = document.getElementById("manage-subport-list");
+    if (!manageList) return;
+
+    if (!isManageMode) {
+        if (chipsEl) chipsEl.style.display = "";
+        manageList.style.display = "none";
+        return;
+    }
+
+    if (chipsEl) chipsEl.style.display = "none";
+    manageList.style.display = "block";
+    manageList.innerHTML = "";
+
+    if (!activeParentPortfolio) return;
+    const parentPort = portfoliosList.find(p => p.name === activeParentPortfolio && p.parentId === null);
+    if (!parentPort) return;
+
+    const children = portfoliosList
+        .filter(p => p.parentId === parentPort.id)
+        .sort((a, b) => (a.sortOrder ?? a.id) - (b.sortOrder ?? b.id));
+
+    const wrapper = document.createElement("div");
+    wrapper.style.cssText = "background:var(--bg-card);border:1px solid var(--border-dim);border-radius:10px;padding:6px 0;margin:8px 0;";
+
+    children.forEach(child => {
+        const row = document.createElement("div");
+        row.className = "manage-tree-row is-child";
+        row.dataset.id = child.id;
+        row.dataset.level = "child";
+        row.draggable = true;
+
+        row.addEventListener("dragstart", e => {
+            dragSrcId = child.id;
+            dragSrcLevel = "child";
+            dragSrcParentId = parentPort.id;
+            row.classList.add("dragging");
+            e.dataTransfer.effectAllowed = "move";
+            e.dataTransfer.setData("text/plain", String(child.id));
+        });
+        row.addEventListener("dragend", () => row.classList.remove("dragging"));
+        row.addEventListener("dragover", e => {
+            e.preventDefault();
+            row.classList.add("drag-over");
+        });
+        row.addEventListener("dragleave", () => row.classList.remove("drag-over"));
+        row.addEventListener("drop", e => {
+            e.preventDefault();
+            row.classList.remove("drag-over");
+            if (dragSrcId == null || dragSrcId === child.id) return;
+            reorderPortfolios(dragSrcId, child.id, "child", parentPort.id);
+        });
+
+        const handle = document.createElement("span");
+        handle.className = "drag-handle";
+        handle.textContent = "⠿";
+
+        const nameEl = document.createElement("span");
+        nameEl.className = "manage-tree-name";
+        nameEl.textContent = child.name;
+
+        const actions = document.createElement("div");
+        actions.className = "manage-tree-actions";
+
+        const editBtn = document.createElement("button");
+        editBtn.className = "manage-tree-btn";
+        editBtn.textContent = "Edit";
+        editBtn.onclick = () => editSubPortfolio(child.name);
+
+        const delBtn = document.createElement("button");
+        delBtn.className = "manage-tree-btn btn-delete";
+        delBtn.textContent = "Delete";
+        delBtn.onclick = () => deleteSubPortfolio(child.name);
+
+        actions.appendChild(editBtn);
+        actions.appendChild(delBtn);
+        row.appendChild(handle);
+        row.appendChild(nameEl);
+        row.appendChild(actions);
+        wrapper.appendChild(row);
+    });
+
+    if (children.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "manage-tree-empty";
+        empty.textContent = "No sub-portfolios yet.";
+        wrapper.appendChild(empty);
+    }
+
+    manageList.appendChild(wrapper);
+}
+
+function reorderPortfolios(srcId, targetId, level, parentId) {
+    let group;
+    if (level === "parent") {
+        group = portfoliosList.filter(p => p.parentId === null).sort((a, b) => (a.sortOrder ?? a.id) - (b.sortOrder ?? b.id));
+    } else {
+        group = portfoliosList.filter(p => p.parentId === parentId).sort((a, b) => (a.sortOrder ?? a.id) - (b.sortOrder ?? b.id));
+    }
+
+    const srcIdx = group.findIndex(p => p.id === srcId);
+    const tgtIdx = group.findIndex(p => p.id === targetId);
+    if (srcIdx === -1 || tgtIdx === -1) return;
+
+    const [moved] = group.splice(srcIdx, 1);
+    group.splice(tgtIdx, 0, moved);
+
+    group.forEach((p, i) => {
+        p.sortOrder = i * 10;
+        const pl = portfoliosList.find(x => x.id === p.id);
+        if (pl) pl.sortOrder = p.sortOrder;
+    });
+
+    persistPortfolioOrder(group);
+
+    if (level === "parent") {
+        renderManageTree();
+    } else {
+        renderManageSubportList();
+    }
+}
+
+function persistPortfolioOrder(group) {
+    const payload = group.map((p, i) => ({ id: p.id, sortOrder: i * 10 }));
+    fetch('/api/portfolios/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    }).catch(err => console.warn("Failed to persist portfolio order:", err));
 }
 
 // AUTO-FILL THAI MUTUAL FUND FROM SEC API

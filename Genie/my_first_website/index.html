@@ -96,13 +96,15 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin: 25px 0 15px 0;">
                     <h3 style="color: var(--text-primary); font-size: 1.1rem; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin: 0;">Portfolio Summaries</h3>
                     <div style="display: flex; gap: 10px; align-items: center;">
-                        <button onclick="openManageCategoriesModal()" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 4px; border: 1px solid var(--border-dim); background: var(--bg-card-solid); color: var(--text-primary); font-weight: 700; cursor: pointer; transition: 0.2s;">⚙️ Manage Categories</button>
-                        <button onclick="openAddPortfolioModal()" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 4px; border: none; cursor: pointer; background: linear-gradient(90deg, #00F0FF 0%, #0088FF 100%); color: #030712; font-weight: 700; transition: 0.2s;">+ Add Portfolio</button>
+                        <button onclick="openManageCategoriesModal()" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 4px; border: 1px solid var(--border-dim); background: var(--bg-card-solid); color: var(--text-primary); font-weight: 700; cursor: pointer; transition: 0.2s;">⚙️ Categories</button>
+                        <button id="btn-manage-portfolios" class="btn-manage-toggle" onclick="toggleManageMode()">⚙ Manage</button>
+                        <button id="btn-add-portfolio" onclick="openAddPortfolioModal()" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 4px; border: none; cursor: pointer; background: linear-gradient(90deg, #00F0FF 0%, #0088FF 100%); color: #030712; font-weight: 700; transition: 0.2s;">+ Add Portfolio</button>
                     </div>
                 </div>
                 <div class="sub-portfolios-grid" id="sub-portfolios-grid">
                     <!-- Dynamic parent portfolio cards will be rendered here by app.js -->
                 </div>
+                <div id="manage-tree-panel"></div>
 
                 <!-- MAIN WORKSPACE GRID -->
                 <div class="workspace-layout">
@@ -269,9 +271,10 @@
                         </div>
                     </div>
 
-                    <!-- Sub-portfolio selection chips -->
+                    <!-- Sub-portfolio selection chips / manage list -->
                     <div class="subport-chips-row" id="subport-chips-row">
                         <div id="subport-chips"></div>
+                        <div id="manage-subport-list" style="display:none; width:100%;"></div>
                     </div>
 
                     <!-- Filtered holdings table -->

@@ -2215,3 +2215,125 @@ select.type-sell {
     border-color: rgba(239, 68, 68, 0.4);
     color: var(--color-negative);
 }
+
+/* ===== MANAGE MODE ===== */
+#manage-tree-panel {
+    display: none;
+    background: var(--bg-card);
+    border: 1px solid var(--border-dim);
+    border-radius: 12px;
+    padding: 8px 0;
+    margin-bottom: 24px;
+}
+.manage-tree-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 16px;
+    border-radius: 6px;
+    transition: background 0.12s;
+    cursor: default;
+}
+.manage-tree-row:hover {
+    background: rgba(255,255,255,0.04);
+}
+.manage-tree-row.is-child {
+    padding-left: 44px;
+}
+.manage-tree-row.dragging {
+    opacity: 0.4;
+}
+.manage-tree-row.drag-over {
+    border-top: 2px solid var(--accent-neon);
+}
+.drag-handle {
+    cursor: grab;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    padding: 2px 4px;
+    border-radius: 3px;
+    user-select: none;
+    flex-shrink: 0;
+    transition: color 0.12s;
+}
+.drag-handle:hover {
+    color: var(--text-primary);
+}
+.drag-handle:active {
+    cursor: grabbing;
+}
+.manage-tree-name {
+    flex: 1;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.manage-tree-row.is-child .manage-tree-name {
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+.manage-tree-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+.manage-tree-btn {
+    padding: 3px 9px;
+    border-radius: 4px;
+    border: 1px solid var(--border-dim);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.12s;
+    letter-spacing: 0.3px;
+}
+.manage-tree-btn:hover {
+    border-color: var(--accent-neon);
+    color: var(--accent-neon);
+    background: rgba(0,240,255,0.06);
+}
+.manage-tree-btn.btn-delete:hover {
+    border-color: rgba(239,68,68,0.5);
+    color: var(--color-negative);
+    background: rgba(239,68,68,0.06);
+}
+.manage-tree-btn.btn-add {
+    border-style: dashed;
+}
+.manage-tree-divider {
+    height: 1px;
+    background: var(--border-dim);
+    margin: 4px 16px;
+}
+.manage-tree-empty {
+    padding: 10px 44px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+.btn-manage-toggle {
+    padding: 6px 14px;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    border: 1px solid var(--border-dim);
+    background: var(--bg-card-solid);
+    color: var(--text-primary);
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-manage-toggle:hover {
+    border-color: var(--accent-neon);
+    color: var(--accent-neon);
+}
+.btn-manage-toggle.active {
+    background: rgba(0,240,255,0.1);
+    border-color: var(--accent-neon);
+    color: var(--accent-neon);
+}

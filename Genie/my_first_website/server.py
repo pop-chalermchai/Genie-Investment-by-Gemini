@@ -271,12 +271,14 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 cursor = conn.cursor()
                 # Fetch all portfolios, left joining categories and sub-querying parent portfolio names
                 query = '''
-                    SELECT 
+                    SELECT
                         MIN(p.id) as id, p.name, p.category_id as categoryId, c.name as category, p.parent_id as parentId,
-                        (SELECT name FROM portfolios WHERE id = p.parent_id) as parentName
+                        (SELECT name FROM portfolios WHERE id = p.parent_id) as parentName,
+                        MIN(p.sort_order) as sortOrder
                     FROM portfolios p
                     LEFT JOIN categories c ON p.category_id = c.id
                     GROUP BY p.name, p.category_id, c.name, p.parent_id
+                    ORDER BY MIN(p.sort_order) ASC, MIN(p.id) ASC
                 '''
                 cursor.execute(query)
                 rows = cursor.fetchall()
@@ -1238,12 +1240,48 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": str(e)}).encode())
+        elif parsed_url.path == '/api/portfolios/reorder':
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            try:
+                items = json.loads(post_data.decode('utf-8'))
+                db_path = os.path.join(DIRECTORY, 'portfolio.db')
+                conn = sqlite3.connect(db_path)
+                cursor = conn.cursor()
+                for item in items:
+                    cursor.execute("UPDATE portfolios SET sort_order = ? WHERE id = ?", (item['sortOrder'], item['id']))
+                conn.commit()
+                conn.close()
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": True}).encode())
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode())
         else:
             self.send_response(404)
             self.end_headers()
 
 
+def migrate_db():
+    db_path = os.path.join(DIRECTORY, 'portfolio.db')
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("ALTER TABLE portfolios ADD COLUMN sort_order INTEGER DEFAULT 0")
+        cursor.execute("UPDATE portfolios SET sort_order = id")
+        conn.commit()
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+    conn.close()
+
 if __name__ == '__main__':
+    migrate_db()
     print(f"Starting server on http://127.0.0.1:{PORT} serving {DIRECTORY}...")
     server = http.server.HTTPServer(('127.0.0.1', PORT), MyHandler)
     server.serve_forever()
