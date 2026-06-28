@@ -178,4 +178,4 @@ $1200.0            M |              21.1389% | $           8166.12M
 *Wall Street Purist*
 
 ---
-**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_LITE_Hub|⬅️ Back to LITE Stock Hub]]

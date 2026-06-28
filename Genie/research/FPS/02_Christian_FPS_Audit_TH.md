@@ -248,4 +248,4 @@ Scenario B (Multi-Year):
 *คอรักความถูกต้องแห่งวอลล์สตรีท*
 
 ---
-**Links:** [[sectors/Energy|Energy Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_FPS_Hub|⬅️ Back to FPS Stock Hub]]

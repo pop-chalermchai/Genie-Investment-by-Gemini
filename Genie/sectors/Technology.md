@@ -3,10 +3,11 @@
 Overview of software, cloud infrastructure, and hardware technology in Genie.
 
 ## 📈 Tickers & Analyses
-- **[[research/AAPL/01_Valerie_AAPL_Overview|AAPL (Apple Inc.)]]** — Consumer Devices & Ecosystem
-- **[[research/AAOI/01_Valerie_AAOI_Overview|AAOI (Applied Optoelectronics)]]** — Optical Transceivers
-- **[[research/AMSC/01_Valerie_AMSC_Overview|AMSC (American Superconductor)]]** — Superconducting Systems
-- **[[research/JBL/01_Valerie_JBL_Overview|JBL (Jabil Inc.)]]** — EMS Manufacturing
+- **[[research/AAPL/00_AAPL_Hub|AAPL (Apple Inc.)]]** — Consumer Devices & Ecosystem
+- **[[research/AAOI/00_AAOI_Hub|AAOI (Applied Optoelectronics)]]** — Optical Transceivers
+- **[[research/AMSC/00_AMSC_Hub|AMSC (American Superconductor)]]** — Superconducting Systems
+- **[[research/JBL/00_JBL_Hub|JBL (Jabil Inc.)]]** — EMS Manufacturing
+- **[[research/NBIS/00_NBIS_Hub|NBIS (Nebius Group N.V.)]]** — AI Cloud Services & Infrastructure
 
 ---
 [[000_Index|⬅️ Back to Index]]

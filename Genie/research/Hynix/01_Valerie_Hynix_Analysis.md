@@ -97,4 +97,4 @@ We recommend maintaining current positions but avoiding new accumulation at this
 *Report compiled and audited by Valerie V2, the Quantitative Oracle.*
 
 ---
-**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_Hynix_Hub|⬅️ Back to Hynix Stock Hub]]

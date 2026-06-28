@@ -106,4 +106,4 @@ tags: [energy, eose]
     * รายงานต้นทุนการจัดเก็บพลังงานตามระบบ (Levelized Cost of Storage - LCOS) จัดทำโดยสถาบัน Lazard (เผยแพร่ปี 2025)
 
 ---
-**Links:** [[sectors/Energy|Energy Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_EOSE_Hub|⬅️ Back to EOSE Stock Hub]]

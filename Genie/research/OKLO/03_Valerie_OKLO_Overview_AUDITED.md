@@ -214,3 +214,6 @@ The wide PT range ($14–$140) reflects binary outcome uncertainty, not analytic
 ---
 
 *Audit corrections applied by Christian (The Forensic Auditor), June 20, 2026. Source: `03_Christian_OKLO_Audit.md`. Errors corrected: E-01 (FY2024 cash), E-04 (Dec 2025 share count), E-05 (6-month dilution %). All other figures independently verified — PASS.*
+
+---
+**Links:** [[00_OKLO_Hub|⬅️ Back to OKLO Stock Hub]]

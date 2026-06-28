@@ -90,4 +90,4 @@ tags: [semiconductors, mu]
 > * **Oligopoly (n.):** ตลาดที่มีผู้ขายน้อยราย (มีอิทธิพลในการกำหนดราคาและควบคุมอุตสาหกรรมร่วมกันได้ง่าย)
 
 ---
-**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_MU_Hub|⬅️ Back to MU Stock Hub]]

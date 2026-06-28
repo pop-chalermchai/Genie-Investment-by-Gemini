@@ -110,4 +110,4 @@ NVIDIA รายงานผลการดำเนินงานประจ�
     * ตัวเลขคาดการณ์ตลาดอุปกรณ์ศูนย์ข้อมูลและชิปเซ็ตประมวลผล AI โดย Gartner (ตีพิมพ์เผยแพร่: Q1 2026)
 
 ---
-**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_NVDA_Hub|⬅️ Back to NVDA Stock Hub]]

@@ -180,4 +180,4 @@ $800.0             M |              11.2809% | $           2329.67M
 *สายอนุรักษ์นิยมแห่งวอลล์สตรีท*
 
 ---
-**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_AMKR_Hub|⬅️ Back to AMKR Stock Hub]]

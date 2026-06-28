@@ -207,4 +207,4 @@ To verify the quantitative viability of our thesis, we perform a strict 3-to-1 a
 8.  **Nasdaq Market Data & SEC CIK 0002080126 Database**, accessed June 2, 2026.
 
 ---
-**Links:** [[sectors/Energy|Energy Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_FPS_Hub|⬅️ Back to FPS Stock Hub]]

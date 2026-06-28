@@ -113,4 +113,4 @@ Amkor reported strong financial results for Q1 FY2026 on April 27, 2026, beating
     * TIKR Terminal Stock Valuation Database (Data Fetched: June 18, 2026)
 
 ---
-**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_AMKR_Hub|⬅️ Back to AMKR Stock Hub]]

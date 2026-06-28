@@ -139,4 +139,4 @@ Micron is a **highly compelling, asymmetric buy** during any macroeconomic pullb
 *Report compiled and audited by Valerie, the Quantitative Oracle.*
 
 ---
-**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_MU_Hub|⬅️ Back to MU Stock Hub]]

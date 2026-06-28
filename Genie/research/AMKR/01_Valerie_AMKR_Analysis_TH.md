@@ -113,4 +113,4 @@ tags: [semiconductors, amkr]
     * ฐานข้อมูลการประเมินมูลค่าหุ้นบนระบบ TIKR Terminal (ข้อมูล ณ วันที่ 18 มิถุนายน 2569)
 
 ---
-**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_AMKR_Hub|⬅️ Back to AMKR Stock Hub]]

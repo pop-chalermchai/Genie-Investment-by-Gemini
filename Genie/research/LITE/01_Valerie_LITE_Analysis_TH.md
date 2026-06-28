@@ -108,4 +108,4 @@ tags: [semiconductors, lite]
     * รายงานภาพรวมและทิศทางอุตสาหกรรมชิ้นส่วนอิเล็กทรอนิกส์และอุปกรณ์โฟโตนิกส์ (จัดทำขึ้นใน: ครึ่งปีแรกของปี 2569)
 
 ---
-**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_LITE_Hub|⬅️ Back to LITE Stock Hub]]

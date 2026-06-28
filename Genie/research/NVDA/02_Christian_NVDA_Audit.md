@@ -306,4 +306,4 @@ $$\text{Rule of 40} = \text{Revenue Growth} + \text{FCF Margin}$$
 The stock is attractive only if the implied business outcomes—capturing 70%+ of a $2.0 Trillion modernized accelerated data center market and sustaining 45%+ FCF margins—are realistically achievable through NVIDIA's software lock-in and system packaging.
 
 ---
-**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_NVDA_Hub|⬅️ Back to NVDA Stock Hub]]

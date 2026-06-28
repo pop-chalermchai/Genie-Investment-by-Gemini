@@ -525,3 +525,6 @@ However, this is a stock where the margin of safety is thin, dilution is ongoing
 
 *Valerie — The Quantitative Oracle | June 20, 2026*
 *Sources: Oklo 10-Q Q1 2026 (SEC EDGAR, March 31, 2026 period); Oklo 10-K FY2025 (March 17, 2026 filing); BusinessWire Q1 2026 earnings release (May 12, 2026); StockAnalysis.com analyst estimates; FinanceCharts.com diluted share data; BloombergNEF SMR market projections; Fortune Business Insights SMR market report; Utility Dive (75MW reactor design, June 2026); Data Center Dynamics (NVIDIA partnership, May 2026); ANS Nuclear Newswire (INL groundbreaking, September 2025); Oklo.com newsroom (NRC PDC approval, Centrus LOI, Meta agreement, 2026).*
+
+---
+**Links:** [[00_OKLO_Hub|⬅️ Back to OKLO Stock Hub]]

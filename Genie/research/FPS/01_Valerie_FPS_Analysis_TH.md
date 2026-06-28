@@ -208,4 +208,4 @@ Forgent กำหนดราคาการเสนอขายหุ้นส
 8.  **ฐานข้อมูลราคาซื้อขายหลักทรัพย์จากตลาด Nasdaq และฐานข้อมูลข้อมูลรหัสบริษัทจดทะเบียนของ SEC (SEC CIK 0002080126 Database)** ข้อมูลล่าสุดสืบค้น ณ วันที่ 2 มิถุนายน 2026
 
 ---
-**Links:** [[sectors/Energy|Energy Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_FPS_Hub|⬅️ Back to FPS Stock Hub]]

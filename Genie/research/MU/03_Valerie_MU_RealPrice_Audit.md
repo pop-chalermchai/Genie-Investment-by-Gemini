@@ -178,4 +178,4 @@ At a $1.10 Trillion market capitalization, Micron has fully priced in its techno
 *Report compiled and audited by Valerie V2, the Quantitative Oracle.*
 
 ---
-**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_MU_Hub|⬅️ Back to MU Stock Hub]]

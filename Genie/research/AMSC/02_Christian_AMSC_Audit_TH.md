@@ -211,4 +211,4 @@ $80.0              M |              28.1062% | $            952.34M
 *วิเคราะห์หลักทรัพย์ตามแนวทางวอลล์สตรีทดั้งเดิม*
 
 ---
-**Links:** [[sectors/Technology|Technology Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_AMSC_Hub|⬅️ Back to AMSC Stock Hub]]

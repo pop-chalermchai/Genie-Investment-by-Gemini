@@ -178,4 +178,4 @@ $$\text{Asymmetric Ratio} = \frac{\text{Bull Case Upside}}{\text{Bear Case Downs
 *รายงานนี้จัดทำและตรวจสอบโดย Valerie V2 ผู้วิเคราะห์เชิงปริมาณ (The Quantitative Oracle)*
 
 ---
-**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_MU_Hub|⬅️ Back to MU Stock Hub]]

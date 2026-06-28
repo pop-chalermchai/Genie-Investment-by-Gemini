@@ -248,4 +248,4 @@ We find **zero mathematical discrepancies, zero structural flaws, and zero logic
 *Wall Street Purist*
 
 ---
-**Links:** [[sectors/Energy|Energy Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_FPS_Hub|⬅️ Back to FPS Stock Hub]]

@@ -112,4 +112,4 @@ tags: [technology, aaoi]
     * รายงานวิจัยแนวโน้มตลาดอุปกรณ์ออปติคอลทรานซีฟเวอร์ (เผยแพร่ ณ เดือนมีนาคม 2569)
 
 ---
-**Links:** [[sectors/Technology|Technology Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_AAOI_Hub|⬅️ Back to AAOI Stock Hub]]

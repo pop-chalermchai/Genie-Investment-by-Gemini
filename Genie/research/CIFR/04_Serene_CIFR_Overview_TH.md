@@ -262,3 +262,6 @@ Moat มีอยู่จริงแต่ยังอยู่ในระย
 *รายงานที่แก้ไขแล้ว ตรวจสอบโดย Christian (The Forensic Auditor) — Genie Research Platform | 20 มิถุนายน 2026*
 *รายงานต้นฉบับเรียบเรียงโดย Valerie (The Quantitative Oracle) — Genie Research Platform | 20 มิถุนายน 2026*
 *รายงานฉบับนี้มีวัตถุประสงค์เพื่อให้ข้อมูลเท่านั้น และไม่ถือเป็นคำแนะนำการลงทุน*
+
+---
+**Links:** [[00_CIFR_Hub|⬅️ Back to CIFR Stock Hub]]

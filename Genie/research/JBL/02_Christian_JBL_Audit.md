@@ -151,4 +151,4 @@ Every metric has been verified independently from primary financial data. From a
 **Auditor Signature:** *Christian*
 
 ---
-**Links:** [[sectors/Technology|Technology Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_JBL_Hub|⬅️ Back to JBL Stock Hub]]

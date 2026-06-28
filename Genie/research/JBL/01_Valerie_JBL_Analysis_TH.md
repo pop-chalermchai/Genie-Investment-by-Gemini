@@ -169,4 +169,4 @@ $$P \le \$285.00$$
 7. **แหล่งข้อมูลทางเลือกอื่นๆ (Alternative Data Sources):** ข้อมูลกระแสเงินสดอิสระย้อนหลังของ Gurufocus และแบบจำลองการประเมินมูลค่าของ Alpha Spread
 
 ---
-**Links:** [[sectors/Technology|Technology Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_JBL_Hub|⬅️ Back to JBL Stock Hub]]

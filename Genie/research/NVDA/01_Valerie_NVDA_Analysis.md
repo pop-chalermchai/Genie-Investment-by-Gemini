@@ -110,4 +110,4 @@ NVIDIA reported stellar Q1 FY2027 results on May 20, 2026, beating consensus on 
     * Gartner Data Center & AI Silicon Market Estimates (Published: Q1 2026).
 
 ---
-**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_NVDA_Hub|⬅️ Back to NVDA Stock Hub]]

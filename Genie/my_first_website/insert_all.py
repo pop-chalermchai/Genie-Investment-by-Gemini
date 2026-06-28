@@ -2,7 +2,7 @@ import os
 import re
 import sqlite3
 
-tickers = ["AAOI", "AAPL", "AMKR", "AMSC", "BMNR", "EOSE", "FLY", "FPS", "Hynix", "JBL", "LITE", "MU", "NVDA"]
+tickers = ["AAOI", "AAPL", "AMKR", "AMSC", "BMNR", "EOSE", "FLY", "FPS", "Hynix", "JBL", "LITE", "MU", "NVDA", "IREN", "NBIS", "RKLB", "CIFR", "OKLO"]
 
 def clean_markdown(text):
     if not text:
@@ -39,18 +39,46 @@ def extract_info(ticker):
     pt = 0.0
     price = 0.0
     
-    m = re.search(r'\*\*Sector(?:[^\*]*)\*\*\s*[:\|]?\s*([^\n\|]+)', content, re.IGNORECASE)
-    if m: sector = m.group(1).strip()
+    raw_sector = ""
+    m = re.search(r'^sector:\s*([^\n\r]+)', content, re.MULTILINE | re.IGNORECASE)
+    if m:
+        raw_sector = m.group(1).strip()
+    else:
+        m = re.search(r'Sector\s*:\s*([^\n\r\*\|_]+)', content, re.IGNORECASE)
+        if m:
+            raw_sector = m.group(1).strip()
+        else:
+            m = re.search(r'\*\*Sector(?:[^\*]*)\*\*\s*[:\|]?\s*([^\n\|]+)', content, re.IGNORECASE)
+            if m: raw_sector = m.group(1).strip()
+
+    def map_sector(raw):
+        if not raw:
+            return "Technology"
+        raw_lower = raw.lower()
+        if "semiconductor" in raw_lower or "hbm" in raw_lower:
+            return "Semiconductors"
+        if "digital asset" in raw_lower or "bitcoin mining" in raw_lower or "crypto" in raw_lower or "digital infrastructure" in raw_lower:
+            return "Digital Assets & Infrastructure"
+        if "aerospace" in raw_lower or "space" in raw_lower:
+            return "Aerospace"
+        if "energy" in raw_lower or "nuclear" in raw_lower or "battery" in raw_lower or "power" in raw_lower:
+            return "Energy"
+        return "Technology"
+
+    sector = map_sector(raw_sector)
     
-    m = re.search(r'\*\*(?:Rating|Recommendation|Recommendation / Rating)(?:[^\*]*)\*\*\s*[:\|]?\s*([A-Za-z ]+)', content, re.IGNORECASE)
-    if m: rating = m.group(1).strip().upper()
+    m = re.search(r'\*\*(?:Rating|Recommendation|Recommendation / Rating)\s*:\s*([A-Z\s&/]+)\*\*', content, re.IGNORECASE)
+    if m:
+        rating = m.group(1).strip().upper()
+    else:
+        m = re.search(r'\*\*(?:Rating|Recommendation|Recommendation / Rating)(?:[^\*]*)\*\*\s*[:\|]?\s*([A-Za-z ]+)', content, re.IGNORECASE)
+        if m: rating = m.group(1).strip().upper()
+
         
-    m = re.search(r'\*\*Price Target[^\*]*\*\*\s*[:\|]?\s*\$?([\d\.]+)', content, re.IGNORECASE)
-    if not m: m = re.search(r'Target(?: Price)?.*?\$([\d\.]+)', content, re.IGNORECASE)
+    m = re.search(r'(?:Target\s*Price|Price\s*Target|Target)[^\d]*([\d,\.]+)', content, re.IGNORECASE)
     if m: pt = float(m.group(1).strip().replace(',', ''))
         
-    m = re.search(r'\*\*(?:Current Price|Analysis Price|Price)[^\*]*\*\*\s*[:\|]?\s*\$?([\d\.]+)', content, re.IGNORECASE)
-    if not m: m = re.search(r'Current Price.*?\$([\d\.]+)', content, re.IGNORECASE)
+    m = re.search(r'(?:Current\s*Price|Analysis\s*Price)[^\d]*([\d,\.]+)', content, re.IGNORECASE)
     if m: price = float(m.group(1).strip().replace(',', ''))
         
     m = re.search(r'^#\s*(.*?)\s*\(', content, re.MULTILINE)

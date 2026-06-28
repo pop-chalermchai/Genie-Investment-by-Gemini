@@ -210,4 +210,4 @@ Scenario B (Multi-Year):
 *Wall Street Purist*
 
 ---
-**Links:** [[sectors/Energy|Energy Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_EOSE_Hub|⬅️ Back to EOSE Stock Hub]]

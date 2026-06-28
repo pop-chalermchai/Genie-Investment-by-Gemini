@@ -169,4 +169,4 @@ $$P \le \$285.00$$
 7. **Alternative Data Sources:** Gurufocus Historical Free Cash Flow Data, Alpha Spread Valuation Profiles.
 
 ---
-**Links:** [[sectors/Technology|Technology Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_JBL_Hub|⬅️ Back to JBL Stock Hub]]

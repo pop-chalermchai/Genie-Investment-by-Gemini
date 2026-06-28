@@ -251,3 +251,6 @@ The market is slowly recognizing that CIFR is not a Bitcoin miner — it is a pr
 
 *Report authored by Valerie (The Quantitative Oracle) — Genie Research Platform | June 20, 2026*
 *This report is for informational purposes only and does not constitute investment advice.*
+
+---
+**Links:** [[00_CIFR_Hub|⬅️ Back to CIFR Stock Hub]]

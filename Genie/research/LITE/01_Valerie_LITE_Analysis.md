@@ -109,4 +109,4 @@ tags: [semiconductors, lite]
     * Optical Communications and Photonic Component Market Outlook (Published: H1 2026)
 
 ---
-**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_LITE_Hub|⬅️ Back to LITE Stock Hub]]

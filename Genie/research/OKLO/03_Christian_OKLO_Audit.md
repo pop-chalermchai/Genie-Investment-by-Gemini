@@ -273,3 +273,6 @@ The two Valerie OKLO reports are materially reliable on current data (Q1 2026 ba
 *Primary verification sources: SEC EDGAR (oklo-20260331.htm, oklo-20251231.htm, oklo-20241231.htm); Oklo.com newsroom; ANS Nuclear Newswire; World Nuclear News; StockAnalysis.com; StockTitan.net; PRNewswire (Centrus LOI, June 18, 2026); BusinessWire (NRC PDC approval, May 6, 2026; Atomic Alchemy NRC license, March 17, 2026).*
 
 **One-line overall verdict: CONDITIONAL PASS — three material errors corrected (FY2024 cash overstated by ~$505M, Aurora-INL capacity misidentified as 15 MWe vs. actual 75 MWe, reactor count calculations systematically understated) and two minor dilution-figure errors corrected; all current financial metrics, pipeline claims, regulatory milestones, and reverse DCF mathematics are independently verified.**
+
+---
+**Links:** [[00_OKLO_Hub|⬅️ Back to OKLO Stock Hub]]

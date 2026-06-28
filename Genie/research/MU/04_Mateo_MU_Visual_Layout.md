@@ -176,4 +176,4 @@ To pitch this design to the main agent and C-Suite, we map the visual flow into 
     *   *Action Call:* A massive, centered Crimson banner: **"VERDICT: LIQUIDATE / AVOID. PAYOFF = 0.87x (REQUIRED: 3.00x)"**
 
 ---
-**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_MU_Hub|⬅️ Back to MU Stock Hub]]

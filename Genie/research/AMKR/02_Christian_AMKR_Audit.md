@@ -180,4 +180,4 @@ We find **zero mathematical discrepancies, zero structural flaws, and zero logic
 *Wall Street Purist*
 
 ---
-**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_AMKR_Hub|⬅️ Back to AMKR Stock Hub]]

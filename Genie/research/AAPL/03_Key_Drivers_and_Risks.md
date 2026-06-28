@@ -22,4 +22,4 @@ tags: [technology, aapl]
 *(Source: AI Web Search Aggregation - May 2026)*
 
 ---
-**Links:** [[sectors/Technology|Technology Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_AAPL_Hub|⬅️ Back to AAPL Stock Hub]]

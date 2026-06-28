@@ -537,3 +537,6 @@ RKLB มี Moat ที่แท้จริงและกำลังขยา
 *Valerie — The Quantitative Oracle | Genie Equity Research*
 *ตรวจสอบโดย: Christian — The Forensic Auditor | Genie Research | 20 มิถุนายน 2569*
 *เอกสารนี้จัดทำขึ้นเพื่อวัตถุประสงค์ด้านข้อมูลและการวิเคราะห์เท่านั้น ไม่ถือเป็นคำแนะนำการลงทุน ตัวเลขทั้งหมดขึ้นอยู่กับความถูกต้องของตลาดและแหล่งข้อมูล ณ เวลาที่เผยแพร่ (20 มิถุนายน 2569)*
+
+---
+**Links:** [[00_RKLB_Hub|⬅️ Back to RKLB Stock Hub]]

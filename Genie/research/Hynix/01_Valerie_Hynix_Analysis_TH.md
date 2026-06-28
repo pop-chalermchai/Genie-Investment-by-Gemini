@@ -48,4 +48,4 @@ tags: [semiconductors, hynix]
 *รายงานฉบับนี้ได้รับการรวบรวมและตรวจสอบความถูกต้องโดย Valerie V2 ผู้เชี่ยวชาญการพยากรณ์เชิงปริมาณ (The Quantitative Oracle)*
 
 ---
-**Links:** [[sectors/Semiconductors|Semiconductors Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_Hynix_Hub|⬅️ Back to Hynix Stock Hub]]

@@ -309,3 +309,6 @@ The structural logic, NOI projections, contract terms, debt structure, and overa
 *Audit conducted by Christian (The Forensic Auditor) — Genie Research Platform | June 20, 2026*
 *All figures verified against SEC EDGAR filings, official press releases, and market data providers.*
 *Every figure in this report is wrong until independently verified — and in several cases, it was.*
+
+---
+**Links:** [[00_CIFR_Hub|⬅️ Back to CIFR Stock Hub]]

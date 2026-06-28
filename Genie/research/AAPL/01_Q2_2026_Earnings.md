@@ -26,4 +26,4 @@ The quarter's performance was largely driven by robust demand for the iPhone 17 
 *(Source: AI Web Search Aggregation - May 2026)*
 
 ---
-**Links:** [[sectors/Technology|Technology Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_AAPL_Hub|⬅️ Back to AAPL Stock Hub]]

@@ -110,4 +110,4 @@ AMSC ได้เปิดเผยแนวโน้มเป้าหมาย
     * รายงานแผนงานต่อเรือของกองทัพเรือสหรัฐฯ และโครงการสายส่งไฟฟ้ามั่นคง REG ของกระทรวงความมั่นคงแห่งมาตุภูมิ (เผยแพร่เมื่อ กุมภาพันธ์ 2569)
 
 ---
-**Links:** [[sectors/Technology|Technology Sector MOC]] | [[research/MOC_Equities|Equities Dashboard]] | [[000_Index|🏛️ Main Index]]
+**Links:** [[00_AMSC_Hub|⬅️ Back to AMSC Stock Hub]]

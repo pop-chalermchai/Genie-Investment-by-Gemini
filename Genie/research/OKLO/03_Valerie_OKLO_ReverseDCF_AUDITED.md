@@ -537,3 +537,6 @@ However, this is a stock where the margin of safety is thin, dilution is ongoing
 ---
 
 *Audit corrections applied by Christian (The Forensic Auditor), June 20, 2026. Source: `03_Christian_OKLO_Audit.md`. Errors corrected: E-02 (Aurora-INL capacity 15 MWe → 75 MWe in all three scenario tables with revenue recalculations), E-03 (reactor counts Bear 85+→98–99, Base ~54→62–63, Bull ~35→41; GW Bear 6.4→7.4, Base 4→4.7, Bull 2.6→3.1; cascaded into Sections 2, 3, 12, 13, 17), E-04 (Dec 2025 share count ~157M → ~160.5M), E-05 (6-month dilution +10.8% → +8.3%). All other figures independently verified — PASS.*
+
+---
+**Links:** [[00_OKLO_Hub|⬅️ Back to OKLO Stock Hub]]
