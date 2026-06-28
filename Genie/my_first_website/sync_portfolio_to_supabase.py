@@ -66,6 +66,9 @@ def ensure_supabase_tables(pg):
         )
     """)
     cur.execute("""
+        ALTER TABLE portfolios ADD COLUMN IF NOT EXISTS sort_order INTEGER DEFAULT 0
+    """)
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS assets (
             id SERIAL PRIMARY KEY,
             ticker TEXT NOT NULL,
