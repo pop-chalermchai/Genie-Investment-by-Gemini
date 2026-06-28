@@ -454,16 +454,17 @@ function updateDashboard() {
     const parentTotals = {}; // { "US Stock": { value: 0, cost: 0, subPorts: { "Dime": { value: 0, cost: 0 }, "WeBull": { value: 0, cost: 0 } } } }
     
     // Initialize parentTotals with all parent and sub-portfolios from portfoliosList
+    // Sort by sortOrder so Object.keys(parentTotals) reflects the user-defined order
     if (typeof portfoliosList !== 'undefined' && portfoliosList) {
-        portfoliosList.forEach(p => {
+        const sortedList = [...portfoliosList].sort((a, b) => (a.sortOrder ?? a.id) - (b.sortOrder ?? b.id));
+        sortedList.forEach(p => {
             if (p.parentId === null) {
                 if (!parentTotals[p.name]) {
                     parentTotals[p.name] = { value: 0, cost: 0, subPorts: {}, isEmpty: true };
                 }
             }
         });
-        
-        portfoliosList.forEach(p => {
+        sortedList.forEach(p => {
             if (p.parentId !== null) {
                 const parentName = p.parentName;
                 if (parentTotals[parentName]) {
@@ -859,13 +860,15 @@ function toggleManageMode() {
         // Also update sub-port view if we're in a portfolio detail
         if (activeParentPortfolio) renderManageSubportList();
     } else {
-        if (grid) grid.style.display = "";
         if (treePanel) treePanel.style.display = "none";
         // Restore sub-port chips
         const chipsEl = document.getElementById("subport-chips");
         const manageList = document.getElementById("manage-subport-list");
         if (chipsEl) chipsEl.style.display = "";
         if (manageList) manageList.style.display = "none";
+        // Rebuild dashboard with updated sort order
+        updateDashboard();
+        if (activeParentPortfolio) renderPortfolioPage();
     }
 }
 
