@@ -1019,8 +1019,10 @@ function movePortfolio(id, level, parentId, direction) {
 
     persistPortfolioOrder(group);
 
-    if (level === "parent") renderManageTree();
-    else renderManageSubportList();
+    // Always re-render the tree (shows both parents and sub-ports)
+    // Also re-render sub-port detail list if currently in portfolio detail view
+    renderManageTree();
+    renderManageSubportList();
 }
 
 function persistPortfolioOrder(group) {
