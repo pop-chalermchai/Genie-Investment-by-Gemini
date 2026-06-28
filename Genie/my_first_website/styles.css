@@ -2306,23 +2306,36 @@ select.type-sell {
     color: var(--text-secondary);
     font-style: italic;
 }
-.btn-manage-toggle {
-    padding: 6px 14px;
+.btn-toolbar {
+    padding: 7px 16px;
     font-size: 0.8rem;
-    border-radius: 4px;
-    border: 1px solid var(--border-dim);
-    background: var(--bg-card-solid);
-    color: var(--text-primary);
     font-weight: 700;
+    border-radius: 6px;
+    border: 1px solid var(--border-dim);
+    background: transparent;
+    color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.2s;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
 }
-.btn-manage-toggle:hover {
+.btn-toolbar:hover {
     border-color: var(--accent-neon);
     color: var(--accent-neon);
+    background: rgba(0,240,255,0.05);
+}
+.btn-toolbar-primary {
+    background: linear-gradient(90deg, #00F0FF 0%, #0088FF 100%);
+    border-color: transparent;
+    color: #030712;
+}
+.btn-toolbar-primary:hover {
+    background: linear-gradient(90deg, #33F5FF 0%, #33AAFF 100%);
+    border-color: transparent;
+    color: #030712;
 }
 .btn-manage-toggle.active {
-    background: rgba(0,240,255,0.1);
+    background: rgba(0,240,255,0.08);
     border-color: var(--accent-neon);
     color: var(--accent-neon);
 }
