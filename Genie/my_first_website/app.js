@@ -934,16 +934,30 @@ function createManageRow(name, id, isChild, parentId) {
         dragSrcId = id;
         dragSrcLevel = isChild ? "child" : "parent";
         dragSrcParentId = parentId;
-        row.classList.add("dragging");
         e.dataTransfer.effectAllowed = "move";
         e.dataTransfer.setData("text/plain", String(id));
+        setTimeout(() => row.classList.add("dragging"), 0);
     });
-    row.addEventListener("dragend", () => row.classList.remove("dragging"));
+    row.addEventListener("dragend", () => {
+        row.classList.remove("dragging");
+        document.querySelectorAll(".manage-tree-row.drag-over").forEach(r => r.classList.remove("drag-over"));
+        dragSrcId = null;
+        dragSrcLevel = null;
+        dragSrcParentId = null;
+    });
     row.addEventListener("dragover", e => {
         e.preventDefault();
-        if (dragSrcLevel === row.dataset.level) row.classList.add("drag-over");
+        e.dataTransfer.dropEffect = "move";
+        if (dragSrcLevel === row.dataset.level && dragSrcId !== id) {
+            row.classList.add("drag-over");
+        }
     });
-    row.addEventListener("dragleave", () => row.classList.remove("drag-over"));
+    row.addEventListener("dragleave", e => {
+        // Only remove when truly leaving the row (not just moving to a child element)
+        if (!row.contains(e.relatedTarget)) {
+            row.classList.remove("drag-over");
+        }
+    });
     row.addEventListener("drop", e => {
         e.preventDefault();
         row.classList.remove("drag-over");
@@ -1031,16 +1045,23 @@ function renderManageSubportList() {
             dragSrcId = child.id;
             dragSrcLevel = "child";
             dragSrcParentId = parentPort.id;
-            row.classList.add("dragging");
             e.dataTransfer.effectAllowed = "move";
             e.dataTransfer.setData("text/plain", String(child.id));
+            setTimeout(() => row.classList.add("dragging"), 0);
         });
-        row.addEventListener("dragend", () => row.classList.remove("dragging"));
+        row.addEventListener("dragend", () => {
+            row.classList.remove("dragging");
+            document.querySelectorAll(".manage-tree-row.drag-over").forEach(r => r.classList.remove("drag-over"));
+            dragSrcId = null; dragSrcLevel = null; dragSrcParentId = null;
+        });
         row.addEventListener("dragover", e => {
             e.preventDefault();
-            row.classList.add("drag-over");
+            e.dataTransfer.dropEffect = "move";
+            if (dragSrcId !== child.id) row.classList.add("drag-over");
         });
-        row.addEventListener("dragleave", () => row.classList.remove("drag-over"));
+        row.addEventListener("dragleave", e => {
+            if (!row.contains(e.relatedTarget)) row.classList.remove("drag-over");
+        });
         row.addEventListener("drop", e => {
             e.preventDefault();
             row.classList.remove("drag-over");

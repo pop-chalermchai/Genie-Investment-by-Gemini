@@ -2255,9 +2255,10 @@ select.type-sell {
     user-select: none;
     flex-shrink: 0;
     transition: color 0.12s;
+    pointer-events: none;
 }
-.drag-handle:hover {
-    color: var(--text-primary);
+.manage-tree-name {
+    pointer-events: none;
 }
 .drag-handle:active {
     cursor: grabbing;
