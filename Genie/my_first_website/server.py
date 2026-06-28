@@ -681,6 +681,8 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
             try:
                 data = json.loads(post_data.decode('utf-8'))
                 type = data.get('type', 'BUY').upper()
+                if type == 'THAI_FUND':
+                    type = 'BUY'
                 ticker = data.get('ticker')
                 company_name = data.get('companyName')
                 sector = data.get('sector')

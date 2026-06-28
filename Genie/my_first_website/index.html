@@ -183,15 +183,22 @@
                             <form id="ingest-form" onsubmit="handleIngest(event)">
                                 <div class="form-grid">
                                     <div class="form-group">
-                                        <label for="ingest-type">Type</label>
-                                        <select id="ingest-type" class="type-buy" required onchange="toggleIngestType()">
-                                            <option value="BUY">Buy</option>
-                                            <option value="SELL">Sell</option>
-                                            <option value="DIVIDEND">Dividend</option>
+                                        <label for="ingest-asset-type">Asset Type</label>
+                                        <select id="ingest-asset-type" required onchange="toggleAssetType()">
+                                            <option value="STOCK">Stock / ETF</option>
+                                            <option value="CRYPTO">Crypto</option>
                                             <option value="THAI_FUND">Thai Mutual Fund</option>
                                         </select>
                                     </div>
                                     <div class="form-group">
+                                        <label for="ingest-tx-type">Transaction</label>
+                                        <select id="ingest-tx-type" class="type-buy" required onchange="toggleTxType()">
+                                            <option value="BUY">Buy</option>
+                                            <option value="SELL">Sell</option>
+                                            <option value="DIVIDEND">Dividend</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group span-2">
                                         <label for="ingest-ticker" id="label-ticker">Ticker</label>
                                         <input type="text" id="ingest-ticker" placeholder="e.g., TSLA or BTC-USD" required onblur="autoFillCompanyName()">
                                     </div>

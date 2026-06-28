@@ -771,7 +771,8 @@ function renderChart() {
 function handleIngest(event) {
     event.preventDefault();
 
-    const type = document.getElementById("ingest-type").value;
+    const txType = document.getElementById("ingest-tx-type").value;
+    const assetType = document.getElementById("ingest-asset-type").value;
     const ticker = document.getElementById("ingest-ticker").value.toUpperCase().trim();
     const companyName = document.getElementById("ingest-name").value.trim();
     const sector = document.getElementById("ingest-sector").value;
@@ -786,14 +787,17 @@ function handleIngest(event) {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            type, ticker, companyName, sector, portfolio, shares, avgCost, currency
+            type: txType, assetType, ticker, companyName, sector, portfolio, shares, avgCost, currency
         })
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
             document.getElementById("ingest-form").reset();
-            toggleIngestType(); // reset to default styles
+            document.getElementById("ingest-asset-type").value = "STOCK";
+            document.getElementById("ingest-tx-type").value = "BUY";
+            toggleAssetType();
+            toggleTxType();
             
             // Re-fetch holdings from DB
             fetch('/api/holdings')
@@ -813,38 +817,47 @@ function handleIngest(event) {
     });
 }
 
-function toggleIngestType() {
-    const select = document.getElementById("ingest-type");
+function toggleAssetType() {
+    const assetType = document.getElementById("ingest-asset-type").value;
     const labelCost = document.getElementById("label-avg-cost");
     const labelTicker = document.getElementById("label-ticker");
     const sharesLabel = document.querySelector("label[for='ingest-shares']");
     const currencySelect = document.getElementById("ingest-currency");
     const sectorSelect = document.getElementById("ingest-sector");
     const tickerInput = document.getElementById("ingest-ticker");
+    const txType = document.getElementById("ingest-tx-type").value;
+    const isSell = txType === "SELL";
 
-    select.classList.remove("type-buy", "type-sell");
-
-    if (select.value === "SELL") {
-        select.classList.add("type-sell");
-        labelCost.innerText = "Selling Price ($)";
-        labelTicker.innerText = "Ticker";
-        if (sharesLabel) sharesLabel.innerText = "Shares (Qty)";
-        tickerInput.placeholder = "e.g., TSLA or BTC-USD";
-    } else if (select.value === "THAI_FUND") {
-        select.classList.add("type-buy");
-        labelCost.innerText = "NAV per Unit (THB)";
+    if (assetType === "THAI_FUND") {
+        labelCost.innerText = isSell ? "Selling NAV (THB)" : "NAV per Unit (THB)";
         labelTicker.innerText = "Fund Code";
         if (sharesLabel) sharesLabel.innerText = "Units";
         tickerInput.placeholder = "e.g., KFGROWTH or K-GROWTH";
         if (currencySelect) currencySelect.value = "THB";
         if (sectorSelect) sectorSelect.value = "Thai Mutual Fund";
+    } else if (assetType === "CRYPTO") {
+        labelCost.innerText = isSell ? "Selling Price ($)" : "Avg Cost ($)";
+        labelTicker.innerText = "Ticker";
+        if (sharesLabel) sharesLabel.innerText = "Coins";
+        tickerInput.placeholder = "e.g., BTC or ETH";
+        if (currencySelect) currencySelect.value = "USD";
+        if (sectorSelect && sectorSelect.value === "Thai Mutual Fund") sectorSelect.value = "Cryptocurrency";
     } else {
-        select.classList.add("type-buy");
-        labelCost.innerText = "Avg Cost ($)";
+        labelCost.innerText = isSell ? "Selling Price ($)" : "Avg Cost ($)";
         labelTicker.innerText = "Ticker";
         if (sharesLabel) sharesLabel.innerText = "Shares (Qty)";
-        tickerInput.placeholder = "e.g., TSLA or BTC-USD";
+        tickerInput.placeholder = "e.g., TSLA or AAPL";
+        if (currencySelect) currencySelect.value = "USD";
+        if (sectorSelect && sectorSelect.value === "Thai Mutual Fund") sectorSelect.value = "Technology";
     }
+}
+
+function toggleTxType() {
+    const txSelect = document.getElementById("ingest-tx-type");
+    txSelect.classList.remove("type-buy", "type-sell");
+    txSelect.classList.add(txSelect.value === "SELL" ? "type-sell" : "type-buy");
+    // Update cost label to reflect sell vs buy
+    toggleAssetType();
 }
 
 // AUTO-FILL THAI MUTUAL FUND FROM SEC API
@@ -885,8 +898,8 @@ async function autoFillThaiFund() {
 
 // AUTO-FILL COMPANY NAME FROM YAHOO FINANCE
 async function autoFillCompanyName() {
-    const type = document.getElementById("ingest-type").value;
-    if (type === "THAI_FUND") {
+    const assetType = document.getElementById("ingest-asset-type").value;
+    if (assetType === "THAI_FUND") {
         return autoFillThaiFund();
     }
 
