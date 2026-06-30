@@ -23,6 +23,10 @@ let isManageMode = false;
 // ==========================================================================
 let activeTheme = localStorage.getItem("genie-portfolio-theme") || "light";
 
+function getBadgeStyle(name) {
+    return `style="background:var(--bg-card-solid);color:var(--text-primary);border:1px solid var(--border-color);font-weight:600;"`;
+}
+
 function setTheme(theme) {
     activeTheme = theme;
     localStorage.setItem("genie-portfolio-theme", theme);
@@ -256,7 +260,7 @@ function renderPortfolioPage() {
         row.innerHTML = `
             <td><span class="ticker-badge">${pos.ticker}</span></td>
             <td><strong>${pos.companyName}</strong><br><span style="font-size:0.72rem;color:var(--text-secondary);">${pos.sector}</span></td>
-            <td><span class="portfolio-badge">${pos.portfolio}</span></td>
+            <td><span class="portfolio-badge" ${getBadgeStyle(pos.portfolio)}>${pos.portfolio}</span></td>
             <td class="text-right table-shares">${formatShares(pos.shares)}</td>
             <td class="text-right table-currency">${symbol}${avgCost.toFixed(2)}</td>
             <td class="text-right table-currency">${symbol}${currentPrice.toFixed(2)}</td>
@@ -539,7 +543,6 @@ function updateDashboard() {
             ? `<span onclick="event.stopPropagation();openResearchFromHolding('${reportKey}')" style="display:block;font-size:0.62rem;color:var(--accent-gold);opacity:0.7;cursor:pointer;letter-spacing:0.4px;margin-top:3px;transition:opacity 0.15s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7">research ↗</span>`
             : '';
 
-        // Badge class derived from sub-portfolio name
         const badgeName = subName.toLowerCase().replace(/ /g, '-');
 
         // Generate HTML row
@@ -554,7 +557,7 @@ function updateDashboard() {
         row.innerHTML = `
             <td style="text-align:center;">${logoHtml}<span style="font-family:var(--font-mono);font-weight:700;font-size:0.82rem;color:var(--accent-neon);letter-spacing:0.5px;">${pos.ticker}</span>${researchLink}</td>
             <td><strong>${pos.companyName}</strong><br><span style="font-size: 0.72rem; color: var(--text-secondary);">${pos.sector}</span></td>
-            <td><span class="portfolio-badge badge-${badgeName}">${subName}</span></td>
+            <td><span class="portfolio-badge" ${getBadgeStyle(subName)}>${subName}</span></td>
             <td class="text-right table-shares">${formatShares(pos.shares)}</td>
             <td class="text-right table-currency">${symbol}${avgCost.toFixed(2)}</td>
             <td class="text-right table-currency">${symbol}${currentPrice.toFixed(2)}</td>
