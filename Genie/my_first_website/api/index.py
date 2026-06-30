@@ -519,22 +519,26 @@ def adjust_asset():
         data = request.get_json(force=True)
         ticker = data.get('ticker')
         portfolio_name = data.get('portfolio')
+        portfolio_id = data.get('portfolioId')
         new_shares = float(data.get('shares', 0))
         new_price = float(data.get('price', 0))
         currency = data.get('currency', 'USD')
-        
+
         if not all([ticker, portfolio_name, new_shares >= 0, new_price >= 0]):
             raise ValueError("Missing or invalid fields")
-            
+
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
-        
-        execute_sql(cursor, is_postgres, "SELECT id FROM portfolios WHERE name=?", (portfolio_name,))
-        p_rows = fetch_all_as_dict(cursor, is_postgres)
-        if not p_rows:
-            raise ValueError("Portfolio not found")
-        p_id = p_rows[0]['id']
-        
+
+        if portfolio_id:
+            p_id = int(portfolio_id)
+        else:
+            execute_sql(cursor, is_postgres, "SELECT id FROM portfolios WHERE name=?", (portfolio_name,))
+            p_rows = fetch_all_as_dict(cursor, is_postgres)
+            if not p_rows:
+                raise ValueError("Portfolio not found")
+            p_id = p_rows[0]['id']
+
         execute_sql(cursor, is_postgres, "SELECT id FROM assets WHERE ticker=? AND portfolio_id=?", (ticker, p_id))
         a_rows = fetch_all_as_dict(cursor, is_postgres)
         if not a_rows:

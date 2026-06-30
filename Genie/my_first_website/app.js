@@ -268,7 +268,7 @@ function renderPortfolioPage() {
             <td class="text-right ${gainLoss >= 0 ? 'cell-positive' : 'cell-negative'}">
                 <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px;">
                     <span>${symbol}${formatNumber(gainLoss, 2)} (${gainLossPct >= 0 ? '+' : ''}${gainLossPct.toFixed(1)}%)</span>
-                    <button onclick="event.stopPropagation(); openEditAssetModal('${pos.ticker}', '${pos.portfolio}', '${pos.currency}', ${pos.shares}, ${pos.avgCost})" title="Edit Asset" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:1rem;padding:0;">✎</button>
+                    <button onclick="event.stopPropagation(); openEditAssetModal('${pos.ticker}', '${pos.portfolio}', '${pos.currency}', ${pos.shares}, ${pos.avgCost}, ${pos.portfolioId})" title="Edit Asset" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:1rem;padding:0;">✎</button>
                 </div>
             </td>
         `;
@@ -2416,9 +2416,10 @@ function handleAddSubPortfolio(e) {
 // ---------------------------------------------
 // EDIT ASSET MODAL
 // ---------------------------------------------
-function openEditAssetModal(ticker, portfolio, currency, shares, avgCost) {
+function openEditAssetModal(ticker, portfolio, currency, shares, avgCost, portfolioId) {
     document.getElementById("edit-asset-ticker").value = ticker;
     document.getElementById("edit-asset-portfolio").value = portfolio;
+    document.getElementById("edit-asset-portfolio-id").value = portfolioId || '';
     document.getElementById("edit-asset-currency").value = currency;
     document.getElementById("edit-asset-display").innerText = `${ticker} (in ${portfolio})`;
     document.getElementById("edit-asset-shares").value = shares;
@@ -2434,6 +2435,7 @@ function handleEditAsset(e) {
     e.preventDefault();
     const ticker = document.getElementById("edit-asset-ticker").value;
     const portfolio = document.getElementById("edit-asset-portfolio").value;
+    const portfolioId = document.getElementById("edit-asset-portfolio-id").value;
     const currency = document.getElementById("edit-asset-currency").value;
     const shares = parseFloat(document.getElementById("edit-asset-shares").value);
     const price = parseFloat(document.getElementById("edit-asset-price").value);
@@ -2441,7 +2443,7 @@ function handleEditAsset(e) {
     fetch('/api/asset-adjustment', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ticker, portfolio, currency, shares, price })
+        body: JSON.stringify({ ticker, portfolio, portfolioId: portfolioId ? parseInt(portfolioId) : null, currency, shares, price })
     })
     .then(r => r.json())
     .then(data => {
