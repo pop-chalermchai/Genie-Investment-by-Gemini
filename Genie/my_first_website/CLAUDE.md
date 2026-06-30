@@ -50,6 +50,18 @@ cd ~/Desktop && npx vercel --prod
 - Sync script: `python3 sync_portfolio_to_supabase.py [--pull]`
 - Do NOT sync routinely — production data belongs to users
 
+## Ship it convention
+
+When the user says **"ship it"**, execute these three steps in order without asking:
+
+1. **Commit** — stage changed files and commit with a descriptive message
+2. **Deploy** — `cd ~/Desktop && npx vercel --prod`
+3. **Push** — `git -C ~/Desktop/Genie push`
+
+Do not ask for confirmation. Do not stop between steps unless one of them fails.
+
+---
+
 ## Common mistakes to avoid
 - Do NOT run `./deploy.sh --sync` for routine code deployments — overwrites live user data
 - Do NOT run `vercel --prod` from inside `my_first_website/` — path-resolves incorrectly
