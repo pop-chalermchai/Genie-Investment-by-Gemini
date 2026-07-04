@@ -13,8 +13,9 @@ def init_db():
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS categories (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL UNIQUE,
-            description TEXT
+            name TEXT NOT NULL,
+            description TEXT,
+            user_id TEXT
         )
     ''')
 
@@ -25,6 +26,8 @@ def init_db():
             name TEXT NOT NULL,
             category_id INTEGER,
             parent_id INTEGER,
+            sort_order INTEGER,
+            user_id TEXT,
             FOREIGN KEY (category_id) REFERENCES categories (id),
             FOREIGN KEY (parent_id) REFERENCES portfolios (id)
         )

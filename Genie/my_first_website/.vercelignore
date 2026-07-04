@@ -1,0 +1,26 @@
+# Keep production deploy limited to what the frontend + serverless function need.
+# Everything ignored here is NOT uploaded to Vercel and therefore not web-servable.
+
+# --- Python source: ignore all, EXCEPT the serverless function under api/ ---
+*.py
+!api/
+!api/*.py
+
+# --- Local database (also gitignored, belt-and-suspenders) ---
+*.db
+
+# --- Secrets (also gitignored) ---
+.env*
+
+# --- Dev / build artifacts ---
+__pycache__/
+*.pyc
+
+# --- Internal docs, not for public web serving ---
+*.md
+
+# --- Shell scripts (deploy tooling, not web assets) ---
+*.sh
+
+# --- Unused dev file (not referenced by index.html) ---
+extract.js

@@ -1,3 +1,5 @@
 .vercel/*
 !.vercel/project.json
 .env*
+# Prod DB backups contain real portfolio data — never commit
+backups/

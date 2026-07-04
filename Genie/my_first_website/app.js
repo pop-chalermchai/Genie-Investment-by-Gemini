@@ -334,7 +334,13 @@ function fetchInitData(onComplete = null) {
     .catch(err => console.error("Error fetching init data:", err));
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+    // Gate the app on auth. The backend tells us whether a login is required
+    // (see /api/auth-config); if so and there's no session, show login and stop.
+    if (window.GenieAuth) {
+        const allowed = await GenieAuth.ensureAllowed();
+        if (!allowed) return;
+    }
     fetchInitData(() => {
         // Apply cached prices from localStorage for instant first render
         try {
@@ -1526,7 +1532,10 @@ function renderReport() {
     const contentKey = activeLanguage + "_" + activeReportTab;
     const rawText = reportData[contentKey];
     if (rawText) {
-        reportContainer.innerHTML = marked.parse(rawText);
+        // Report bodies are freeform markdown rendered to HTML — sanitize to
+        // strip any embedded scripts/handlers before injecting.
+        const html = marked.parse(rawText);
+        reportContainer.innerHTML = window.DOMPurify ? DOMPurify.sanitize(html) : html;
     } else {
         reportContainer.innerHTML = "<em>Content not available for this tab.</em>";
     }

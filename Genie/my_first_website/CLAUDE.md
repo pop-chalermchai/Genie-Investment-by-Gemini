@@ -49,6 +49,34 @@ cd ~/Desktop && npx vercel --prod
 - **Local fallback:** SQLite `portfolio.db` (gitignored)
 - Sync script: `python3 sync_portfolio_to_supabase.py [--pull]`
 - Do NOT sync routinely — production data belongs to users
+- **Schema migrations:** numbered SQL in `migrations/` — run in order (see `migrations/README.md`). Replaces the old `migrate_db()` startup hack.
+- **Local SQLite schema:** after pulling multi-user changes, run `python3 migrate_local_sqlite.py` once to add `user_id`/`sort_order` columns to an existing `portfolio.db` and backfill to the dev user.
+- **Auth mode is backend-driven:** `GET /api/auth-config` returns `{authRequired}`. It's true when `DATABASE_URL` or `SUPABASE_JWT_SECRET` is set (prod, or local-against-Supabase), false only in pure local SQLite dev. The frontend reads this to decide whether to show the login screen.
+
+## Auth & multi-user (in progress — see ARCHITECTURE_MULTIUSER.md)
+- Auth provider: **Supabase Auth** (HS256 JWT). Signup is **invite-only** at launch.
+- Every `/api/*` route is `@require_auth`. Data is scoped by `user_id` at the
+  **application layer** (primary guard); RLS in `migrations/003_rls.sql` is a backstop
+  because the backend connects as the DB owner (BYPASSRLS).
+- Tokens are **ES256** (asymmetric). The backend verifies them via the project
+  JWKS endpoint (`SUPABASE_URL` → `/auth/v1/.well-known/jwks.json`). HS256 + a
+  `SUPABASE_JWT_SECRET` is also supported (tests / legacy) but not used in prod.
+- Env vars:
+  - `SUPABASE_URL` — defaults to the project URL; used to build the JWKS URL. No secret required for auth.
+  - `SEC_FACTSHEET_KEY`, `SEC_DAILY_INFO_KEY` — required for Thai-fund endpoints (no hardcoded fallback).
+  - `DEV_USER_ID` — local single-user id (default `local-dev-user`). The no-token dev
+    fallback works ONLY when running local SQLite with `DATABASE_URL` and `SUPABASE_JWT_SECRET` both unset.
+- When adding/altering any endpoint that touches user data, scope every query by
+  `user_id` and add an isolation test. This is the invariant that keeps users separate.
+
+## Tests
+```bash
+cd ~/Desktop/Genie/my_first_website
+DATABASE_URL="" SEC_FACTSHEET_KEY="" python3 -m pytest tests/ -q
+```
+- `tests/test_api_baseline.py` — characterization of core flows (single-user).
+- `tests/test_auth_isolation.py` — proves user A cannot see/modify/delete user B's data.
+- Run before committing any change to `api/index.py`.
 
 ## Ship it convention
 

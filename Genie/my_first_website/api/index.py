@@ -1,5 +1,6 @@
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory, g
 from datetime import datetime, timedelta
+from functools import wraps
 import sqlite3
 import os
 import urllib.request
@@ -7,6 +8,7 @@ import urllib.parse
 import json
 import ssl
 import pg8000
+import jwt
 
 app = Flask(__name__)
 
@@ -25,8 +27,69 @@ if os.path.exists(_env_path):
                 os.environ.setdefault(_k.strip(), _v.strip())
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
-SEC_FACTSHEET_KEY = os.environ.get('SEC_FACTSHEET_KEY', 'eb52da4e4d2c4587a293bbbf6c4f00cb')
-SEC_DAILY_INFO_KEY = os.environ.get('SEC_DAILY_INFO_KEY', '38a6644d289443f4803ceb41132c1c60')
+# SEC API keys must come from the environment. No hardcoded fallback — a leaked
+# default key was previously committed here; the Thai-fund endpoints will return
+# a clear error if these are unset rather than silently shipping a secret.
+SEC_FACTSHEET_KEY = os.environ.get('SEC_FACTSHEET_KEY')
+SEC_DAILY_INFO_KEY = os.environ.get('SEC_DAILY_INFO_KEY')
+
+# Optional Supabase CA cert (PEM contents or file path) to enable verify-ca on the
+# Postgres connection. See get_db_connection().
+SUPABASE_CA_CERT = os.environ.get('SUPABASE_CA_CERT')
+
+# Auth (Supabase). This project signs access tokens with asymmetric keys (ES256),
+# verified via the project's JWKS endpoint. SUPABASE_JWT_SECRET (legacy HS256) is
+# still supported for tokens whose header says HS256 — used by the test suite and
+# as a fallback. When running locally against SQLite with neither configured, the
+# app falls back to a single local user (DEV_USER_ID) so local use needs no login.
+SUPABASE_URL = os.environ.get('SUPABASE_URL', 'https://jkndlurskolcmifmsctm.supabase.co')
+SUPABASE_JWKS_URL = os.environ.get(
+    'SUPABASE_JWKS_URL',
+    (SUPABASE_URL.rstrip('/') + '/auth/v1/.well-known/jwks.json') if SUPABASE_URL else None,
+)
+SUPABASE_JWT_SECRET = os.environ.get('SUPABASE_JWT_SECRET')
+DEV_USER_ID = os.environ.get('DEV_USER_ID', 'local-dev-user')
+
+_jwks_client = None
+
+
+def _get_jwks_client():
+    """Lazily build a cached JWKS client for asymmetric (ES256) token verification."""
+    global _jwks_client
+    if _jwks_client is None and SUPABASE_JWKS_URL:
+        from jwt import PyJWKClient
+        _jwks_client = PyJWKClient(SUPABASE_JWKS_URL)
+    return _jwks_client
+
+
+def _verify_token(token):
+    """Return the token's claims if valid, else None. Chooses HS256 vs asymmetric
+    based on the token header, so it works whether the project issues legacy HS256
+    or current ES256 tokens."""
+    try:
+        alg = jwt.get_unverified_header(token).get('alg', '')
+    except Exception:
+        return None
+    try:
+        if alg == 'HS256':
+            if not SUPABASE_JWT_SECRET:
+                return None
+            return jwt.decode(token, SUPABASE_JWT_SECRET, algorithms=['HS256'], audience='authenticated')
+        # Asymmetric (ES256 / RS256) via JWKS
+        client = _get_jwks_client()
+        if not client:
+            return None
+        signing_key = client.get_signing_key_from_jwt(token)
+        return jwt.decode(token, signing_key.key, algorithms=['ES256', 'RS256'], audience='authenticated')
+    except Exception:
+        return None
+
+DEFAULT_CATEGORIES = [
+    ('Stocks', 'หุ้นและ ETF ทั่วไป'),
+    ('Provident Fund', 'กองทุนสำรองเลี้ยงชีพ'),
+    ('Crypto', 'สินทรัพย์ดิจิทัล'),
+]
+
 
 def get_db_connection():
     """
@@ -37,18 +100,31 @@ def get_db_connection():
         db_url = DATABASE_URL
         if db_url.startswith("postgres://"):
             db_url = db_url.replace("postgres://", "postgresql://", 1)
-            
+
         url = urllib.parse.urlparse(db_url)
         username = url.username
         password = url.password
         database = url.path[1:]
         hostname = url.hostname
         port = url.port or 5432
-        
+
         ssl_context = ssl.create_default_context()
-        ssl_context.check_hostname = False
-        ssl_context.verify_mode = ssl.CERT_NONE
-        
+        # Supabase's connection pooler presents a self-signed cert chain, so full
+        # verification against system CAs fails. Provide Supabase's CA cert via
+        # SUPABASE_CA_CERT (PEM contents or a file path) to enable verify-ca —
+        # this authenticates the server (blocks MITM) while tolerating the pooler's
+        # hostname mismatch. Without it we fall back to encrypted-but-unverified.
+        if SUPABASE_CA_CERT:
+            if os.path.exists(SUPABASE_CA_CERT):
+                ssl_context.load_verify_locations(cafile=SUPABASE_CA_CERT)
+            else:
+                ssl_context.load_verify_locations(cadata=SUPABASE_CA_CERT)
+            ssl_context.check_hostname = False
+            ssl_context.verify_mode = ssl.CERT_REQUIRED
+        else:
+            ssl_context.check_hostname = False
+            ssl_context.verify_mode = ssl.CERT_NONE
+
         conn = pg8000.connect(
             user=username,
             password=password,
@@ -64,6 +140,7 @@ def get_db_connection():
         conn.row_factory = sqlite3.Row
         return conn, False
 
+
 def execute_sql(cursor, is_postgres, query, params=None):
     if params is None:
         params = ()
@@ -71,6 +148,7 @@ def execute_sql(cursor, is_postgres, query, params=None):
         # Convert SQLite ? to Postgres %s placeholders
         query = query.replace('?', '%s')
     cursor.execute(query, params)
+
 
 def fetch_all_as_dict(cursor, is_postgres):
     if is_postgres:
@@ -81,43 +159,118 @@ def fetch_all_as_dict(cursor, is_postgres):
     else:
         return [dict(r) for r in cursor.fetchall()]
 
+
+def _err(e):
+    """Uniform error response. ValueErrors are intentional, user-facing validation
+    messages (400). Anything else is unexpected — log it server-side and return a
+    generic message so internal details (DB errors, stack context) don't leak."""
+    if isinstance(e, ValueError):
+        return jsonify({"error": str(e)}), 400
+    app.logger.exception("Unhandled API error")
+    return jsonify({"error": "Something went wrong. Please try again."}), 500
+
+
+# ── Auth ──────────────────────────────────────────────────────────────────────
+
+def _resolve_user_id():
+    """
+    Resolve the caller's user id, or None if unauthenticated.
+    Priority: valid Supabase Bearer token → its `sub`. Otherwise, when running
+    locally against SQLite (no DATABASE_URL), fall back to the single local user.
+    """
+    auth = request.headers.get('Authorization', '')
+    if auth.startswith('Bearer '):
+        token = auth[7:].strip()
+        claims = _verify_token(token)
+        return claims.get('sub') if claims else None
+    # No token: allow the single local user ONLY in pure local dev — SQLite and
+    # no JWT secret configured. Once a secret is set (prod, or any auth-enabled
+    # environment), a missing/invalid token is unauthorized.
+    if not DATABASE_URL and not SUPABASE_JWT_SECRET:
+        return DEV_USER_ID
+    return None
+
+
+def _auth_enforced():
+    """
+    True when the backend requires a valid token. Auth is enforced everywhere
+    except pure local dev (SQLite, no JWT secret configured), which matches the
+    single-user fallback in _resolve_user_id().
+    """
+    return bool(DATABASE_URL) or bool(SUPABASE_JWT_SECRET)
+
+
+@app.route('/api/auth-config', methods=['GET'])
+def auth_config():
+    # Public: lets the frontend know whether to show the login screen. Contains
+    # no secrets — only whether auth is on.
+    return jsonify({"authRequired": _auth_enforced()})
+
+
+def require_auth(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        uid = _resolve_user_id()
+        if not uid:
+            return jsonify({"error": "Unauthorized"}), 401
+        g.user_id = uid
+        return fn(*args, **kwargs)
+    return wrapper
+
+
+def ensure_user_seeded(cursor, is_postgres, user_id):
+    """Give a brand-new user the default categories on first load."""
+    execute_sql(cursor, is_postgres, "SELECT COUNT(*) AS n FROM categories WHERE user_id=?", (user_id,))
+    row = fetch_all_as_dict(cursor, is_postgres)
+    if row and row[0]['n'] and int(row[0]['n']) > 0:
+        return
+    for name, desc in DEFAULT_CATEGORIES:
+        execute_sql(cursor, is_postgres,
+                    "INSERT INTO categories (name, description, user_id) VALUES (?, ?, ?)",
+                    (name, desc, user_id))
+
+
 @app.route('/api/transactions', methods=['GET'])
+@require_auth
 def get_transactions():
     try:
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
         query = '''
-            SELECT 
+            SELECT
                 t.id, t.type, t.shares, t.price, t.currency, t.transaction_date as "transactionDate",
                 a.ticker, a.company_name as "companyName", p.name as portfolio, p.parent_id as "parentId",
                 (SELECT name FROM portfolios WHERE id = p.parent_id) as "parentPortfolio"
             FROM transactions t
             JOIN assets a ON t.asset_id = a.id
             JOIN portfolios p ON a.portfolio_id = p.id
+            WHERE p.user_id = ?
             ORDER BY t.transaction_date DESC
         '''
-        execute_sql(cursor, is_postgres, query)
+        execute_sql(cursor, is_postgres, query, (g.user_id,))
         transactions = fetch_all_as_dict(cursor, is_postgres)
         conn.close()
         return jsonify(transactions)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return _err(e)
+
 
 @app.route('/api/stock/chart', methods=['GET'])
+@require_auth
 def get_stock_chart():
     ticker = request.args.get('ticker')
     chart_range = request.args.get('range', '1mo')
     interval = '1d'
     if chart_range == '1d':
         interval = '5m'
-    
+
     if not ticker:
         return jsonify({"error": "Missing ticker parameter"}), 400
-        
+
     ticker = ticker.upper()
     url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?range={chart_range}&interval={interval}"
     req = urllib.request.Request(
-        url, 
+        url,
         headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
     )
     try:
@@ -125,11 +278,11 @@ def get_stock_chart():
             data = json.loads(response.read().decode())
             if not data.get('chart', {}).get('result'):
                 raise ValueError("No stock chart data found in Yahoo Finance response")
-            
+
             result = data['chart']['result'][0]
             timestamps = result.get('timestamp', [])
             quote = result.get('indicators', {}).get('quote', [{}])[0]
-            
+
             chart_data = {
                 "ticker": ticker,
                 "timestamps": timestamps,
@@ -141,65 +294,81 @@ def get_stock_chart():
             }
             return jsonify(chart_data)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return _err(e)
+
+
+# Holdings aggregation query, parameterized by the owning user.
+_HOLDINGS_QUERY = '''
+    SELECT
+        a.ticker, a.company_name as "companyName", a.sector, a.domain,
+        p.name as portfolio, p.id as "portfolioId", p.parent_id as "parentId",
+        (SELECT name FROM portfolios WHERE id = p.parent_id) as "parentPortfolio",
+        t.currency, SUM(t.shares) as shares,
+        SUM(CASE WHEN t.type IN ('BUY', 'TRANSFER_IN') THEN t.shares * t.price ELSE 0 END) /
+        NULLIF(SUM(CASE WHEN t.type IN ('BUY', 'TRANSFER_IN') THEN t.shares ELSE 0 END), 0) as "avgCost"
+    FROM assets a
+    JOIN portfolios p ON a.portfolio_id = p.id
+    JOIN transactions t ON t.asset_id = a.id
+    WHERE p.user_id = ?
+    GROUP BY a.id, p.id, t.currency
+    HAVING SUM(t.shares) > 0
+'''
+
+
+def _load_reports(cursor, is_postgres, user_id):
+    execute_sql(cursor, is_postgres, 'SELECT * FROM research_reports WHERE user_id=?', (user_id,))
+    rows = fetch_all_as_dict(cursor, is_postgres)
+    reports = {}
+    for r in rows:
+        reports[r['report_key']] = {
+            "ticker": r['ticker'],
+            "companyName": r['company_name'],
+            "subtitle": r['subtitle'],
+            "preparedBy": r['prepared_by'],
+            "auditedBy": r['audited_by'],
+            "rating": r['rating'],
+            "isPositive": bool(r['is_positive']),
+            "priceTarget": r.get('price_target'),
+            "analysisPrice": r.get('analysis_price'),
+            "en_overview": r['en_overview'],
+            "th_overview": r['th_overview'],
+            "en_dcf": r['en_dcf'],
+            "th_dcf": r['th_dcf'],
+            "sector": r.get('sector')
+        }
+    return reports
+
 
 @app.route('/api/init-data', methods=['GET'])
+@require_auth
 def get_init_data():
     try:
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
-        
+
+        # New users get default categories on first load.
+        ensure_user_seeded(cursor, is_postgres, g.user_id)
+        conn.commit()
+
         # 1. Holdings
-        holdings_query = '''
-            SELECT 
-                a.ticker, a.company_name as "companyName", a.sector, a.domain,
-                p.name as portfolio, p.id as "portfolioId", p.parent_id as "parentId",
-                (SELECT name FROM portfolios WHERE id = p.parent_id) as "parentPortfolio",
-                t.currency, SUM(t.shares) as shares, 
-                SUM(CASE WHEN t.type IN ('BUY', 'TRANSFER_IN') THEN t.shares * t.price ELSE 0 END) / 
-                NULLIF(SUM(CASE WHEN t.type IN ('BUY', 'TRANSFER_IN') THEN t.shares ELSE 0 END), 0) as "avgCost"
-            FROM assets a
-            JOIN portfolios p ON a.portfolio_id = p.id
-            JOIN transactions t ON t.asset_id = a.id
-            GROUP BY a.id, p.id, t.currency
-            HAVING SUM(t.shares) > 0
-        '''
-        execute_sql(cursor, is_postgres, holdings_query)
+        execute_sql(cursor, is_postgres, _HOLDINGS_QUERY, (g.user_id,))
         holdings = fetch_all_as_dict(cursor, is_postgres)
-        
+
         # 2. Reports
-        execute_sql(cursor, is_postgres, 'SELECT * FROM research_reports')
-        rows = fetch_all_as_dict(cursor, is_postgres)
-        reports = {}
-        for r in rows:
-            reports[r['report_key']] = {
-                "ticker": r['ticker'],
-                "companyName": r['company_name'],
-                "subtitle": r['subtitle'],
-                "preparedBy": r['prepared_by'],
-                "auditedBy": r['audited_by'],
-                "rating": r['rating'],
-                "isPositive": bool(r['is_positive']),
-                "priceTarget": r.get('price_target'),
-                "analysisPrice": r.get('analysis_price'),
-                "en_overview": r['en_overview'],
-                "th_overview": r['th_overview'],
-                "en_dcf": r['en_dcf'],
-                "th_dcf": r['th_dcf'],
-                "sector": r.get('sector')
-            }
-            
+        reports = _load_reports(cursor, is_postgres, g.user_id)
+
         # 3. Portfolios
         portfolios_query = """
-            SELECT 
+            SELECT
                 p.id, p.name, p.category_id as "categoryId", c.name as category, p.parent_id as "parentId",
                 (SELECT name FROM portfolios WHERE id = p.parent_id) as "parentName"
             FROM portfolios p
             LEFT JOIN categories c ON p.category_id = c.id
+            WHERE p.user_id = ?
         """
-        execute_sql(cursor, is_postgres, portfolios_query)
+        execute_sql(cursor, is_postgres, portfolios_query, (g.user_id,))
         ports = fetch_all_as_dict(cursor, is_postgres)
-        
+
         conn.close()
         return jsonify({
             "holdings": holdings,
@@ -207,74 +376,47 @@ def get_init_data():
             "portfolios": ports
         })
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return _err(e)
+
 
 @app.route('/api/holdings', methods=['GET'])
+@require_auth
 def get_holdings():
     try:
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
-        query = '''
-            SELECT 
-                a.ticker, a.company_name as "companyName", a.sector, a.domain,
-                p.name as portfolio, p.id as "portfolioId", p.parent_id as "parentId",
-                (SELECT name FROM portfolios WHERE id = p.parent_id) as "parentPortfolio",
-                t.currency, SUM(t.shares) as shares, 
-                SUM(CASE WHEN t.type IN ('BUY', 'TRANSFER_IN') THEN t.shares * t.price ELSE 0 END) / 
-                NULLIF(SUM(CASE WHEN t.type IN ('BUY', 'TRANSFER_IN') THEN t.shares ELSE 0 END), 0) as "avgCost"
-            FROM assets a
-            JOIN portfolios p ON a.portfolio_id = p.id
-            JOIN transactions t ON t.asset_id = a.id
-            GROUP BY a.id, p.id, t.currency
-            HAVING SUM(t.shares) > 0
-        '''
-        execute_sql(cursor, is_postgres, query)
+        execute_sql(cursor, is_postgres, _HOLDINGS_QUERY, (g.user_id,))
         holdings = fetch_all_as_dict(cursor, is_postgres)
         conn.close()
         return jsonify(holdings)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return _err(e)
+
 
 @app.route('/api/reports', methods=['GET'])
+@require_auth
 def get_reports():
     try:
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
-        execute_sql(cursor, is_postgres, 'SELECT * FROM research_reports')
-        rows = fetch_all_as_dict(cursor, is_postgres)
-        reports = {}
-        for r in rows:
-            reports[r['report_key']] = {
-                "ticker": r['ticker'],
-                "companyName": r['company_name'],
-                "subtitle": r['subtitle'],
-                "preparedBy": r['prepared_by'],
-                "auditedBy": r['audited_by'],
-                "rating": r['rating'],
-                "isPositive": bool(r['is_positive']),
-                "priceTarget": r.get('price_target'),
-                "analysisPrice": r.get('analysis_price'),
-                "en_overview": r['en_overview'],
-                "th_overview": r['th_overview'],
-                "en_dcf": r['en_dcf'],
-                "th_dcf": r['th_dcf'],
-                "sector": r.get('sector')
-            }
+        reports = _load_reports(cursor, is_postgres, g.user_id)
         conn.close()
         return jsonify(reports)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return _err(e)
+
 
 @app.route('/api/stock', methods=['GET'])
+@require_auth
 def get_stock():
     ticker = request.args.get('ticker')
     if not ticker:
         return jsonify({"error": "Missing ticker parameter"}), 400
-    
+
     ticker = ticker.upper()
     url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}"
     req = urllib.request.Request(
-        url, 
+        url,
         headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
     )
     try:
@@ -282,7 +424,7 @@ def get_stock():
             data = json.loads(response.read().decode())
             if not data.get('chart', {}).get('result'):
                 raise ValueError("No stock data found in Yahoo Finance response")
-            
+
             meta = data['chart']['result'][0]['meta']
             stock_info = {
                 "ticker": ticker,
@@ -298,9 +440,24 @@ def get_stock():
             }
             return jsonify(stock_info)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return _err(e)
+
+
+def _get_or_create_category(cursor, is_postgres, user_id, category_name):
+    """Return the id of the user's category by name, creating it if missing."""
+    execute_sql(cursor, is_postgres, "SELECT id FROM categories WHERE name=? AND user_id=?", (category_name, user_id))
+    cat_rows = fetch_all_as_dict(cursor, is_postgres)
+    if cat_rows:
+        return cat_rows[0]['id']
+    execute_sql(cursor, is_postgres, "INSERT INTO categories (name, user_id) VALUES (?, ?)", (category_name, user_id))
+    if is_postgres:
+        execute_sql(cursor, is_postgres, "SELECT MAX(id) FROM categories WHERE user_id=?", (user_id,))
+        return cursor.fetchone()[0]
+    return cursor.lastrowid
+
 
 @app.route('/api/portfolios', methods=['POST'])
+@require_auth
 def add_portfolio():
     try:
         data = request.get_json(force=True)
@@ -316,151 +473,110 @@ def add_portfolio():
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
 
-        # Get category id
-        execute_sql(cursor, is_postgres, "SELECT id FROM categories WHERE name=?", (category_name,))
-        cat_rows = fetch_all_as_dict(cursor, is_postgres)
+        cat_id = _get_or_create_category(cursor, is_postgres, g.user_id, category_name)
 
-        if cat_rows:
-            cat_id = cat_rows[0]['id']
-        else:
-            execute_sql(cursor, is_postgres, "INSERT INTO categories (name) VALUES (?)", (category_name,))
-            if is_postgres:
-                execute_sql(cursor, is_postgres, "SELECT MAX(id) FROM categories")
-                cat_id = cursor.fetchone()[0]
-            else:
-                cat_id = cursor.lastrowid
-
-        # Check for duplicates
-        execute_sql(cursor, is_postgres, "SELECT id FROM portfolios WHERE name=?", (portfolio_name,))
+        # Check for duplicates (scoped to this user)
+        execute_sql(cursor, is_postgres, "SELECT id FROM portfolios WHERE name=? AND user_id=?", (portfolio_name, g.user_id))
         if fetch_all_as_dict(cursor, is_postgres):
             raise ValueError(f"Portfolio name '{portfolio_name}' already exists. Please choose a different name.")
 
-        execute_sql(cursor, is_postgres, "INSERT INTO portfolios (name, category_id, parent_id) VALUES (?, ?, ?)", (portfolio_name, cat_id, parent_id))
+        execute_sql(cursor, is_postgres,
+                    "INSERT INTO portfolios (name, category_id, parent_id, user_id) VALUES (?, ?, ?, ?)",
+                    (portfolio_name, cat_id, parent_id, g.user_id))
 
         conn.commit()
         conn.close()
         return jsonify({"success": True})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return _err(e)
+
+
+def _lookup_owned_portfolio_id(cursor, is_postgres, user_id, portfolio_name):
+    execute_sql(cursor, is_postgres, "SELECT id FROM portfolios WHERE name=? AND user_id=?", (portfolio_name, user_id))
+    rows = fetch_all_as_dict(cursor, is_postgres)
+    return rows[0]['id'] if rows else None
+
+
+def _insert_transaction_row(cursor, is_postgres, user_id, tx):
+    """Insert a single BUY/SELL transaction for the user. Raises on invalid input."""
+    tx_type = tx.get('type', 'BUY').upper()
+    ticker = tx.get('ticker')
+    company_name = tx.get('companyName')
+    sector = tx.get('sector', 'Technology')
+    portfolio_name = tx.get('portfolio')
+    shares = float(tx.get('shares', 0))
+    price = float(tx.get('avgCost', 0))
+    currency = tx.get('currency', 'USD')
+    tx_date = tx.get('date')
+
+    if not all([ticker, company_name, portfolio_name, shares > 0, price > 0]):
+        raise ValueError(f"Missing required fields or invalid amounts for ticker {ticker}")
+
+    if tx_type == 'SELL':
+        shares = -abs(shares)
+
+    p_id = _lookup_owned_portfolio_id(cursor, is_postgres, user_id, portfolio_name)
+    if p_id is None:
+        raise ValueError(f"Portfolio '{portfolio_name}' does not exist")
+
+    execute_sql(cursor, is_postgres, "SELECT id FROM assets WHERE ticker=? AND portfolio_id=?", (ticker, p_id))
+    a_rows = fetch_all_as_dict(cursor, is_postgres)
+    if a_rows:
+        asset_id = a_rows[0]['id']
+    else:
+        execute_sql(cursor, is_postgres, "INSERT INTO assets (ticker, company_name, sector, portfolio_id) VALUES (?, ?, ?, ?)",
+                    (ticker, company_name, sector, p_id))
+        if is_postgres:
+            execute_sql(cursor, is_postgres, "SELECT MAX(id) FROM assets")
+            asset_id = cursor.fetchone()[0]
+        else:
+            asset_id = cursor.lastrowid
+
+    if tx_date:
+        execute_sql(cursor, is_postgres, "INSERT INTO transactions (asset_id, type, shares, price, currency, transaction_date) VALUES (?, ?, ?, ?, ?, ?)",
+                    (asset_id, tx_type, shares, price, currency, tx_date))
+    else:
+        execute_sql(cursor, is_postgres, "INSERT INTO transactions (asset_id, type, shares, price, currency) VALUES (?, ?, ?, ?, ?)",
+                    (asset_id, tx_type, shares, price, currency))
+
 
 @app.route('/api/ingest', methods=['POST'])
+@require_auth
 def ingest_transaction():
     try:
         data = request.get_json(force=True)
-        tx_type = data.get('type', 'BUY').upper()
-        ticker = data.get('ticker')
-        company_name = data.get('companyName')
-        sector = data.get('sector')
-        portfolio_name = data.get('portfolio')
-        shares = float(data.get('shares', 0))
-        price = float(data.get('avgCost', 0))
-        currency = data.get('currency', 'USD')
-        tx_date = data.get('date')
-        
-        if not all([ticker, company_name, portfolio_name, shares > 0, price > 0]):
-            raise ValueError("Missing required fields or invalid amounts")
-            
-        if tx_type == 'SELL':
-            shares = -abs(shares)
-        
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
-        
-        execute_sql(cursor, is_postgres, "SELECT id FROM portfolios WHERE name=?", (portfolio_name,))
-        p_rows = fetch_all_as_dict(cursor, is_postgres)
-        if not p_rows:
-            raise ValueError(f"Portfolio '{portfolio_name}' does not exist")
-        p_id = p_rows[0]['id']
-        
-        execute_sql(cursor, is_postgres, "SELECT id FROM assets WHERE ticker=? AND portfolio_id=?", (ticker, p_id))
-        a_rows = fetch_all_as_dict(cursor, is_postgres)
-        
-        if a_rows:
-            asset_id = a_rows[0]['id']
-        else:
-            execute_sql(cursor, is_postgres, "INSERT INTO assets (ticker, company_name, sector, portfolio_id) VALUES (?, ?, ?, ?)",
-                           (ticker, company_name, sector, p_id))
-            if is_postgres:
-                execute_sql(cursor, is_postgres, "SELECT MAX(id) FROM assets")
-                asset_id = cursor.fetchone()[0]
-            else:
-                asset_id = cursor.lastrowid
-        
-        if tx_date:
-            execute_sql(cursor, is_postgres, "INSERT INTO transactions (asset_id, type, shares, price, currency, transaction_date) VALUES (?, ?, ?, ?, ?, ?)",
-                           (asset_id, tx_type, shares, price, currency, tx_date))
-        else:
-            execute_sql(cursor, is_postgres, "INSERT INTO transactions (asset_id, type, shares, price, currency) VALUES (?, ?, ?, ?, ?)",
-                           (asset_id, tx_type, shares, price, currency))
-        
+        _insert_transaction_row(cursor, is_postgres, g.user_id, data)
         conn.commit()
         conn.close()
         return jsonify({"success": True})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return _err(e)
+
 
 @app.route('/api/bulk-ingest', methods=['POST'])
+@require_auth
 def bulk_ingest():
     try:
         data = request.get_json(force=True)
         tx_list = data.get('transactions', [])
         if not tx_list:
             raise ValueError("No transactions provided")
-            
+
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
-        
         for tx in tx_list:
-            tx_type = tx.get('type', 'BUY').upper()
-            ticker = tx.get('ticker')
-            company_name = tx.get('companyName')
-            sector = tx.get('sector', 'Technology')
-            portfolio_name = tx.get('portfolio')
-            shares = float(tx.get('shares', 0))
-            price = float(tx.get('avgCost', 0))
-            currency = tx.get('currency', 'USD')
-            tx_date = tx.get('date')
-            
-            if not all([ticker, company_name, portfolio_name, shares > 0, price > 0]):
-                raise ValueError(f"Missing required fields or invalid amounts for ticker {ticker}")
-                
-            if tx_type == 'SELL':
-                shares = -abs(shares)
-                
-            execute_sql(cursor, is_postgres, "SELECT id FROM portfolios WHERE name=?", (portfolio_name,))
-            p_rows = fetch_all_as_dict(cursor, is_postgres)
-            if not p_rows:
-                raise ValueError(f"Portfolio '{portfolio_name}' does not exist")
-            p_id = p_rows[0]['id']
-            
-            execute_sql(cursor, is_postgres, "SELECT id FROM assets WHERE ticker=? AND portfolio_id=?", (ticker, p_id))
-            a_rows = fetch_all_as_dict(cursor, is_postgres)
-            
-            if a_rows:
-                asset_id = a_rows[0]['id']
-            else:
-                execute_sql(cursor, is_postgres, "INSERT INTO assets (ticker, company_name, sector, portfolio_id) VALUES (?, ?, ?, ?)",
-                               (ticker, company_name, sector, p_id))
-                if is_postgres:
-                    execute_sql(cursor, is_postgres, "SELECT MAX(id) FROM assets")
-                    asset_id = cursor.fetchone()[0]
-                else:
-                    asset_id = cursor.lastrowid
-            
-            if tx_date:
-                execute_sql(cursor, is_postgres, "INSERT INTO transactions (asset_id, type, shares, price, currency, transaction_date) VALUES (?, ?, ?, ?, ?, ?)",
-                               (asset_id, tx_type, shares, price, currency, tx_date))
-            else:
-                execute_sql(cursor, is_postgres, "INSERT INTO transactions (asset_id, type, shares, price, currency) VALUES (?, ?, ?, ?, ?)",
-                               (asset_id, tx_type, shares, price, currency))
-                               
+            _insert_transaction_row(cursor, is_postgres, g.user_id, tx)
         conn.commit()
         conn.close()
         return jsonify({"success": True, "count": len(tx_list)})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return _err(e)
+
 
 @app.route('/api/portfolio', methods=['PUT'])
+@require_auth
 def edit_portfolio():
     try:
         data = request.get_json(force=True)
@@ -470,50 +586,41 @@ def edit_portfolio():
         new_category = data.get('newCategory')
         if not old_name or not new_name:
             raise ValueError("oldName and newName are required")
-            
+
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
-        
-        # Get category id if newCategory is provided
+
         cat_id = None
         if new_category:
-            execute_sql(cursor, is_postgres, "SELECT id FROM categories WHERE name=?", (new_category,))
-            cat_rows = fetch_all_as_dict(cursor, is_postgres)
-            if cat_rows:
-                cat_id = cat_rows[0]['id']
-            else:
-                execute_sql(cursor, is_postgres, "INSERT INTO categories (name) VALUES (?)", (new_category,))
-                if is_postgres:
-                    execute_sql(cursor, is_postgres, "SELECT MAX(id) FROM categories")
-                    cat_id = cursor.fetchone()[0]
-                else:
-                    cat_id = cursor.lastrowid
-        
+            cat_id = _get_or_create_category(cursor, is_postgres, g.user_id, new_category)
+
         if parent_name:
-            # Find parent portfolio ID
-            execute_sql(cursor, is_postgres, "SELECT id FROM portfolios WHERE name=? AND parent_id IS NULL", (parent_name,))
+            # Find parent portfolio ID (owned by this user)
+            execute_sql(cursor, is_postgres, "SELECT id FROM portfolios WHERE name=? AND parent_id IS NULL AND user_id=?", (parent_name, g.user_id))
             rows = fetch_all_as_dict(cursor, is_postgres)
             if rows:
                 p_id = rows[0]['id']
                 if cat_id is not None:
-                    execute_sql(cursor, is_postgres, "UPDATE portfolios SET name=?, category_id=? WHERE name=? AND parent_id=?", (new_name, cat_id, old_name, p_id))
+                    execute_sql(cursor, is_postgres, "UPDATE portfolios SET name=?, category_id=? WHERE name=? AND parent_id=? AND user_id=?", (new_name, cat_id, old_name, p_id, g.user_id))
                 else:
-                    execute_sql(cursor, is_postgres, "UPDATE portfolios SET name=? WHERE name=? AND parent_id=?", (new_name, old_name, p_id))
+                    execute_sql(cursor, is_postgres, "UPDATE portfolios SET name=? WHERE name=? AND parent_id=? AND user_id=?", (new_name, old_name, p_id, g.user_id))
             else:
                 raise ValueError("Parent portfolio not found")
         else:
             if cat_id is not None:
-                execute_sql(cursor, is_postgres, "UPDATE portfolios SET name=?, category_id=? WHERE name=? AND parent_id IS NULL", (new_name, cat_id, old_name))
+                execute_sql(cursor, is_postgres, "UPDATE portfolios SET name=?, category_id=? WHERE name=? AND parent_id IS NULL AND user_id=?", (new_name, cat_id, old_name, g.user_id))
             else:
-                execute_sql(cursor, is_postgres, "UPDATE portfolios SET name=? WHERE name=? AND parent_id IS NULL", (new_name, old_name))
-                
+                execute_sql(cursor, is_postgres, "UPDATE portfolios SET name=? WHERE name=? AND parent_id IS NULL AND user_id=?", (new_name, old_name, g.user_id))
+
         conn.commit()
         conn.close()
         return jsonify({"success": True})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return _err(e)
+
 
 @app.route('/api/asset-adjustment', methods=['PUT'])
+@require_auth
 def adjust_asset():
     try:
         data = request.get_json(force=True)
@@ -530,32 +637,38 @@ def adjust_asset():
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
 
+        # Verify the target portfolio belongs to this user (prevents IDOR via
+        # a forged portfolioId).
         if portfolio_id:
-            p_id = int(portfolio_id)
-        else:
-            execute_sql(cursor, is_postgres, "SELECT id FROM portfolios WHERE name=?", (portfolio_name,))
-            p_rows = fetch_all_as_dict(cursor, is_postgres)
-            if not p_rows:
+            execute_sql(cursor, is_postgres, "SELECT id FROM portfolios WHERE id=? AND user_id=?", (int(portfolio_id), g.user_id))
+            rows = fetch_all_as_dict(cursor, is_postgres)
+            if not rows:
                 raise ValueError("Portfolio not found")
-            p_id = p_rows[0]['id']
+            p_id = rows[0]['id']
+        else:
+            p_id = _lookup_owned_portfolio_id(cursor, is_postgres, g.user_id, portfolio_name)
+            if p_id is None:
+                raise ValueError("Portfolio not found")
 
         execute_sql(cursor, is_postgres, "SELECT id FROM assets WHERE ticker=? AND portfolio_id=?", (ticker, p_id))
         a_rows = fetch_all_as_dict(cursor, is_postgres)
         if not a_rows:
             raise ValueError("Asset not found")
         asset_id = a_rows[0]['id']
-        
+
         execute_sql(cursor, is_postgres, "DELETE FROM transactions WHERE asset_id=?", (asset_id,))
         if new_shares > 0:
             execute_sql(cursor, is_postgres, "INSERT INTO transactions (asset_id, type, shares, price, currency) VALUES (?, 'BUY', ?, ?, ?)", (asset_id, new_shares, new_price, currency))
-            
+
         conn.commit()
         conn.close()
         return jsonify({"success": True})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return _err(e)
+
 
 @app.route('/api/portfolio', methods=['DELETE'])
+@require_auth
 def delete_portfolio():
     p_name = request.args.get('name')
     if not p_name:
@@ -565,15 +678,13 @@ def delete_portfolio():
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
 
-        # Find portfolio ID
-        execute_sql(cursor, is_postgres, "SELECT id FROM portfolios WHERE name=?", (p_name,))
-        p_rows = fetch_all_as_dict(cursor, is_postgres)
-        if not p_rows:
+        # Find portfolio ID (owned by this user)
+        p_id = _lookup_owned_portfolio_id(cursor, is_postgres, g.user_id, p_name)
+        if p_id is None:
             raise ValueError(f"Portfolio '{p_name}' not found")
-        p_id = p_rows[0]['id']
 
-        # Find all sub-portfolios under this parent
-        execute_sql(cursor, is_postgres, "SELECT id FROM portfolios WHERE parent_id=?", (p_id,))
+        # Find all sub-portfolios under this parent (also owned by this user)
+        execute_sql(cursor, is_postgres, "SELECT id FROM portfolios WHERE parent_id=? AND user_id=?", (p_id, g.user_id))
         sub_rows = fetch_all_as_dict(cursor, is_postgres)
         sub_ids = [r['id'] for r in sub_rows]
 
@@ -582,15 +693,17 @@ def delete_portfolio():
         for curr_id in all_ids:
             execute_sql(cursor, is_postgres, "DELETE FROM transactions WHERE asset_id IN (SELECT id FROM assets WHERE portfolio_id=?)", (curr_id,))
             execute_sql(cursor, is_postgres, "DELETE FROM assets WHERE portfolio_id=?", (curr_id,))
-            execute_sql(cursor, is_postgres, "DELETE FROM portfolios WHERE id=?", (curr_id,))
+            execute_sql(cursor, is_postgres, "DELETE FROM portfolios WHERE id=? AND user_id=?", (curr_id, g.user_id))
 
         conn.commit()
         conn.close()
         return jsonify({"success": True})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return _err(e)
+
 
 @app.route('/api/research-report', methods=['POST'])
+@require_auth
 def add_research_report():
     try:
         data = request.get_json(force=True)
@@ -609,38 +722,40 @@ def add_research_report():
         th_overview = data.get('th_overview', '')
         en_dcf = data.get('en_dcf', '')
         th_dcf = data.get('th_dcf', '')
-        
+
         if not report_key or not ticker or not company_name:
             raise ValueError("report_key, ticker, and company_name are required")
-            
+
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
-        
+
         query = '''
             INSERT INTO research_reports (
-                report_key, ticker, company_name, subtitle, prepared_by, audited_by, 
-                rating, is_positive, price_target, analysis_price, sector, 
-                en_overview, th_overview, en_dcf, th_dcf
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                report_key, ticker, company_name, subtitle, prepared_by, audited_by,
+                rating, is_positive, price_target, analysis_price, sector,
+                en_overview, th_overview, en_dcf, th_dcf, user_id
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         '''
         execute_sql(cursor, is_postgres, query, (
-            report_key, ticker, company_name, subtitle, prepared_by, audited_by, 
-            rating, 1 if is_positive else 0, price_target, analysis_price, sector, 
-            en_overview, th_overview, en_dcf, th_dcf
+            report_key, ticker, company_name, subtitle, prepared_by, audited_by,
+            rating, 1 if is_positive else 0, price_target, analysis_price, sector,
+            en_overview, th_overview, en_dcf, th_dcf, g.user_id
         ))
-        
+
         conn.commit()
         conn.close()
         return jsonify({"success": True})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return _err(e)
+
 
 @app.route('/api/research-report', methods=['PUT'])
+@require_auth
 def edit_research_report():
     report_key = request.args.get('key')
     if not report_key:
         return jsonify({"error": "report_key required"}), 400
-        
+
     try:
         data = request.get_json(force=True)
         ticker = data.get('ticker', '').strip().upper()
@@ -657,70 +772,73 @@ def edit_research_report():
         th_overview = data.get('th_overview', '')
         en_dcf = data.get('en_dcf', '')
         th_dcf = data.get('th_dcf', '')
-        
+
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
-        
+
         query = '''
-            UPDATE research_reports 
-            SET ticker=?, company_name=?, subtitle=?, prepared_by=?, audited_by=?, 
-                rating=?, is_positive=?, price_target=?, analysis_price=?, sector=?, 
+            UPDATE research_reports
+            SET ticker=?, company_name=?, subtitle=?, prepared_by=?, audited_by=?,
+                rating=?, is_positive=?, price_target=?, analysis_price=?, sector=?,
                 en_overview=?, th_overview=?, en_dcf=?, th_dcf=?
-            WHERE report_key=?
+            WHERE report_key=? AND user_id=?
         '''
         execute_sql(cursor, is_postgres, query, (
-            ticker, company_name, subtitle, prepared_by, audited_by, 
-            rating, 1 if is_positive else 0, price_target, analysis_price, sector, 
-            en_overview, th_overview, en_dcf, th_dcf, report_key
+            ticker, company_name, subtitle, prepared_by, audited_by,
+            rating, 1 if is_positive else 0, price_target, analysis_price, sector,
+            en_overview, th_overview, en_dcf, th_dcf, report_key, g.user_id
         ))
-        
+
         conn.commit()
         conn.close()
         return jsonify({"success": True})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return _err(e)
+
 
 @app.route('/api/research-report', methods=['DELETE'])
+@require_auth
 def delete_research_report():
     report_key = request.args.get('key')
     if not report_key:
         return jsonify({"error": "report_key required"}), 400
-        
+
     try:
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
-        
-        query = "DELETE FROM research_reports WHERE report_key=?"
-        execute_sql(cursor, is_postgres, query, (report_key,))
-        
+        execute_sql(cursor, is_postgres, "DELETE FROM research_reports WHERE report_key=? AND user_id=?", (report_key, g.user_id))
         conn.commit()
         conn.close()
         return jsonify({"success": True})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return _err(e)
 
 
 @app.route('/api/portfolios', methods=['GET'])
+@require_auth
 def get_portfolios():
     try:
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
         query = """
-            SELECT 
+            SELECT
                 MIN(p.id) as id, p.name, p.category_id as "categoryId", c.name as category, p.parent_id as "parentId",
                 (SELECT name FROM portfolios WHERE id = p.parent_id) as "parentName"
             FROM portfolios p
             LEFT JOIN categories c ON p.category_id = c.id
+            WHERE p.user_id = ?
             GROUP BY p.name, p.category_id, c.name, p.parent_id
         """
-        execute_sql(cursor, is_postgres, query)
+        execute_sql(cursor, is_postgres, query, (g.user_id,))
         ports = fetch_all_as_dict(cursor, is_postgres)
         conn.close()
         return jsonify(ports)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return _err(e)
+
 
 @app.route('/api/transfer', methods=['POST'])
+@require_auth
 def transfer_stock():
     try:
         data = request.get_json(force=True)
@@ -730,25 +848,25 @@ def transfer_stock():
         shares = float(data.get('shares', 0))
         price = float(data.get('price', 0))
         date = data.get('date')
-        
+
         if not all([source_portfolio_id, dest_portfolio_id, ticker, shares > 0, price >= 0]):
             raise ValueError("Missing required fields or invalid amounts")
-            
+
         if int(source_portfolio_id) == int(dest_portfolio_id):
             raise ValueError("Source and destination portfolios must be different")
-            
+
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
-        
-        # Check source and destination portfolios
-        execute_sql(cursor, is_postgres, "SELECT id FROM portfolios WHERE id=?", (source_portfolio_id,))
+
+        # Both portfolios must belong to this user.
+        execute_sql(cursor, is_postgres, "SELECT id FROM portfolios WHERE id=? AND user_id=?", (source_portfolio_id, g.user_id))
         if not fetch_all_as_dict(cursor, is_postgres):
             raise ValueError(f"Source portfolio ID {source_portfolio_id} does not exist")
-            
-        execute_sql(cursor, is_postgres, "SELECT id FROM portfolios WHERE id=?", (dest_portfolio_id,))
+
+        execute_sql(cursor, is_postgres, "SELECT id FROM portfolios WHERE id=? AND user_id=?", (dest_portfolio_id, g.user_id))
         if not fetch_all_as_dict(cursor, is_postgres):
             raise ValueError(f"Destination portfolio ID {dest_portfolio_id} does not exist")
-            
+
         # Check if asset exists in source
         execute_sql(cursor, is_postgres, "SELECT id, company_name, sector FROM assets WHERE ticker=? AND portfolio_id=?", (ticker, source_portfolio_id))
         src_rows = fetch_all_as_dict(cursor, is_postgres)
@@ -757,15 +875,15 @@ def transfer_stock():
         src_asset_id = src_rows[0]['id']
         company_name = src_rows[0]['company_name']
         sector = src_rows[0]['sector']
-        
+
         # Calculate available shares
         execute_sql(cursor, is_postgres, "SELECT SUM(shares) as total FROM transactions WHERE asset_id=?", (src_asset_id,))
         avail_row = fetch_all_as_dict(cursor, is_postgres)
         avail_shares = float(avail_row[0]['total'] or 0) if avail_row else 0
-        
+
         if avail_shares < shares - 1e-8:
             raise ValueError(f"Insufficient shares of {ticker} in source portfolio. Available: {avail_shares}, requested: {shares}")
-            
+
         # Get or create dest asset
         execute_sql(cursor, is_postgres, "SELECT id FROM assets WHERE ticker=? AND portfolio_id=?", (ticker, dest_portfolio_id))
         dest_rows = fetch_all_as_dict(cursor, is_postgres)
@@ -778,12 +896,12 @@ def transfer_stock():
                 dest_asset_id = fetch_all_as_dict(cursor, is_postgres)[0]['id']
             else:
                 dest_asset_id = cursor.lastrowid
-                
+
         # Get currency
         execute_sql(cursor, is_postgres, "SELECT currency FROM transactions WHERE asset_id=? LIMIT 1", (src_asset_id,))
         curr_row = fetch_all_as_dict(cursor, is_postgres)
         currency = curr_row[0]['currency'] if curr_row else 'USD'
-        
+
         # Insert transactions
         if date:
             execute_sql(cursor, is_postgres, "INSERT INTO transactions (asset_id, type, shares, price, currency, transaction_date) VALUES (?, 'TRANSFER_OUT', ?, ?, ?, ?)", (src_asset_id, -shares, price, currency, date))
@@ -791,19 +909,27 @@ def transfer_stock():
         else:
             execute_sql(cursor, is_postgres, "INSERT INTO transactions (asset_id, type, shares, price, currency) VALUES (?, 'TRANSFER_OUT', ?, ?, ?)", (src_asset_id, -shares, price, currency))
             execute_sql(cursor, is_postgres, "INSERT INTO transactions (asset_id, type, shares, price, currency) VALUES (?, 'TRANSFER_IN', ?, ?, ?)", (dest_asset_id, shares, price, currency))
-            
+
         conn.commit()
         conn.close()
         return jsonify({"success": True})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return _err(e)
+
+
+# Scopes a transaction to the calling user by joining back to portfolios.
+_TX_OWNED_SUBQUERY = (
+    "asset_id IN (SELECT a.id FROM assets a JOIN portfolios p ON a.portfolio_id = p.id WHERE p.user_id = ?)"
+)
+
 
 @app.route('/api/transaction', methods=['PUT'])
+@require_auth
 def edit_transaction():
     tx_id = request.args.get('id')
     if not tx_id:
         return jsonify({"error": "Transaction id required"}), 400
-        
+
     try:
         data = request.get_json(force=True)
         tx_type = data.get('type')
@@ -811,58 +937,64 @@ def edit_transaction():
         price = float(data.get('price', 0))
         currency = data.get('currency', 'USD')
         tx_date = data.get('transactionDate')
-        
+
         if not tx_type or shares == 0 or price <= 0:
             raise ValueError("Missing required fields")
-            
+
         if tx_type in ('SELL', 'TRANSFER_OUT'):
             shares = -abs(shares)
         else:
             shares = abs(shares)
-            
+
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
-        
+
         if tx_date:
-            execute_sql(cursor, is_postgres, "UPDATE transactions SET type=?, shares=?, price=?, currency=?, transaction_date=? WHERE id=?", (tx_type, shares, price, currency, tx_date, tx_id))
+            execute_sql(cursor, is_postgres, f"UPDATE transactions SET type=?, shares=?, price=?, currency=?, transaction_date=? WHERE id=? AND {_TX_OWNED_SUBQUERY}", (tx_type, shares, price, currency, tx_date, tx_id, g.user_id))
         else:
-            execute_sql(cursor, is_postgres, "UPDATE transactions SET type=?, shares=?, price=?, currency=? WHERE id=?", (tx_type, shares, price, currency, tx_id))
-            
+            execute_sql(cursor, is_postgres, f"UPDATE transactions SET type=?, shares=?, price=?, currency=? WHERE id=? AND {_TX_OWNED_SUBQUERY}", (tx_type, shares, price, currency, tx_id, g.user_id))
+
         conn.commit()
         conn.close()
         return jsonify({"success": True})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return _err(e)
+
 
 @app.route('/api/transaction', methods=['DELETE'])
+@require_auth
 def delete_transaction():
     tx_id = request.args.get('id')
     if not tx_id:
         return jsonify({"error": "Transaction id required"}), 400
-        
+
     try:
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
-        execute_sql(cursor, is_postgres, "DELETE FROM transactions WHERE id=?", (tx_id,))
+        execute_sql(cursor, is_postgres, f"DELETE FROM transactions WHERE id=? AND {_TX_OWNED_SUBQUERY}", (tx_id, g.user_id))
         conn.commit()
         conn.close()
         return jsonify({"success": True})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return _err(e)
+
 
 @app.route('/api/categories', methods=['GET'])
+@require_auth
 def get_categories():
     try:
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
-        execute_sql(cursor, is_postgres, "SELECT id, name, description FROM categories ORDER BY name")
+        execute_sql(cursor, is_postgres, "SELECT id, name, description FROM categories WHERE user_id=? ORDER BY name", (g.user_id,))
         rows = fetch_all_as_dict(cursor, is_postgres)
         conn.close()
         return jsonify(rows)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return _err(e)
+
 
 @app.route('/api/categories', methods=['POST'])
+@require_auth
 def add_category():
     try:
         data = request.get_json(force=True)
@@ -870,23 +1002,25 @@ def add_category():
         description = data.get('description', '')
         if not cat_name:
             raise ValueError("Category name is required")
-            
+
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
-        
-        # Check duplicate
-        execute_sql(cursor, is_postgres, "SELECT id FROM categories WHERE name=?", (cat_name,))
+
+        # Check duplicate (scoped to this user)
+        execute_sql(cursor, is_postgres, "SELECT id FROM categories WHERE name=? AND user_id=?", (cat_name, g.user_id))
         if fetch_all_as_dict(cursor, is_postgres):
             raise ValueError(f"Category '{cat_name}' already exists.")
-            
-        execute_sql(cursor, is_postgres, "INSERT INTO categories (name, description) VALUES (?, ?)", (cat_name, description))
+
+        execute_sql(cursor, is_postgres, "INSERT INTO categories (name, description, user_id) VALUES (?, ?, ?)", (cat_name, description, g.user_id))
         conn.commit()
         conn.close()
         return jsonify({"success": True})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return _err(e)
+
 
 @app.route('/api/categories', methods=['PUT'])
+@require_auth
 def edit_category():
     try:
         data = request.get_json(force=True)
@@ -895,17 +1029,19 @@ def edit_category():
         description = data.get('description', '')
         if not cat_id or not new_name:
             raise ValueError("id and name required")
-            
+
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
-        execute_sql(cursor, is_postgres, "UPDATE categories SET name = ?, description = ? WHERE id = ?", (new_name, description, cat_id))
+        execute_sql(cursor, is_postgres, "UPDATE categories SET name = ?, description = ? WHERE id = ? AND user_id=?", (new_name, description, cat_id, g.user_id))
         conn.commit()
         conn.close()
         return jsonify({"success": True})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return _err(e)
+
 
 @app.route('/api/categories', methods=['DELETE'])
+@require_auth
 def delete_category():
     try:
         cat_id = request.args.get('id')
@@ -915,33 +1051,35 @@ def delete_category():
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
 
-        # Update referencing portfolios
-        execute_sql(cursor, is_postgres, "UPDATE portfolios SET category_id = NULL WHERE category_id = ?", (cat_id,))
-        # Delete category
-        execute_sql(cursor, is_postgres, "DELETE FROM categories WHERE id = ?", (cat_id,))
+        # Update referencing portfolios (only this user's)
+        execute_sql(cursor, is_postgres, "UPDATE portfolios SET category_id = NULL WHERE category_id = ? AND user_id=?", (cat_id, g.user_id))
+        # Delete category (only if owned)
+        execute_sql(cursor, is_postgres, "DELETE FROM categories WHERE id = ? AND user_id=?", (cat_id, g.user_id))
         conn.commit()
         conn.close()
         return jsonify({"success": True})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return _err(e)
 
 
 @app.route('/api/portfolios/reorder', methods=['POST'])
+@require_auth
 def reorder_portfolios():
     try:
         items = request.get_json()
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
         for item in items:
-            execute_sql(cursor, is_postgres, "UPDATE portfolios SET sort_order = ? WHERE id = ?", (item['sortOrder'], item['id']))
+            execute_sql(cursor, is_postgres, "UPDATE portfolios SET sort_order = ? WHERE id = ? AND user_id=?", (item['sortOrder'], item['id'], g.user_id))
         conn.commit()
         conn.close()
         return jsonify({"success": True})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return _err(e)
 
 
 @app.route('/api/thai-fund', methods=['GET'])
+@require_auth
 def get_thai_fund():
     code = request.args.get('code', '').upper().strip()
     if not code:
@@ -958,7 +1096,7 @@ def get_thai_fund():
         proj_id = fund['proj_id']
         nav = None
         nav_date = None
-        for i in range(1, 8):
+        for i in range(1, 8) if SEC_DAILY_INFO_KEY else []:
             date_str = (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d')
             try:
                 nav_url = f'https://api.sec.or.th/FundDailyInfo/{proj_id}/dailynav/{date_str}'
@@ -981,41 +1119,30 @@ def get_thai_fund():
             'nav_date': nav_date,
         })
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return _err(e)
 
 
 @app.route('/api/thai-fund/sync', methods=['POST'])
+@require_auth
 def sync_thai_funds():
+    if not SEC_FACTSHEET_KEY:
+        return jsonify({"error": "SEC_FACTSHEET_KEY is not configured on the server"}), 503
     try:
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
         # Ensure thai_funds table exists
-        if is_postgres:
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS thai_funds (
-                    proj_id TEXT PRIMARY KEY,
-                    proj_abbr_name TEXT,
-                    proj_name_th TEXT,
-                    proj_name_en TEXT,
-                    fund_status TEXT,
-                    amc_name_en TEXT,
-                    unique_id TEXT,
-                    last_synced TIMESTAMP
-                )
-            """)
-        else:
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS thai_funds (
-                    proj_id TEXT PRIMARY KEY,
-                    proj_abbr_name TEXT,
-                    proj_name_th TEXT,
-                    proj_name_en TEXT,
-                    fund_status TEXT,
-                    amc_name_en TEXT,
-                    unique_id TEXT,
-                    last_synced TIMESTAMP
-                )
-            """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS thai_funds (
+                proj_id TEXT PRIMARY KEY,
+                proj_abbr_name TEXT,
+                proj_name_th TEXT,
+                proj_name_en TEXT,
+                fund_status TEXT,
+                amc_name_en TEXT,
+                unique_id TEXT,
+                last_synced TIMESTAMP
+            )
+        """)
         conn.commit()
 
         amc_req = urllib.request.Request(
@@ -1056,7 +1183,7 @@ def sync_thai_funds():
         conn.close()
         return jsonify({"synced": total, "amcs": len(amcs)})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return _err(e)
 
 
 # ── Static file serving (local dev only) ──────────────────────────────────────
@@ -1067,6 +1194,7 @@ def sync_thai_funds():
 @app.route('/transactions')
 def serve_index():
     return send_from_directory(BASE_DIR, 'index.html')
+
 
 @app.route('/<path:filename>')
 def serve_static(filename):
