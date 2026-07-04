@@ -64,6 +64,12 @@ Key เดิม (`eb52da4e…`, `38a6644d…`) รั่วใน git history �
 ตั้งเนื้อ PEM เป็น env `SUPABASE_CA_CERT` บน Vercel (โค้ดรองรับแล้ว — ดู `get_db_connection()`)
 **เสร็จเมื่อ:** prod ต่อ DB ได้ปกติโดย `verify_mode=CERT_REQUIRED`
 
+### T9-b. Security headers บน static assets ⚠️ มีกับดัก — อ่าน incident ก่อน
+**Incident (2026-07-04):** เพิ่ม `headers` block ใน `vercel.json` (source `/(.*)`) แล้ว **routing ไป Python function พังทั้งโปรเจกต์** — ทุก `/api/*` กลายเป็น NOT_FOUND ระดับ platform ทั้งที่ lambda build สำเร็จ (API ล่ม ~5 นาที แก้โดยถอด headers block ออก) สาเหตุคาดว่าเป็น interaction ระหว่าง `headers` + `rewrites` + Python runtime บน root-directory project
+ตอนนี้ API ได้ headers จาก Flask `after_request` แล้ว — เหลือแค่ static assets
+**แนวทางที่ยังไม่ลอง:** จำกัด source ให้แคบ (เช่น `/(.*)\\.js`, `/index.html`) หรือใช้ middleware — **ต้องทดสอบบน preview deploy ก่อน promote เสมอ** และเช็ค `/api/auth-config` ทันทีหลัง deploy
+**เสร็จเมื่อ:** `curl -sI /` เห็น nosniff/HSTS โดย `/api/*` ยังทำงาน
+
 ### T9. Vercel WAF rate limiting (ทดแทน in-memory limiter)
 Limiter ปัจจุบัน per-instance (serverless ไม่แชร์ state) — ตั้ง WAF rule บน Vercel dashboard:
 rate limit `/api/*` ต่อ IP แล้วลด/ถอด in-memory limiter ออกได้
