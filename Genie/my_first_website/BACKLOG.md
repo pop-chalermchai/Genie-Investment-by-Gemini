@@ -16,7 +16,13 @@
 ### T1. ~~Rotate SEC API keys~~ ✅ เสร็จ (2026-07-04)
 Rotate key สำเร็จ + subscribe API product ใหม่ชื่อ "Fund API" บน secopendata.sec.or.th (คนละ subscription จากของเดิม)
 
-### T1-b. ~~Migrate ไป Thai SEC Open API v2~~ ✅ เสร็จ (2026-07-04) — NAV lookup ใช้งานได้แล้ว
+### T1-b. ~~Migrate ไป Thai SEC Open API v2~~ ✅ เสร็จและยืนยันบน production แล้ว (2026-07-04)
+
+**ยืนยันแล้วบนหน้าเว็บจริง:** ทดสอบ ingest กองทุน ONE-UGERMF → ช่อง NAV per Unit เติมค่า `18.4851` อัตโนมัติถูกต้อง + เช็ค Vercel logs ไม่พบ error 401 หลงเหลือ
+
+**⚠️ บทเรียนสำคัญที่ทำให้พลาดไปก่อนหน้านี้:** ตอนแก้โค้ดเสร็จรอบแรก **ลืมอัปเดตคีย์บน Vercel** ให้เป็นคีย์ subscription "Fund API" ตัวใหม่ — production ยังใช้คีย์เก่า (rotate ไปแล้วแต่ไม่ได้ subscribe v2) อยู่ ทำให้ deploy โค้ดถูกแล้วแต่ NAV ยังไม่ขึ้น (401 invalid subscription key) ต้องไล่เช็ค `npx vercel logs <url> --json --level warning` ถึงเจอ **เช็คลิสต์เวลาแก้ third-party API integration: (1) โค้ดถูกไหม (2) env var ตรงกับคีย์ตัวล่าสุดที่ทดสอบผ่านจริงไหม — สองอย่างต้อง sync กันเสมอ**
+
+**หมายเหตุ:** v2 ใช้ subscription เดียว ("Fund API") ครอบคลุมทั้ง daily-info และ general-info/factsheet — ตอนนี้ `SEC_DAILY_INFO_KEY` และ `SEC_FACTSHEET_KEY` บน Vercel ตั้งเป็นค่าเดียวกัน (คีย์ของ "Fund API") ไม่ต้องแยกคีย์แบบระบบเก่าแล้ว
 
 **สรุปสิ่งที่เกิดขึ้น:** `api.sec.or.th` เวอร์ชันเก่าถูก ก.ล.ต. ปิดให้บริการทั้งระบบ (คืน HTTP 503 พร้อมข้อความ deprecation ชี้ไป `secopendata.sec.or.th` ซึ่งเป็นแค่**หน้าเอกสาร** ไม่ใช่ API endpoint จริง) ต้อง subscribe API product ใหม่ (คนละตัวจาก subscription เดิม แม้ host เดียวกัน) แล้วใช้ endpoint ใหม่
 
