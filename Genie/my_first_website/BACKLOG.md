@@ -26,12 +26,31 @@ API เวอร์ชันใหม่ได้ที่ https://secopendata.s
 
 **ที่ลองแล้ว:** เข้า `https://secopendata.sec.or.th` ทั้งผ่าน WebFetch และ curl — **โดน WAF บล็อกจาก server-side/automated request** เข้าได้เฉพาะ browser จริง ต้องให้คนเปิดดูเอง
 
-**งานที่ต้องทำ:**
-1. เปิด `https://secopendata.sec.or.th` ในเบราว์เซอร์ ดูวิธีสมัคร/ขอ API key ใหม่ + หา endpoint เทียบเท่า `FundDailyInfo` (NAV รายวัน) และ `FundFactsheet` (รายชื่อกองทุน)
-2. เทียบโครงสร้าง response ใหม่กับของเดิม (โค้ดปัจจุบันคาดหวัง field เช่น `last_val`, `proj_abbr_name`, `proj_name_th/en`, `amc_name_en` — ดู `api/index.py` ฟังก์ชัน `get_thai_fund` และ `sync_thai_funds`)
-3. แก้ `api/index.py`: เปลี่ยน URL, auth header (อาจไม่ใช่ `Ocp-Apim-Subscription-Key` แบบเดิม), parsing response
-4. ตั้ง env var คีย์ใหม่บน Vercel (ชื่อเดิมได้ถ้า auth mechanism เหมือนเดิม หรือเปลี่ยนชื่อถ้าจำเป็น — อัปเดต `CLAUDE.md` ด้วย)
-5. Sync ข้อมูลกองทุนใหม่เข้า `thai_funds` ตาราง (ผ่าน `/api/thai-fund/sync` เดิม หรือเขียนใหม่ตาม API ใหม่)
+**Mapping ที่ยืนยันแล้ว (จากหน้า "Fund API Mapping (Old vs New)" บน secopendata.sec.or.th + ทดสอบ endpoint จริง):**
+
+| เก่า (`api.sec.or.th`) | ใหม่ (`api.sec.or.th`) | หมายเหตุ |
+|---|---|---|
+| `/FundDailyInfo/{proj_id}/dailynav/{nav_date}` | `/v2/fund/daily-info/nav` | ยืนยันด้วย curl จริง — ตอบ 401 (มีอยู่จริง ไม่ใช่ 503) query param รูปแบบใหม่ (ไม่ใช่ path param) แต่ยังไม่รู้ชื่อ param แน่ชัด |
+| `/FundDailyInfo/{proj_id}/dividend` | `/v2/fund/daily-info/dividend-history` | |
+| `/FundFactsheet/fund/amc` | `/v2/fund/general-info/amcs` | ใช้แทนใน `sync_thai_funds()` |
+| `/FundFactsheet/fund/amc/{unique_id}` | `/v2/fund/general-info/profiles` | ใช้แทนใน `sync_thai_funds()` |
+
+**สิ่งที่ "ไม่ต้องเปลี่ยน":**
+- **Host เดิม** `api.sec.or.th` — แค่เติม `/v2/` prefix ไม่ใช่ domain ใหม่ (`secopendata.sec.or.th` เป็นแค่หน้า "เอกสาร" ไม่ใช่ API endpoint จริง — endpoint จริงยังอยู่ที่ `api.sec.or.th`)
+- **Auth header เดิม** `Ocp-Apim-Subscription-Key` — ยืนยันแล้ว (ตอบ error message ต่างกันระหว่าง "missing" กับ "invalid" key ซึ่งพิสูจน์ว่า header ถูกต้อง)
+
+**ที่ยังไม่รู้ (ต้องหาต่อ):**
+1. ชื่อ query parameter ที่ `/v2/fund/daily-info/nav` ต้องการ (proj_id? nav_date? ชื่ออื่น?) — Azure APIM เช็ค subscription key ก่อนเช็ค param เสมอ เดาไม่ได้ถ้าไม่มีคีย์จริง ต้องดู endpoint docs หรือ "ลองยิงจริง" (Try it out) ในหน้า secopendata
+2. คีย์ที่ rotate ไปแล้ว (`SEC_FACTSHEET_KEY`/`SEC_DAILY_INFO_KEY` บน Vercel) ใช้กับ v2 ได้เลยไหม หรือต้อง subscribe API product ใหม่แยกต่างหากในหน้า "เริ่มต้นใช้งาน" ของ secopendata — **ทดสอบเองได้โดยไม่ต้องเปิดเผยคีย์:**
+   ```
+   curl -s "https://api.sec.or.th/v2/fund/daily-info/nav" -H "Ocp-Apim-Subscription-Key: <คีย์จริง>"
+   ```
+   ถ้าตอบอย่างอื่นที่ไม่ใช่ "invalid subscription key" แปลว่าคีย์ใช้ได้แล้ว
+3. โครงสร้าง response ใหม่ (โค้ดเดิมคาดหวัง field เช่น `last_val`, `proj_abbr_name` ฯลฯ — ต้องดู response จริงจาก v2 ถึงจะรู้ชื่อ field ใหม่)
+
+**งานที่ต้องทำ (เมื่อรู้ param/response ครบ):**
+1. แก้ `api/index.py`: เปลี่ยน URL จาก `/FundDailyInfo/...` → `/v2/fund/daily-info/nav`, จาก `/FundFactsheet/fund/amc...` → `/v2/fund/general-info/amcs` + `/profiles`, ปรับ query param และ parsing response ตาม schema ใหม่
+2. Sync ข้อมูลกองทุนใหม่เข้า `thai_funds` ตาราง (ผ่าน `/api/thai-fund/sync` ที่แก้แล้ว)
 **เสร็จเมื่อ:** `/api/thai-fund?code=…` คืน NAV จริงบน prod (ไม่ null)
 
 **Diagnostic logging ที่เพิ่มไว้ (เก็บไว้ถาวร ไม่ต้องลบ):** `get_thai_fund()` มี `app.logger.warning(...)` log HTTP status/body จาก SEC API เวลา NAV lookup fail (ไม่ log ตัวคีย์) — ใช้ `npx vercel logs <deployment-url> --json --level warning` ดูได้เวลา debug ต่อ
