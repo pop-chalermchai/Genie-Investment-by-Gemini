@@ -1296,6 +1296,13 @@
     <script src="marked.min.js"></script>
     <script src="purify.min.js"></script>
     <script src="auth.js?v=1"></script>
-    <script src="app.js?v=16"></script>
+    <!-- App modules: sequential split of the former app.js — load order matters -->
+    <script src="js/01_core.js?v=1"></script>
+    <script src="js/02_init.js?v=1"></script>
+    <script src="js/03_dashboard.js?v=1"></script>
+    <script src="js/04_research.js?v=1"></script>
+    <script src="js/05_transactions.js?v=1"></script>
+    <script src="js/06_modals.js?v=1"></script>
+    <script src="js/07_import_misc.js?v=1"></script>
 </body>
 </html>

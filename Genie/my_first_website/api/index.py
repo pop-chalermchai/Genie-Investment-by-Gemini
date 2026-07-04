@@ -207,6 +207,48 @@ def auth_config():
     return jsonify({"authRequired": _auth_enforced()})
 
 
+@app.after_request
+def _security_headers(resp):
+    # API responses are JSON; these headers stop them being sniffed/framed.
+    # (Static assets on Vercel get their headers from vercel.json.)
+    resp.headers.setdefault('X-Content-Type-Options', 'nosniff')
+    resp.headers.setdefault('X-Frame-Options', 'DENY')
+    resp.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
+    resp.headers.setdefault('Cache-Control', 'no-store')
+    return resp
+
+
+# ── Rate limiting ─────────────────────────────────────────────────────────────
+# In-memory sliding window, per client IP, for endpoints that proxy external
+# APIs (Yahoo Finance, Thai SEC) — protects those upstreams from abuse through
+# us. Per-instance only: serverless instances don't share state, so this is a
+# soft cap; durable limits belong in Vercel WAF rules (see BACKLOG).
+_rate_buckets = {}
+RATE_LIMIT_MAX = int(os.environ.get('RATE_LIMIT_MAX', '30'))       # requests…
+RATE_LIMIT_WINDOW = int(os.environ.get('RATE_LIMIT_WINDOW', '60'))  # …per seconds
+
+
+def rate_limited(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        import time as _time
+        now = _time.time()
+        ip = (request.headers.get('x-forwarded-for', '').split(',')[0].strip()
+              or request.remote_addr or 'unknown')
+        key = f"{ip}:{fn.__name__}"
+        bucket = [t for t in _rate_buckets.get(key, []) if now - t < RATE_LIMIT_WINDOW]
+        if len(bucket) >= RATE_LIMIT_MAX:
+            return jsonify({"error": "Too many requests. Please slow down."}), 429
+        bucket.append(now)
+        _rate_buckets[key] = bucket
+        # Opportunistic cleanup so the dict doesn't grow unbounded.
+        if len(_rate_buckets) > 1000:
+            for k in [k for k, v in _rate_buckets.items() if not v or now - v[-1] > RATE_LIMIT_WINDOW]:
+                _rate_buckets.pop(k, None)
+        return fn(*args, **kwargs)
+    return wrapper
+
+
 def require_auth(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
@@ -257,6 +299,7 @@ def get_transactions():
 
 @app.route('/api/stock/chart', methods=['GET'])
 @require_auth
+@rate_limited
 def get_stock_chart():
     ticker = request.args.get('ticker')
     chart_range = request.args.get('range', '1mo')
@@ -408,6 +451,7 @@ def get_reports():
 
 @app.route('/api/stock', methods=['GET'])
 @require_auth
+@rate_limited
 def get_stock():
     ticker = request.args.get('ticker')
     if not ticker:
@@ -1080,6 +1124,7 @@ def reorder_portfolios():
 
 @app.route('/api/thai-fund', methods=['GET'])
 @require_auth
+@rate_limited
 def get_thai_fund():
     code = request.args.get('code', '').upper().strip()
     if not code:
@@ -1124,6 +1169,7 @@ def get_thai_fund():
 
 @app.route('/api/thai-fund/sync', methods=['POST'])
 @require_auth
+@rate_limited
 def sync_thai_funds():
     if not SEC_FACTSHEET_KEY:
         return jsonify({"error": "SEC_FACTSHEET_KEY is not configured on the server"}), 503

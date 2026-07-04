@@ -113,3 +113,23 @@ def test_thai_fund_sync_without_key_returns_503(client):
     # SEC_FACTSHEET_KEY is unset in the test env → guard should return 503
     r = client.post("/api/thai-fund/sync")
     assert r.status_code == 503
+
+
+# ── Security headers & rate limiting ─────────────────────────────────────────
+
+def test_security_headers_on_api_responses(client):
+    r = client.get("/api/holdings")
+    assert r.headers.get("X-Content-Type-Options") == "nosniff"
+    assert r.headers.get("X-Frame-Options") == "DENY"
+    assert r.headers.get("Referrer-Policy") == "strict-origin-when-cross-origin"
+
+
+def test_rate_limit_kicks_in_on_proxy_endpoint(client):
+    # /api/thai-fund is @rate_limited (RATE_LIMIT_MAX=30/min). Hammer it and
+    # expect 429s once the budget is spent. (Uses a fund code that doesn't
+    # exist — a 404 still consumes budget, no external call is made because
+    # the DB lookup fails first.)
+    statuses = [client.get("/api/thai-fund?code=NOPE").status_code for _ in range(35)]
+    assert 429 in statuses
+    assert statuses[0] != 429          # first requests pass
+    assert statuses[-1] == 429         # budget exhausted at the end
