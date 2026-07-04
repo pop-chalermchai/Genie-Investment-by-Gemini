@@ -64,10 +64,14 @@ Key เดิม (`eb52da4e…`, `38a6644d…`) รั่วใน git history �
 ตั้งเนื้อ PEM เป็น env `SUPABASE_CA_CERT` บน Vercel (โค้ดรองรับแล้ว — ดู `get_db_connection()`)
 **เสร็จเมื่อ:** prod ต่อ DB ได้ปกติโดย `verify_mode=CERT_REQUIRED`
 
-### T9-b. Security headers บน static assets ⚠️ มีกับดัก — อ่าน incident ก่อน
-**Incident (2026-07-04):** เพิ่ม `headers` block ใน `vercel.json` (source `/(.*)`) แล้ว **routing ไป Python function พังทั้งโปรเจกต์** — ทุก `/api/*` กลายเป็น NOT_FOUND ระดับ platform ทั้งที่ lambda build สำเร็จ (API ล่ม ~5 นาที แก้โดยถอด headers block ออก) สาเหตุคาดว่าเป็น interaction ระหว่าง `headers` + `rewrites` + Python runtime บน root-directory project
-ตอนนี้ API ได้ headers จาก Flask `after_request` แล้ว — เหลือแค่ static assets
-**แนวทางที่ยังไม่ลอง:** จำกัด source ให้แคบ (เช่น `/(.*)\\.js`, `/index.html`) หรือใช้ middleware — **ต้องทดสอบบน preview deploy ก่อน promote เสมอ** และเช็ค `/api/auth-config` ทันทีหลัง deploy
+### T9-b. Security headers บน static assets + บทเรียน incident 2026-07-04
+**Incident จริง (วินิจฉัยครั้งแรกผิด):** API ล่ม 2 รอบในวัน ship ไม่ใช่เพราะ `headers` block —
+สาเหตุจริงคือ **Vercel GitHub integration: build ที่ trigger จาก `git push` ไม่มี Python lambda เลย**
+(พิสูจน์ด้วย `vercel inspect`: git-triggered deployments ไม่มี λ, CLI deployments มี `λ api/index`)
+ทุกครั้งที่ push → git build แย่ง production alias → `/api/*` ทั้งหมด 404
+**แก้ถาวรแล้ว:** `vercel.json` มี `"git": {"deploymentEnabled": false}` — โปรเจกต์นี้ **deploy ทาง CLI เท่านั้น** (`deploy.sh`)
+⚠️ ห้ามลบบรรทัดนี้ / ถ้าอยากกลับมาใช้ git deploy ต้องแก้เรื่อง function หายใน git build ให้ได้ก่อน (ทดสอบบน preview)
+**งานที่เหลือของ task นี้:** เพิ่ม security headers ให้ static assets — `headers` block ใน vercel.json น่าจะบริสุทธิ์ (ยังไม่ยืนยัน 100%) ให้ลองใหม่บน **preview deploy** แล้วเช็ค `/api/auth-config` ก่อน promote เสมอ
 **เสร็จเมื่อ:** `curl -sI /` เห็น nosniff/HSTS โดย `/api/*` ยังทำงาน
 
 ### T9. Vercel WAF rate limiting (ทดแทน in-memory limiter)
