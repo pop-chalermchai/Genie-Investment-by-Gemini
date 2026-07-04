@@ -1142,18 +1142,28 @@ def get_thai_fund():
         proj_id = fund['proj_id']
         nav = None
         nav_date = None
-        for i in range(1, 8) if SEC_DAILY_INFO_KEY else []:
-            date_str = (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d')
+        if SEC_DAILY_INFO_KEY:
+            # SEC's v2 API (api.sec.or.th, host unchanged from the pre-2026
+            # deprecation) returns a date-ranged list rather than a single day,
+            # and a proj_id can span multiple fund_class_name rows (share
+            # classes) with different NAVs — take the most recent nav_date.
+            end_date = datetime.now()
+            start_date = end_date - timedelta(days=10)
+            nav_url = (
+                'https://api.sec.or.th/v2/fund/daily-info/nav'
+                f'?proj_id={urllib.parse.quote(str(proj_id))}'
+                f'&start_nav_date={start_date.strftime("%Y-%m-%d")}'
+                f'&end_nav_date={end_date.strftime("%Y-%m-%d")}'
+            )
+            req = urllib.request.Request(nav_url, headers={'Ocp-Apim-Subscription-Key': SEC_DAILY_INFO_KEY})
             try:
-                nav_url = f'https://api.sec.or.th/FundDailyInfo/{proj_id}/dailynav/{date_str}'
-                req = urllib.request.Request(nav_url, headers={'Ocp-Apim-Subscription-Key': SEC_DAILY_INFO_KEY})
-                with urllib.request.urlopen(req, timeout=5) as resp:
-                    if resp.status == 200:
-                        data = json.loads(resp.read().decode())
-                        if data and len(data) > 0:
-                            nav = data[0]['last_val']
-                            nav_date = date_str
-                            break
+                with urllib.request.urlopen(req, timeout=8) as resp:
+                    data = json.loads(resp.read().decode())
+                    items = data.get('items', [])
+                    if items:
+                        latest = max(items, key=lambda it: it['nav_date'])
+                        nav = latest.get('last_val')
+                        nav_date = latest.get('nav_date')
             except urllib.error.HTTPError as e:
                 # Log the upstream status/body (never the key) so NAV lookup
                 # failures are diagnosable from Vercel logs instead of silent.
@@ -1161,11 +1171,9 @@ def get_thai_fund():
                     body = e.read().decode()[:200]
                 except Exception:
                     body = ''
-                app.logger.warning(f"SEC dailynav {date_str} for proj_id={proj_id} -> HTTP {e.code}: {body}")
-                continue
+                app.logger.warning(f"SEC v2 nav lookup for proj_id={proj_id} -> HTTP {e.code}: {body}")
             except Exception as e:
-                app.logger.warning(f"SEC dailynav {date_str} for proj_id={proj_id} -> {type(e).__name__}: {e}")
-                continue
+                app.logger.warning(f"SEC v2 nav lookup for proj_id={proj_id} -> {type(e).__name__}: {e}")
         return jsonify({
             'proj_abbr_name': fund['proj_abbr_name'],
             'proj_name_th': fund.get('proj_name_th'),

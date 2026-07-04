@@ -13,47 +13,42 @@
 
 ## P0 — รอเจ้าของทำ (Pop เท่านั้น)
 
-### T1. ~~Rotate SEC API keys~~ ✅ เสร็จ (2026-07-04) — แต่เจอปัญหาใหญ่กว่า ดู T1-b
-Rotate key สำเร็จแล้ว (`SEC_FACTSHEET_KEY`, `SEC_DAILY_INFO_KEY` ตั้งบน Vercel production ใหม่) แต่ NAV ยังไม่ขึ้น
+### T1. ~~Rotate SEC API keys~~ ✅ เสร็จ (2026-07-04)
+Rotate key สำเร็จ + subscribe API product ใหม่ชื่อ "Fund API" บน secopendata.sec.or.th (คนละ subscription จากของเดิม)
 
-### T1-b. 🔴 CRITICAL: Migrate ไป Thai SEC Open API ใหม่ (`api.sec.or.th` ถูกปิดแล้ว)
-**สาเหตุที่แท้จริง (เจอผ่าน Vercel logs หลัง rotate key):** `api.sec.or.th` (host เดิมที่ endpoint `FundDailyInfo`/`FundFactsheet` ใช้อยู่) **ถูก ก.ล.ต. ปิดให้บริการทั้งระบบแล้ว** — ไม่เกี่ยวกับคีย์ผิดหรือหมดอายุ ทุก request คืน:
+### T1-b. ~~Migrate ไป Thai SEC Open API v2~~ ✅ เสร็จ (2026-07-04) — NAV lookup ใช้งานได้แล้ว
+
+**สรุปสิ่งที่เกิดขึ้น:** `api.sec.or.th` เวอร์ชันเก่าถูก ก.ล.ต. ปิดให้บริการทั้งระบบ (คืน HTTP 503 พร้อมข้อความ deprecation ชี้ไป `secopendata.sec.or.th` ซึ่งเป็นแค่**หน้าเอกสาร** ไม่ใช่ API endpoint จริง) ต้อง subscribe API product ใหม่ (คนละตัวจาก subscription เดิม แม้ host เดียวกัน) แล้วใช้ endpoint ใหม่
+
+**Endpoint + parameter ที่ยืนยันแล้วด้วยการยิงจริง:**
 ```
-HTTP 503: ยุติการให้บริการ API เดิม โดยขอให้ผู้ใช้งานดำเนินการเปลี่ยนไปใช้งาน
-API เวอร์ชันใหม่ได้ที่ https://secopendata.sec.or.th
+GET https://api.sec.or.th/v2/fund/daily-info/nav
+    ?proj_id=<proj_id>
+    &start_nav_date=YYYY-MM-DD
+    &end_nav_date=YYYY-MM-DD
+Header: Ocp-Apim-Subscription-Key: <key>
 ```
-ชื่อกองทุนที่ยังขึ้นในแอปได้เพราะอ่านจากตาราง `thai_funds` ที่เคย sync เก็บไว้ก่อนหน้านี้ (ข้อมูลเก่า) — **NAV สดใช้ไม่ได้เลยจนกว่าจะ migrate**
+⚠️ เอกสารบนเว็บมี 2 จุดขัดแย้งกันเอง — กล่อง NOTE บอกชื่อ param ว่า `nav_date_start`/`nav_date_end` (ผิด) ส่วนตาราง "Query parameters" จริงบอกว่า `start_nav_date`/`end_nav_date` (ถูก — ยืนยันด้วย curl จริงแล้ว) **ถ้าจะดู endpoint อื่นในเอกสารชุดนี้ เชื่อตาราง parameter ไม่ใช่กล่อง NOTE**
 
-**ที่ลองแล้ว:** เข้า `https://secopendata.sec.or.th` ทั้งผ่าน WebFetch และ curl — **โดน WAF บล็อกจาก server-side/automated request** เข้าได้เฉพาะ browser จริง ต้องให้คนเปิดดูเอง
+**Response shape:** `{"message","page_size","next_cursor","items":[{proj_id, unique_id, fund_class_name, nav_date, net_asset, last_val, sell_price, buy_price, sell_swap_price, buy_swap_price, last_upd_date}]}` — field `last_val` ชื่อเดิมเป๊ะ (parsing เดิมใช้ต่อได้)
 
-**Mapping ที่ยืนยันแล้ว (จากหน้า "Fund API Mapping (Old vs New)" บน secopendata.sec.or.th + ทดสอบ endpoint จริง):**
+**ข้อควรรู้:** proj_id เดียวอาจมีหลาย `fund_class_name` (share class) พร้อม NAV ต่างกัน (เช่น `ONE-UGERMF-A` vs `-P`) — endpoint ไม่รองรับกรองด้วยวันเดียว (ไม่มี `nav_date` เดี่ยวๆ ใช้ได้) ต้องขอเป็นช่วงวันที่แล้วเลือกวันล่าสุดเอง
 
-| เก่า (`api.sec.or.th`) | ใหม่ (`api.sec.or.th`) | หมายเหตุ |
-|---|---|---|
-| `/FundDailyInfo/{proj_id}/dailynav/{nav_date}` | `/v2/fund/daily-info/nav` | ยืนยันด้วย curl จริง — ตอบ 401 (มีอยู่จริง ไม่ใช่ 503) query param รูปแบบใหม่ (ไม่ใช่ path param) แต่ยังไม่รู้ชื่อ param แน่ชัด |
-| `/FundDailyInfo/{proj_id}/dividend` | `/v2/fund/daily-info/dividend-history` | |
-| `/FundFactsheet/fund/amc` | `/v2/fund/general-info/amcs` | ใช้แทนใน `sync_thai_funds()` |
-| `/FundFactsheet/fund/amc/{unique_id}` | `/v2/fund/general-info/profiles` | ใช้แทนใน `sync_thai_funds()` |
+**แก้แล้วใน `api/index.py` (`get_thai_fund()`):** เปลี่ยนจาก loop 7 วันยิงทีละวัน → ยิงครั้งเดียวขอช่วง 10 วันย้อนหลัง แล้วเลือก item ที่ `nav_date` ล่าสุดด้วย `max(items, key=lambda it: it['nav_date'])` — เทสต์ 24 ตัวผ่านหมด, ทดสอบยิงจริงกับ Pop's key แล้วได้ NAV ปัจจุบันถูกต้อง (deploy แล้ว)
 
-**สิ่งที่ "ไม่ต้องเปลี่ยน":**
-- **Host เดิม** `api.sec.or.th` — แค่เติม `/v2/` prefix ไม่ใช่ domain ใหม่ (`secopendata.sec.or.th` เป็นแค่หน้า "เอกสาร" ไม่ใช่ API endpoint จริง — endpoint จริงยังอยู่ที่ `api.sec.or.th`)
-- **Auth header เดิม** `Ocp-Apim-Subscription-Key` — ยืนยันแล้ว (ตอบ error message ต่างกันระหว่าง "missing" กับ "invalid" key ซึ่งพิสูจน์ว่า header ถูกต้อง)
+**Diagnostic logging ที่เพิ่มไว้ (เก็บไว้ถาวร):** `get_thai_fund()` มี `app.logger.warning(...)` log HTTP status/body จาก SEC API เวลา lookup fail (ไม่ log ตัวคีย์) — ใช้ `npx vercel logs <deployment-url> --json --level warning` ดูได้เวลา debug ต่อ
 
-**ที่ยังไม่รู้ (ต้องหาต่อ):**
-1. ชื่อ query parameter ที่ `/v2/fund/daily-info/nav` ต้องการ (proj_id? nav_date? ชื่ออื่น?) — Azure APIM เช็ค subscription key ก่อนเช็ค param เสมอ เดาไม่ได้ถ้าไม่มีคีย์จริง ต้องดู endpoint docs หรือ "ลองยิงจริง" (Try it out) ในหน้า secopendata
-2. คีย์ที่ rotate ไปแล้ว (`SEC_FACTSHEET_KEY`/`SEC_DAILY_INFO_KEY` บน Vercel) ใช้กับ v2 ได้เลยไหม หรือต้อง subscribe API product ใหม่แยกต่างหากในหน้า "เริ่มต้นใช้งาน" ของ secopendata — **ทดสอบเองได้โดยไม่ต้องเปิดเผยคีย์:**
-   ```
-   curl -s "https://api.sec.or.th/v2/fund/daily-info/nav" -H "Ocp-Apim-Subscription-Key: <คีย์จริง>"
-   ```
-   ถ้าตอบอย่างอื่นที่ไม่ใช่ "invalid subscription key" แปลว่าคีย์ใช้ได้แล้ว
-3. โครงสร้าง response ใหม่ (โค้ดเดิมคาดหวัง field เช่น `last_val`, `proj_abbr_name` ฯลฯ — ต้องดู response จริงจาก v2 ถึงจะรู้ชื่อ field ใหม่)
+### T1-c. `sync_thai_funds()` ยังใช้ endpoint เก่า (`/FundFactsheet/fund/amc...`) — ยังไม่แก้ (priority ต่ำกว่า)
+ยังไม่ได้ migrate เพราะข้อมูล `thai_funds` ในเครื่องมีอยู่แล้ว (sync ไว้ก่อนหน้านี้) ใช้หาชื่อกองทุนได้ปกติ — sync ใหม่จะได้กองทุนที่เพิ่งเปิดใหม่/ข้อมูลล่าสุด แต่ไม่ block การใช้งานตอนนี้
 
-**งานที่ต้องทำ (เมื่อรู้ param/response ครบ):**
-1. แก้ `api/index.py`: เปลี่ยน URL จาก `/FundDailyInfo/...` → `/v2/fund/daily-info/nav`, จาก `/FundFactsheet/fund/amc...` → `/v2/fund/general-info/amcs` + `/profiles`, ปรับ query param และ parsing response ตาม schema ใหม่
-2. Sync ข้อมูลกองทุนใหม่เข้า `thai_funds` ตาราง (ผ่าน `/api/thai-fund/sync` ที่แก้แล้ว)
-**เสร็จเมื่อ:** `/api/thai-fund?code=…` คืน NAV จริงบน prod (ไม่ null)
+**Mapping ที่รู้แล้ว (จากหน้า Fund API Mapping):**
+| เก่า | ใหม่ |
+|---|---|
+| `/FundFactsheet/fund/amc` (รายชื่อ บลจ.) | `/v2/fund/general-info/amcs` |
+| `/FundFactsheet/fund/amc/{unique_id}` (กองทุนใต้ บลจ.) | `/v2/fund/general-info/profiles` |
 
-**Diagnostic logging ที่เพิ่มไว้ (เก็บไว้ถาวร ไม่ต้องลบ):** `get_thai_fund()` มี `app.logger.warning(...)` log HTTP status/body จาก SEC API เวลา NAV lookup fail (ไม่ log ตัวคีย์) — ใช้ `npx vercel logs <deployment-url> --json --level warning` ดูได้เวลา debug ต่อ
+**งานที่ต้องทำ:** หา query parameter ที่ endpoint ใหม่ทั้งสองต้องการ (ใช้วิธีเดียวกับ T1-b — เปิด endpoint docs ในหน้า secopendata.sec.or.th ดูตาราง "Query parameters" ตรงๆ อย่าเชื่อกล่อง NOTE) แล้วแก้ `sync_thai_funds()` ให้เรียก v2 + ปรับ parsing ตาม response schema ใหม่
+**เสร็จเมื่อ:** `POST /api/thai-fund/sync` คืนจำนวนกองทุนที่ sync ได้จริงจาก v2 (ไม่ใช่ error 503)
 
 ---
 
