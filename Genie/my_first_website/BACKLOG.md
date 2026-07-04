@@ -13,10 +13,28 @@
 
 ## P0 — รอเจ้าของทำ (Pop เท่านั้น)
 
-### T1. Rotate SEC API keys 🔑
-Key เดิม (`eb52da4e…`, `38a6644d…`) รั่วใน git history — ไป SEC portal ขอ key ใหม่ แล้วตั้งบน Vercel:
-`npx vercel env add SEC_FACTSHEET_KEY production` และ `SEC_DAILY_INFO_KEY` เหมือนกัน จากนั้น redeploy
-**เสร็จเมื่อ:** `/api/thai-fund?code=…` คืน NAV ได้บน prod (ตอนนี้ NAV เป็น null / sync คืน 503)
+### T1. ~~Rotate SEC API keys~~ ✅ เสร็จ (2026-07-04) — แต่เจอปัญหาใหญ่กว่า ดู T1-b
+Rotate key สำเร็จแล้ว (`SEC_FACTSHEET_KEY`, `SEC_DAILY_INFO_KEY` ตั้งบน Vercel production ใหม่) แต่ NAV ยังไม่ขึ้น
+
+### T1-b. 🔴 CRITICAL: Migrate ไป Thai SEC Open API ใหม่ (`api.sec.or.th` ถูกปิดแล้ว)
+**สาเหตุที่แท้จริง (เจอผ่าน Vercel logs หลัง rotate key):** `api.sec.or.th` (host เดิมที่ endpoint `FundDailyInfo`/`FundFactsheet` ใช้อยู่) **ถูก ก.ล.ต. ปิดให้บริการทั้งระบบแล้ว** — ไม่เกี่ยวกับคีย์ผิดหรือหมดอายุ ทุก request คืน:
+```
+HTTP 503: ยุติการให้บริการ API เดิม โดยขอให้ผู้ใช้งานดำเนินการเปลี่ยนไปใช้งาน
+API เวอร์ชันใหม่ได้ที่ https://secopendata.sec.or.th
+```
+ชื่อกองทุนที่ยังขึ้นในแอปได้เพราะอ่านจากตาราง `thai_funds` ที่เคย sync เก็บไว้ก่อนหน้านี้ (ข้อมูลเก่า) — **NAV สดใช้ไม่ได้เลยจนกว่าจะ migrate**
+
+**ที่ลองแล้ว:** เข้า `https://secopendata.sec.or.th` ทั้งผ่าน WebFetch และ curl — **โดน WAF บล็อกจาก server-side/automated request** เข้าได้เฉพาะ browser จริง ต้องให้คนเปิดดูเอง
+
+**งานที่ต้องทำ:**
+1. เปิด `https://secopendata.sec.or.th` ในเบราว์เซอร์ ดูวิธีสมัคร/ขอ API key ใหม่ + หา endpoint เทียบเท่า `FundDailyInfo` (NAV รายวัน) และ `FundFactsheet` (รายชื่อกองทุน)
+2. เทียบโครงสร้าง response ใหม่กับของเดิม (โค้ดปัจจุบันคาดหวัง field เช่น `last_val`, `proj_abbr_name`, `proj_name_th/en`, `amc_name_en` — ดู `api/index.py` ฟังก์ชัน `get_thai_fund` และ `sync_thai_funds`)
+3. แก้ `api/index.py`: เปลี่ยน URL, auth header (อาจไม่ใช่ `Ocp-Apim-Subscription-Key` แบบเดิม), parsing response
+4. ตั้ง env var คีย์ใหม่บน Vercel (ชื่อเดิมได้ถ้า auth mechanism เหมือนเดิม หรือเปลี่ยนชื่อถ้าจำเป็น — อัปเดต `CLAUDE.md` ด้วย)
+5. Sync ข้อมูลกองทุนใหม่เข้า `thai_funds` ตาราง (ผ่าน `/api/thai-fund/sync` เดิม หรือเขียนใหม่ตาม API ใหม่)
+**เสร็จเมื่อ:** `/api/thai-fund?code=…` คืน NAV จริงบน prod (ไม่ null)
+
+**Diagnostic logging ที่เพิ่มไว้ (เก็บไว้ถาวร ไม่ต้องลบ):** `get_thai_fund()` มี `app.logger.warning(...)` log HTTP status/body จาก SEC API เวลา NAV lookup fail (ไม่ log ตัวคีย์) — ใช้ `npx vercel logs <deployment-url> --json --level warning` ดูได้เวลา debug ต่อ
 
 ---
 

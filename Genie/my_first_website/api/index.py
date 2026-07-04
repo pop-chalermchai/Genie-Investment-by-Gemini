@@ -5,6 +5,7 @@ import sqlite3
 import os
 import urllib.request
 import urllib.parse
+import urllib.error
 import json
 import ssl
 import pg8000
@@ -1153,7 +1154,17 @@ def get_thai_fund():
                             nav = data[0]['last_val']
                             nav_date = date_str
                             break
-            except Exception:
+            except urllib.error.HTTPError as e:
+                # Log the upstream status/body (never the key) so NAV lookup
+                # failures are diagnosable from Vercel logs instead of silent.
+                try:
+                    body = e.read().decode()[:200]
+                except Exception:
+                    body = ''
+                app.logger.warning(f"SEC dailynav {date_str} for proj_id={proj_id} -> HTTP {e.code}: {body}")
+                continue
+            except Exception as e:
+                app.logger.warning(f"SEC dailynav {date_str} for proj_id={proj_id} -> {type(e).__name__}: {e}")
                 continue
         return jsonify({
             'proj_abbr_name': fund['proj_abbr_name'],
