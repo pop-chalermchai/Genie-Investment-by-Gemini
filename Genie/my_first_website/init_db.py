@@ -82,9 +82,22 @@ def init_db():
     ''')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_thai_funds_abbr ON thai_funds (proj_abbr_name)')
 
+    # 6. ตาราง profiles (ข้อมูลผู้ใช้ + preferences — local counterpart ของ migrations/004_profiles.sql)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS profiles (
+            user_id            TEXT PRIMARY KEY,
+            display_name       TEXT,
+            avatar_emoji       TEXT NOT NULL DEFAULT '🧞',
+            preferred_currency TEXT NOT NULL DEFAULT 'USD',
+            preferred_theme    TEXT NOT NULL DEFAULT 'light',
+            preferred_language TEXT NOT NULL DEFAULT 'en',
+            updated_at         DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
     conn.commit()
     conn.close()
-    print(f"✅ สร้างฐานข้อมูลและ 5 ตารางสำเร็จแล้ว! ไฟล์ถูกเก็บไว้ที่: {db_path}")
+    print(f"✅ สร้างฐานข้อมูลและ 6 ตารางสำเร็จแล้ว! ไฟล์ถูกเก็บไว้ที่: {db_path}")
 
 if __name__ == '__main__':
     init_db()

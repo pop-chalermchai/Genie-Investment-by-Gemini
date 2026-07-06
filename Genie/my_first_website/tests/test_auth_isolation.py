@@ -140,3 +140,62 @@ def test_bob_cannot_delete_alice_transaction(multiuser):
     # Alice's transaction survives
     still = client.get("/api/transactions", headers=_hdr(make_token, "alice")).get_json()
     assert any(t["id"] == tx_id for t in still)
+
+
+# ── Profile ───────────────────────────────────────────────────────────────────
+
+def test_profile_requires_auth(multiuser):
+    client, _ = multiuser
+    assert client.get("/api/profile").status_code == 401
+    assert client.put("/api/profile", json={"display_name": "x"}).status_code == 401
+
+
+def test_profile_created_with_defaults_on_first_get(multiuser):
+    client, make_token = multiuser
+    p = client.get("/api/profile", headers=_hdr(make_token, "alice")).get_json()
+    assert p["display_name"] is None
+    assert p["avatar_emoji"] == "🧞"
+    assert p["preferred_currency"] == "USD"
+    assert p["preferred_theme"] == "light"
+    assert p["preferred_language"] == "en"
+    assert "user_id" not in p  # internal id never leaves the API
+
+
+def test_profiles_are_per_user(multiuser):
+    client, make_token = multiuser
+    r = client.put("/api/profile", json={
+        "display_name": "Alice", "preferred_currency": "THB", "preferred_theme": "dark",
+    }, headers=_hdr(make_token, "alice"))
+    assert r.status_code == 200
+
+    # Bob still sees pristine defaults, not Alice's values
+    bob = client.get("/api/profile", headers=_hdr(make_token, "bob")).get_json()
+    assert bob["display_name"] is None
+    assert bob["preferred_currency"] == "USD"
+
+    # Alice's values persisted
+    alice = client.get("/api/profile", headers=_hdr(make_token, "alice")).get_json()
+    assert alice["display_name"] == "Alice"
+    assert alice["preferred_currency"] == "THB"
+    assert alice["preferred_theme"] == "dark"
+
+
+def test_profile_rejects_invalid_values(multiuser):
+    client, make_token = multiuser
+    hdr = _hdr(make_token, "alice")
+    assert client.put("/api/profile", json={"preferred_currency": "EUR"}, headers=hdr).status_code == 400
+    assert client.put("/api/profile", json={"preferred_theme": "neon"}, headers=hdr).status_code == 400
+    assert client.put("/api/profile", json={"preferred_language": "jp"}, headers=hdr).status_code == 400
+    assert client.put("/api/profile", json={"display_name": "x" * 61}, headers=hdr).status_code == 400
+    assert client.put("/api/profile", json={}, headers=hdr).status_code == 400
+    # unknown fields alone are rejected, not silently written
+    assert client.put("/api/profile", json={"user_id": "evil"}, headers=hdr).status_code == 400
+
+
+def test_profile_empty_display_name_clears_it(multiuser):
+    client, make_token = multiuser
+    hdr = _hdr(make_token, "alice")
+    client.put("/api/profile", json={"display_name": "Alice"}, headers=hdr)
+    r = client.put("/api/profile", json={"display_name": "  "}, headers=hdr)
+    assert r.status_code == 200
+    assert r.get_json()["display_name"] is None

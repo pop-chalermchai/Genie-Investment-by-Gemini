@@ -241,7 +241,7 @@ function updateDashboard() {
             card.innerHTML = `
                 <div style="font-size:1.2rem;font-weight:700;color:var(--text-emphasis);margin:0 0 2px 0;">${parentName}</div>
                 <span style="font-size:1.1rem;font-weight:700;color:var(--text-primary);">${symbol}${formatNumber(data.value, 2)}</span>
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">${bottomRow}</div>
+                <div style="display:flex;justify-content:center;align-items:center;gap:14px;margin-top:6px;">${bottomRow}</div>
             `;
             gridEl.appendChild(card);
         });

@@ -29,6 +29,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const allowed = await GenieAuth.ensureAllowed();
         if (!allowed) return;
     }
+    loadUserProfile(); // fire-and-forget: applies name/avatar/preferences when it lands
     fetchInitData(() => {
         // Apply cached prices from localStorage for instant first render
         try {

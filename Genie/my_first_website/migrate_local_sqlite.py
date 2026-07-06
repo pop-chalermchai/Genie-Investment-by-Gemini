@@ -53,6 +53,24 @@ def migrate():
         cur.execute("ALTER TABLE portfolios ADD COLUMN sort_order INTEGER")
         changes.append("portfolios: added sort_order")
 
+    # profiles — local counterpart of migrations/004_profiles.sql (user_id is TEXT
+    # here; no auth.users to reference in SQLite)
+    if not _table_exists(cur, "profiles"):
+        cur.execute(
+            """
+            CREATE TABLE profiles (
+                user_id            TEXT PRIMARY KEY,
+                display_name       TEXT,
+                avatar_emoji       TEXT NOT NULL DEFAULT '🧞',
+                preferred_currency TEXT NOT NULL DEFAULT 'USD',
+                preferred_theme    TEXT NOT NULL DEFAULT 'light',
+                preferred_language TEXT NOT NULL DEFAULT 'en',
+                updated_at         DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+        changes.append("profiles: created table")
+
     conn.commit()
     conn.close()
 

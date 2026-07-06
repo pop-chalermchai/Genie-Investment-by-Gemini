@@ -72,6 +72,15 @@ def _build_schema(db_path):
             en_overview TEXT, th_overview TEXT, en_dcf TEXT, th_dcf TEXT,
             user_id TEXT
         );
+        CREATE TABLE profiles (
+            user_id            TEXT PRIMARY KEY,
+            display_name       TEXT,
+            avatar_emoji       TEXT NOT NULL DEFAULT '🧞',
+            preferred_currency TEXT NOT NULL DEFAULT 'USD',
+            preferred_theme    TEXT NOT NULL DEFAULT 'light',
+            preferred_language TEXT NOT NULL DEFAULT 'en',
+            updated_at         DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
         CREATE TABLE thai_funds (
             proj_id TEXT PRIMARY KEY, proj_abbr_name TEXT, proj_name_th TEXT,
             proj_name_en TEXT, fund_status TEXT, amc_name_en TEXT,

@@ -412,3 +412,136 @@ function updateRangeButtonStyles() {
 // ==========================================================================
 // EXCEL TRANSACTION IMPORT & TEMPLATE DOWNLOAD
 // ==========================================================================
+
+// ==========================================================================
+// USER PROFILE (display name, avatar, preferences synced via /api/profile)
+// ==========================================================================
+let userProfile = null;
+const PROFILE_AVATARS = ["🧞", "🧞‍♂️", "🧞‍♀️", "🦁", "🐯", "🦊", "🐼", "🦅", "🚀", "💎", "📈", "🪙"];
+
+function loadUserProfile() {
+    return fetch('/api/profile?t=' + Date.now())
+        .then(r => r.json())
+        .then(p => { if (p && !p.error) applyProfile(p); })
+        .catch(err => console.error("Error loading profile:", err));
+}
+
+function applyProfile(profile) {
+    userProfile = profile;
+
+    // Header chip
+    const avatarEl = document.getElementById("profile-header-avatar");
+    const nameEl = document.getElementById("profile-header-name");
+    if (avatarEl) avatarEl.innerText = profile.avatar_emoji || "🧞";
+    if (nameEl) nameEl.innerText = profile.display_name || "Profile";
+
+    // Preferences
+    if (profile.preferred_theme) setTheme(profile.preferred_theme);
+    if (profile.preferred_currency && profile.preferred_currency !== displayCurrency) {
+        toggleCurrency(profile.preferred_currency);
+    }
+    if (profile.preferred_language && profile.preferred_language !== activeLanguage) {
+        activeLanguage = profile.preferred_language;
+        const langBtn = document.getElementById("lang-" + profile.preferred_language);
+        if (langBtn) {
+            document.getElementById("lang-en").classList.remove("active");
+            document.getElementById("lang-th").classList.remove("active");
+            langBtn.classList.add("active");
+        }
+        // Re-render report only once data is loaded (boot-time race guard)
+        if (Object.keys(researchReports).length > 0) renderReport();
+    }
+}
+
+function renderAvatarChoices(selected) {
+    const wrap = document.getElementById("profile-avatar-choices");
+    wrap.innerHTML = "";
+    PROFILE_AVATARS.forEach(emoji => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.innerText = emoji;
+        btn.dataset.emoji = emoji;
+        btn.style.cssText = "font-size:1.3rem;padding:6px 8px;border-radius:6px;cursor:pointer;background:rgba(0,0,0,0.3);border:1px solid " +
+            (emoji === selected ? "var(--accent-neon)" : "rgba(255,255,255,0.1)") + ";";
+        btn.onclick = () => renderAvatarChoices(emoji);
+        wrap.appendChild(btn);
+    });
+    wrap.dataset.selected = selected;
+}
+
+function openProfileModal() {
+    const fill = () => {
+        document.getElementById("profile-email").innerText = (userProfile && userProfile.email) || "";
+        document.getElementById("profile-display-name").value = (userProfile && userProfile.display_name) || "";
+        renderAvatarChoices((userProfile && userProfile.avatar_emoji) || "🧞");
+        document.getElementById("profile-currency").value = (userProfile && userProfile.preferred_currency) || "USD";
+        document.getElementById("profile-theme").value = (userProfile && userProfile.preferred_theme) || "light";
+        document.getElementById("profile-language").value = (userProfile && userProfile.preferred_language) || "en";
+        document.getElementById("profile-modal").classList.add("active");
+    };
+    if (userProfile) { fill(); } else { loadUserProfile().then(fill); }
+}
+
+function closeProfileModal() {
+    document.getElementById("profile-modal").classList.remove("active");
+}
+
+function handleProfileSubmit(e) {
+    e.preventDefault();
+    const payload = {
+        display_name: document.getElementById("profile-display-name").value.trim(),
+        avatar_emoji: document.getElementById("profile-avatar-choices").dataset.selected || "🧞",
+        preferred_currency: document.getElementById("profile-currency").value,
+        preferred_theme: document.getElementById("profile-theme").value,
+        preferred_language: document.getElementById("profile-language").value,
+    };
+    fetch('/api/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(r => r.json().then(data => ({ ok: r.ok, data })))
+    .then(({ ok, data }) => {
+        if (!ok || data.error) {
+            alert("Error saving profile: " + (data.error || "unknown"));
+            return;
+        }
+        applyProfile(data);
+        closeProfileModal();
+    })
+    .catch(err => {
+        console.error("Error saving profile:", err);
+        alert("Failed to save profile.");
+    });
+}
+
+// === Profile dropdown menu (avatar button in the nav) ===
+function toggleProfileMenu(e) {
+    e.stopPropagation();
+    const dd = document.getElementById("profile-dropdown");
+    const opening = dd.style.display !== "block";
+    dd.style.display = opening ? "block" : "none";
+    if (opening) {
+        // Anchored right of the button by default; flip when that runs off-screen
+        // (mobile: the nav collapses to a grid and the button sits near the left edge)
+        dd.style.right = "0";
+        dd.style.left = "auto";
+        if (dd.getBoundingClientRect().left < 8) {
+            dd.style.right = "auto";
+            dd.style.left = "0";
+        }
+    }
+}
+
+function closeProfileMenu() {
+    document.getElementById("profile-dropdown").style.display = "none";
+}
+
+document.addEventListener("click", (e) => {
+    const wrap = document.getElementById("profile-menu-wrap");
+    if (wrap && !wrap.contains(e.target)) closeProfileMenu();
+});
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeProfileMenu();
+});

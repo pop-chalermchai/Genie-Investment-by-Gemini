@@ -55,10 +55,24 @@
                     <svg class="tab-icon" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 1.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
                     Genie Team
                 </button>
-                <button class="nav-tab" id="tab-logout" onclick="if(window.GenieAuth) GenieAuth.logout()" title="Sign out">
-                    <svg class="tab-icon" viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
-                    Sign out
-                </button>
+                <div id="profile-menu-wrap" style="position: relative; display: flex;">
+                    <button class="nav-tab" id="tab-profile" onclick="toggleProfileMenu(event)" title="Account menu">
+                        <span id="profile-header-avatar" style="font-size:1.05rem;line-height:1;">🧞</span>
+                        <span id="profile-header-name">Profile</span>
+                        <span id="profile-caret" style="font-size:0.55rem;opacity:0.7;margin-left:2px;">▼</span>
+                    </button>
+                    <div id="profile-dropdown" style="display: none; position: absolute; top: calc(100% + 10px); right: 0; min-width: 190px; background: var(--bg-card-solid); border: 1px solid var(--border-color); border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); z-index: 1500; overflow: hidden;">
+                        <button class="profile-menu-item" onclick="closeProfileMenu(); openProfileModal();" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 16px; background: none; border: none; color: var(--text-primary); font-size: 0.88rem; font-weight: 600; cursor: pointer; text-align: left;" onmouseover="this.style.background='rgba(0,240,255,0.08)'" onmouseout="this.style.background='none'">
+                            <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                            My Profile
+                        </button>
+                        <div style="height: 1px; background: var(--border-color);"></div>
+                        <button class="profile-menu-item" onclick="closeProfileMenu(); if(window.GenieAuth) GenieAuth.logout();" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 16px; background: none; border: none; color: var(--text-primary); font-size: 0.88rem; font-weight: 600; cursor: pointer; text-align: left;" onmouseover="this.style.background='rgba(0,240,255,0.08)'" onmouseout="this.style.background='none'">
+                            <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+                            Sign out
+                        </button>
+                    </div>
+                </div>
             </nav>
         </header>
 
@@ -922,6 +936,49 @@
                     </select>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: 700; border-radius: 6px; border: none; cursor: pointer; background: linear-gradient(90deg, #00F0FF 0%, #0088FF 100%); color: #030712;">Create Portfolio</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- USER PROFILE MODAL -->
+    <div id="profile-modal" class="modal-overlay">
+        <div class="modal-content glass-panel" style="max-width: 420px; padding: 30px;">
+            <button class="modal-close" onclick="closeProfileModal()">×</button>
+            <h2 class="card-title" style="margin-bottom: 4px;">My Profile</h2>
+            <p id="profile-email" style="margin: 0 0 20px 0; color: var(--text-secondary); font-size: 0.82rem;"></p>
+            <form id="profile-form" onsubmit="handleProfileSubmit(event)">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label for="profile-display-name" style="display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 0.85rem;">Display Name</label>
+                    <input type="text" id="profile-display-name" maxlength="60" placeholder="e.g., Pop" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 6px; box-sizing: border-box;">
+                </div>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 0.85rem;">Avatar</label>
+                    <div id="profile-avatar-choices" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 25px;">
+                    <div class="form-group">
+                        <label for="profile-currency" style="display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 0.85rem;">Currency</label>
+                        <select id="profile-currency" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 6px; box-sizing: border-box; appearance: none;">
+                            <option value="USD">USD $</option>
+                            <option value="THB">THB ฿</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-theme" style="display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 0.85rem;">Theme</label>
+                        <select id="profile-theme" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 6px; box-sizing: border-box; appearance: none;">
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-language" style="display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 0.85rem;">Language</label>
+                        <select id="profile-language" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 6px; box-sizing: border-box; appearance: none;">
+                            <option value="en">English</option>
+                            <option value="th">ไทย</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: 700; border-radius: 6px; border: none; cursor: pointer; background: linear-gradient(90deg, #00F0FF 0%, #0088FF 100%); color: #030712;">Save Profile</button>
             </form>
         </div>
     </div>

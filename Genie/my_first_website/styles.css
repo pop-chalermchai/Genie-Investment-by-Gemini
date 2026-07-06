@@ -252,6 +252,16 @@ header::before {
 }
 
 /* Nav tabs */
+/* The header's backdrop-filter creates a stacking context; without a z-index the
+   profile dropdown paints underneath the glass panels that follow in the DOM.
+   overflow:visible overrides the base header rule so the dropdown isn't clipped
+   (the ::before gradient line stays within bounds either way). */
+#main-header {
+    position: relative;
+    z-index: 100;
+    overflow: visible;
+}
+
 .navigation-tabs {
     display: flex;
     gap: 8px;
@@ -921,6 +931,8 @@ header::before {
     position: absolute;
     top: 20px;
     right: 25px;
+    /* paint above .card-title (position:relative), which otherwise covers the button */
+    z-index: 2;
     background: none;
     border: none;
     color: var(--text-secondary);

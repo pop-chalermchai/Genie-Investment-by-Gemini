@@ -183,7 +183,10 @@ def _resolve_user_id():
     if auth.startswith('Bearer '):
         token = auth[7:].strip()
         claims = _verify_token(token)
-        return claims.get('sub') if claims else None
+        if claims:
+            g.user_email = claims.get('email')
+            return claims.get('sub')
+        return None
     # No token: allow the single local user ONLY in pure local dev — SQLite and
     # no JWT secret configured. Once a secret is set (prod, or any auth-enabled
     # environment), a missing/invalid token is unauthorized.
@@ -271,6 +274,87 @@ def ensure_user_seeded(cursor, is_postgres, user_id):
         execute_sql(cursor, is_postgres,
                     "INSERT INTO categories (name, description, user_id) VALUES (?, ?, ?)",
                     (name, desc, user_id))
+
+
+# ── User profile ──────────────────────────────────────────────────────────────
+# email / last_sign_in_at live in auth.users (surfaced from the JWT); the
+# profiles table holds only display identity + app preferences.
+
+PROFILE_VALIDATORS = {
+    'display_name':       lambda v: v is None or (isinstance(v, str) and len(v) <= 60),
+    'avatar_emoji':       lambda v: isinstance(v, str) and 0 < len(v) <= 16,
+    'preferred_currency': lambda v: v in ('USD', 'THB'),
+    'preferred_theme':    lambda v: v in ('light', 'dark'),
+    'preferred_language': lambda v: v in ('en', 'th'),
+}
+
+
+def _load_or_create_profile(cursor, is_postgres, user_id):
+    """Return the caller's profile row, creating a default one on first access."""
+    execute_sql(cursor, is_postgres, "SELECT * FROM profiles WHERE user_id=?", (user_id,))
+    rows = fetch_all_as_dict(cursor, is_postgres)
+    if rows:
+        return rows[0]
+    execute_sql(cursor, is_postgres, "INSERT INTO profiles (user_id) VALUES (?)", (user_id,))
+    execute_sql(cursor, is_postgres, "SELECT * FROM profiles WHERE user_id=?", (user_id,))
+    return fetch_all_as_dict(cursor, is_postgres)[0]
+
+
+def _profile_response(profile):
+    out = {k: v for k, v in profile.items() if k not in ('user_id', 'updated_at')}
+    out['email'] = getattr(g, 'user_email', None)
+    return jsonify(out)
+
+
+@app.route('/api/profile', methods=['GET'])
+@require_auth
+def get_profile():
+    try:
+        conn, is_postgres = get_db_connection()
+        cursor = conn.cursor()
+        profile = _load_or_create_profile(cursor, is_postgres, g.user_id)
+        conn.commit()
+        conn.close()
+        return _profile_response(profile)
+    except Exception as e:
+        return _err(e)
+
+
+@app.route('/api/profile', methods=['PUT'])
+@require_auth
+def update_profile():
+    try:
+        data = request.get_json(silent=True) or {}
+        updates = {}
+        for field, is_valid in PROFILE_VALIDATORS.items():
+            if field not in data:
+                continue
+            value = data[field]
+            if isinstance(value, str):
+                value = value.strip()
+            if field == 'display_name' and value == '':
+                value = None
+            if not is_valid(value):
+                raise ValueError(f"Invalid value for {field}.")
+            updates[field] = value
+        if not updates:
+            raise ValueError("No valid profile fields to update.")
+
+        conn, is_postgres = get_db_connection()
+        cursor = conn.cursor()
+        _load_or_create_profile(cursor, is_postgres, g.user_id)
+        # Column names come from PROFILE_VALIDATORS keys, never from user input.
+        set_clause = ", ".join(f"{f}=?" for f in updates)
+        execute_sql(cursor, is_postgres,
+                    f"UPDATE profiles SET {set_clause}, updated_at=CURRENT_TIMESTAMP WHERE user_id=?",
+                    tuple(updates.values()) + (g.user_id,))
+        execute_sql(cursor, is_postgres, "SELECT * FROM profiles WHERE user_id=?", (g.user_id,))
+        profile = fetch_all_as_dict(cursor, is_postgres)[0]
+        conn.commit()
+        conn.close()
+        return _profile_response(profile)
+    except Exception as e:
+        return _err(e)
 
 
 @app.route('/api/transactions', methods=['GET'])
