@@ -228,9 +228,19 @@ function renderPortfolioPage() {
     });
 
     if (filteredHoldings.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text-secondary);padding:24px;">No holdings in this portfolio.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--text-secondary);padding:24px;">No holdings in this portfolio.</td></tr>`;
         return;
     }
+
+    // Pre-pass: total market value of the current view (parent or selected sub-port),
+    // so weights sum to 100% within this view
+    let viewTotalMarketValue = 0;
+    filteredHoldings.forEach(pos => {
+        let mv = pos.shares * pos.currentPrice;
+        if (displayCurrency === "USD" && pos.currency === "THB") mv /= exchangeRateUSDTHB;
+        else if (displayCurrency === "THB" && pos.currency === "USD") mv *= exchangeRateUSDTHB;
+        viewTotalMarketValue += mv;
+    });
 
     filteredHoldings.forEach(pos => {
         let avgCost = pos.avgCost;
@@ -252,6 +262,7 @@ function renderPortfolioPage() {
 
         const gainLoss = marketValue - costBasis;
         const gainLossPct = costBasis > 0 ? (gainLoss / costBasis) * 100 : 0;
+        const weightPct = viewTotalMarketValue > 0 ? (marketValue / viewTotalMarketValue) * 100 : 0;
 
         const row = document.createElement("tr");
         row.style.cursor = "pointer";
@@ -265,6 +276,14 @@ function renderPortfolioPage() {
             <td class="text-right table-currency">${symbol}${avgCost.toFixed(2)}</td>
             <td class="text-right table-currency">${symbol}${currentPrice.toFixed(2)}</td>
             <td class="text-right table-currency" style="font-weight:500;">${symbol}${formatNumber(marketValue, 2)}</td>
+            <td class="text-right" style="font-family:var(--font-mono);font-size:0.85rem;">
+                <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;">
+                    <div style="width:40px;height:4px;background:var(--border-dim);border-radius:2px;overflow:hidden;flex-shrink:0;">
+                        <div style="width:${Math.min(weightPct,100)}%;height:100%;background:var(--accent-neon);border-radius:2px;"></div>
+                    </div>
+                    <span style="color:var(--text-secondary);min-width:36px;text-align:right;">${weightPct.toFixed(1)}%</span>
+                </div>
+            </td>
             <td class="text-right ${gainLoss >= 0 ? 'cell-positive' : 'cell-negative'}">
                 <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px;">
                     <span>${symbol}${formatNumber(gainLoss, 2)} (${gainLossPct >= 0 ? '+' : ''}${gainLossPct.toFixed(1)}%)</span>
