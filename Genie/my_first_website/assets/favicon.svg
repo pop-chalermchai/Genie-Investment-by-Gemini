@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="75%">
+      <stop offset="0%" stop-color="#0E3A4E"/>
+      <stop offset="60%" stop-color="#06293A"/>
+      <stop offset="100%" stop-color="#021B26"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F9E39A"/>
+      <stop offset="45%" stop-color="#E8BE4D"/>
+      <stop offset="100%" stop-color="#B8860B"/>
+    </linearGradient>
+    <linearGradient id="goldDeep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E8BE4D"/>
+      <stop offset="100%" stop-color="#8A6508"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#7BE8FF" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#7BE8FF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- App-icon rounded square background -->
+  <rect x="8" y="8" width="496" height="496" rx="110" fill="url(#bg)"/>
+  <rect x="8" y="8" width="496" height="496" rx="110" fill="none" stroke="#7BE8FF" stroke-opacity="0.18" stroke-width="6"/>
+
+  <!-- Magic glow behind the sparkle -->
+  <circle cx="150" cy="152" r="120" fill="url(#glow)"/>
+
+  <!-- Magic smoke wisp rising from the spout -->
+  <path d="M118 236 C92 210 118 186 144 170 C170 154 176 132 160 112"
+        fill="none" stroke="#7BE8FF" stroke-opacity="0.65" stroke-width="14" stroke-linecap="round"/>
+
+  <!-- Four-point sparkle -->
+  <path d="M150 84 C156 128 172 144 216 150 C172 156 156 172 150 216 C144 172 128 156 84 150 C128 144 144 128 150 84 Z"
+        fill="#AFF3FF"/>
+  <circle cx="228" cy="96" r="10" fill="#7BE8FF"/>
+  <circle cx="96" cy="232" r="7" fill="#7BE8FF" fill-opacity="0.8"/>
+
+  <!-- Lamp handle (right) -->
+  <path d="M368 306 C424 292 436 330 420 352 C404 374 372 378 352 368"
+        fill="none" stroke="url(#goldDeep)" stroke-width="22" stroke-linecap="round"/>
+
+  <!-- Lamp bowl -->
+  <path d="M148 300 L376 300 C376 372 328 412 262 412 C196 412 148 372 148 300 Z"
+        fill="url(#gold)"/>
+  <!-- Waist rim -->
+  <rect x="136" y="288" width="252" height="22" rx="11" fill="url(#goldDeep)"/>
+
+  <!-- Domed lid + knob -->
+  <path d="M196 288 C204 246 236 226 262 226 C288 226 320 246 328 288 Z" fill="url(#gold)"/>
+  <circle cx="262" cy="216" r="15" fill="url(#gold)"/>
+
+  <!-- Spout (pointing up-left, where the magic comes out) -->
+  <path d="M152 296 C120 296 92 272 80 234 C118 244 152 262 168 278 Z" fill="url(#gold)"/>
+
+  <!-- Base stand -->
+  <path d="M216 412 L308 412 C308 430 288 438 262 438 C236 438 216 430 216 412 Z" fill="url(#goldDeep)"/>
+
+  <!-- Bowl highlight -->
+  <path d="M180 318 C184 358 208 384 240 392 C200 392 172 362 168 318 Z" fill="#FFF6D8" fill-opacity="0.35"/>
+</svg>
