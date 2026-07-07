@@ -195,7 +195,9 @@ header::before {
 }
 
 .logo-emoji {
-    font-size: 2.2rem;
+    width: 42px;
+    height: 42px;
+    display: block;
     filter: drop-shadow(0 0 10px rgba(38, 139, 210, 0.4));
     animation: float-emoji 4s infinite ease-in-out;
 }
@@ -1554,7 +1556,8 @@ footer {
     }
 
     .logo-emoji {
-        font-size: 1.7rem;
+        width: 32px;
+        height: 32px;
     }
 
     .logo-title {
