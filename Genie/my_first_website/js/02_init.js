@@ -4,7 +4,7 @@ function fetchInitData(onComplete = null) {
         fetch('/api/categories?t=' + Date.now()).then(res => res.json())
     ])
     .then(([initData, catsData]) => {
-        holdings = initData.holdings.map(h => ({...h, currentPrice: h.avgCost}));
+        holdings = initData.holdings.map(h => ({...h, currentPrice: h.manualPrice || h.avgCost}));
         researchReports = initData.reports;
         portfoliosList = initData.portfolios;
         categoriesList = catsData;
@@ -37,7 +37,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
             if (cached.__ts__ && (Date.now() - cached.__ts__) < CACHE_TTL) {
                 if (cached.__rate__) exchangeRateUSDTHB = cached.__rate__;
-                holdings.forEach(h => { if (cached[h.ticker]) h.currentPrice = cached[h.ticker]; });
+                if (cached.__rateEURUSD__) exchangeRateEURUSD = cached.__rateEURUSD__;
+                // Manual price overrides win over cached live prices
+                holdings.forEach(h => { if (cached[h.ticker] && !h.manualPrice) h.currentPrice = cached[h.ticker]; });
             }
         } catch (e) { /* ignore corrupt cache */ }
 

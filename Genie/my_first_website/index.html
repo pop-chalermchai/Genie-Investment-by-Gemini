@@ -256,7 +256,12 @@
                                         <select id="ingest-currency" required>
                                             <option value="USD">USD</option>
                                             <option value="THB">THB</option>
+                                            <option value="EUR">EUR</option>
                                         </select>
+                                    </div>
+                                    <div class="form-group span-2">
+                                        <label for="ingest-market-price" id="label-market-price">Market Price — Manual (optional)</label>
+                                        <input type="number" id="ingest-market-price" placeholder="Leave blank for automatic live price" min="0.00000001" step="any">
                                     </div>
                                 </div>
                                 <button type="submit" class="btn btn-primary" id="btn-ingest-submit">
@@ -300,15 +305,15 @@
                         <table class="positions-table">
                             <thead>
                                 <tr>
-                                    <th>Ticker</th>
-                                    <th>Company Name</th>
-                                    <th>Sub-Portfolio</th>
-                                    <th class="text-right">Shares</th>
-                                    <th class="text-right">Avg Cost</th>
-                                    <th class="text-right">Market Price</th>
-                                    <th class="text-right">Market Value</th>
-                                    <th class="text-right">Weight</th>
-                                    <th class="text-right">Return (P&amp;L)</th>
+                                    <th style="cursor:pointer;" onclick="sortPortfolioTable('ticker')" title="Sort by Ticker">Ticker ↕</th>
+                                    <th style="cursor:pointer;" onclick="sortPortfolioTable('companyName')" title="Sort by Company">Company Name ↕</th>
+                                    <th style="cursor:pointer;" onclick="sortPortfolioTable('portfolio')" title="Sort by Sub-Portfolio">Sub-Portfolio ↕</th>
+                                    <th class="text-right" style="cursor:pointer;" onclick="sortPortfolioTable('shares')" title="Sort by Shares">Shares ↕</th>
+                                    <th class="text-right" style="cursor:pointer;" onclick="sortPortfolioTable('avgCost')" title="Sort by Avg Cost">Avg Cost ↕</th>
+                                    <th class="text-right" style="cursor:pointer;" onclick="sortPortfolioTable('marketPrice')" title="Sort by Price">Market Price ↕</th>
+                                    <th class="text-right" style="cursor:pointer;" onclick="sortPortfolioTable('marketValue')" title="Sort by Market Value">Market Value ↕</th>
+                                    <th class="text-right" style="cursor:pointer;" onclick="sortPortfolioTable('weight')" title="Sort by Weight">Weight ↕</th>
+                                    <th class="text-right" style="cursor:pointer;" onclick="sortPortfolioTable('return')" title="Sort by Return">Return (P&amp;L) ↕</th>
                                 </tr>
                             </thead>
                             <tbody id="portfolio-table-body"></tbody>
@@ -1097,9 +1102,14 @@
                     <label for="edit-asset-shares" style="display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 0.85rem;">Total Shares (Qty)</label>
                     <input type="number" id="edit-asset-shares" required min="0.00000001" step="any" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 6px; box-sizing: border-box;">
                 </div>
-                <div class="form-group" style="margin-bottom: 25px;">
+                <div class="form-group" style="margin-bottom: 15px;">
                     <label for="edit-asset-price" style="display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 0.85rem;">Average Cost Price</label>
                     <input type="number" id="edit-asset-price" required min="0.00000001" step="any" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 6px; box-sizing: border-box;">
+                </div>
+                <div class="form-group" style="margin-bottom: 25px;">
+                    <label for="edit-asset-market-price" style="display: block; margin-bottom: 5px; color: var(--text-secondary); font-size: 0.85rem;">Market Price — Manual Override</label>
+                    <input type="number" id="edit-asset-market-price" min="0.00000001" step="any" placeholder="Leave blank for automatic live price" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 6px; box-sizing: border-box;">
+                    <span style="display:block; margin-top:5px; font-size:0.72rem; color:var(--text-secondary);">ใส่ราคาเองสำหรับสินทรัพย์ที่ดึงราคาอัตโนมัติไม่ได้ — เว้นว่างเพื่อกลับไปใช้ราคา live</span>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: 700; border-radius: 6px; border: none; cursor: pointer; background: linear-gradient(90deg, #00F0FF 0%, #0088FF 100%); color: #030712;">Save Changes</button>
             </form>
@@ -1232,6 +1242,7 @@
                         <select id="edit-tx-currency" required>
                             <option value="USD">USD</option>
                             <option value="THB">THB</option>
+                            <option value="EUR">EUR</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -1355,12 +1366,12 @@
     <script src="purify.min.js"></script>
     <script src="auth.js?v=1"></script>
     <!-- App modules: sequential split of the former app.js — load order matters -->
-    <script src="js/01_core.js?v=1"></script>
-    <script src="js/02_init.js?v=1"></script>
-    <script src="js/03_dashboard.js?v=1"></script>
-    <script src="js/04_research.js?v=1"></script>
-    <script src="js/05_transactions.js?v=1"></script>
-    <script src="js/06_modals.js?v=1"></script>
-    <script src="js/07_import_misc.js?v=1"></script>
+    <script src="js/01_core.js?v=2"></script>
+    <script src="js/02_init.js?v=2"></script>
+    <script src="js/03_dashboard.js?v=2"></script>
+    <script src="js/04_research.js?v=2"></script>
+    <script src="js/05_transactions.js?v=2"></script>
+    <script src="js/06_modals.js?v=2"></script>
+    <script src="js/07_import_misc.js?v=2"></script>
 </body>
 </html>

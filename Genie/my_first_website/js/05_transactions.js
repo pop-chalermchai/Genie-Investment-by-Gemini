@@ -255,11 +255,8 @@ function renderTransactions() {
         const meta = typeMeta[t.type] || { label: t.type, bg: "rgba(100,100,100,0.1)", color: "var(--text-secondary)" };
         const typeBadge = `<span style="background:${meta.bg};color:${meta.color};padding:4px 8px;border-radius:4px;font-weight:600;font-size:0.75rem;">${meta.label}</span>`;
 
-        let price = parseFloat(t.price);
-        let displayPrice = price;
-        let sym = t.currency === "THB" ? "฿" : "$";
-        if (displayCurrency === "THB" && t.currency === "USD") { displayPrice = price * exchangeRateUSDTHB; sym = "฿"; }
-        else if (displayCurrency === "USD" && t.currency === "THB") { displayPrice = price / exchangeRateUSDTHB; sym = "$"; }
+        const displayPrice = convertCurrency(parseFloat(t.price), t.currency, displayCurrency);
+        const sym = displayCurrency === "THB" ? "฿" : "$";
 
         const formattedPrice = sym + displayPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         const formattedQty = formatShares(Math.abs(parseFloat(t.shares)));

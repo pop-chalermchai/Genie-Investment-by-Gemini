@@ -371,7 +371,7 @@ async function fetchLivePrices() {
     if (btnText) btnText.innerText = "Refreshing...";
     if (btnIcon) btnIcon.style.animation = "spin 1s linear infinite";
 
-    // 1. Fetch live USD/THB exchange rate from Yahoo Finance
+    // 1. Fetch live exchange rates from Yahoo Finance (USD/THB and EUR/USD)
     const ratePromise = (async () => {
         try {
             const response = await fetch(`/api/stock?ticker=USDTHB=X`);
@@ -386,9 +386,24 @@ async function fetchLivePrices() {
             console.warn("Failed to fetch live USD/THB rate:", err);
         }
     })();
+    const eurRatePromise = (async () => {
+        try {
+            const response = await fetch(`/api/stock?ticker=EURUSD=X`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.price) {
+                    exchangeRateEURUSD = data.price;
+                    console.log("Updated EUR/USD exchange rate to:", exchangeRateEURUSD);
+                }
+            }
+        } catch (err) {
+            console.warn("Failed to fetch live EUR/USD rate:", err);
+        }
+    })();
 
     // 2. Fetch prices for all holdings
     const promises = holdings.map(async (pos) => {
+        if (pos.manualPrice) return; // User-entered market price overrides live fetch
         if (pos.ticker.includes(" ") || pos.ticker.startsWith("KAsset")) return; // Skip custom/private tickers
 
         // Thai mutual funds — fetch NAV from SEC API instead of Yahoo Finance
@@ -423,11 +438,11 @@ async function fetchLivePrices() {
     });
 
     // Wait for all to complete
-    await Promise.all([...promises, ratePromise]);
+    await Promise.all([...promises, ratePromise, eurRatePromise]);
 
     // Save prices to localStorage cache for instant render on next page load
-    const priceCache = { __ts__: Date.now(), __rate__: exchangeRateUSDTHB };
-    holdings.forEach(h => { priceCache[h.ticker] = h.currentPrice; });
+    const priceCache = { __ts__: Date.now(), __rate__: exchangeRateUSDTHB, __rateEURUSD__: exchangeRateEURUSD };
+    holdings.forEach(h => { if (!h.manualPrice) priceCache[h.ticker] = h.currentPrice; });
     localStorage.setItem('genie-price-cache', JSON.stringify(priceCache));
 
     // Update the UI

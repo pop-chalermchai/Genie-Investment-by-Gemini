@@ -166,7 +166,7 @@ function handleExcelUpload(event) {
                 if (!companyName) companyName = ticker;
                 if (!sector) sector = "Technology";
                 if (!currency) currency = "USD";
-                if (currency !== "USD" && currency !== "THB") currency = "USD";
+                if (!["USD", "THB", "EUR"].includes(currency)) currency = "USD";
                 
                 if (date) {
                     if (!isNaN(date) && parseFloat(date) > 20000 && parseFloat(date) < 60000) {
@@ -245,7 +245,7 @@ function renderExcelPreview() {
         const row = document.createElement("tr");
         
         const typeStyle = tx.type === "BUY" ? "color: #10B981; font-weight: 600;" : "color: #EF4444; font-weight: 600;";
-        const currencySymbol = tx.currency === "USD" ? "$" : "฿";
+        const symbol = currencySymbol(tx.currency);
         
         row.innerHTML = `
             <td style="color: var(--text-secondary);">${tx.date || "<i>(Now)</i>"}</td>
@@ -253,7 +253,7 @@ function renderExcelPreview() {
             <td>${tx.companyName}</td>
             <td style="${typeStyle}">${tx.type}</td>
             <td class="text-right">${tx.shares.toLocaleString()}</td>
-            <td class="text-right">${currencySymbol}${tx.avgCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}</td>
+            <td class="text-right">${symbol}${tx.avgCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})}</td>
             <td>${tx.currency}</td>
             <td><span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-primary); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">${tx.portfolio}</span></td>
         `;
@@ -302,7 +302,7 @@ function confirmExcelUpload() {
             fetch('/api/holdings')
                 .then(r => r.json())
                 .then(hData => {
-                    holdings = hData.map(h => ({...h, currentPrice: h.avgCost}));
+                    holdings = hData.map(h => ({...h, currentPrice: h.manualPrice || h.avgCost}));
                     updateDashboard();
                     fetchLivePrices(); // Update to live price
                 });
@@ -445,7 +445,7 @@ function handleTransferStock(event) {
             fetch('/api/holdings')
                 .then(r => r.json())
                 .then(hData => {
-                    holdings = hData.map(h => ({...h, currentPrice: h.avgCost}));
+                    holdings = hData.map(h => ({...h, currentPrice: h.manualPrice || h.avgCost}));
                     updateDashboard();
                     fetchLivePrices(); // update with real prices
                 });

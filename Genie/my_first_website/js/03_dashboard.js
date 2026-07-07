@@ -5,18 +5,8 @@ function updateDashboard() {
     // Apply sorting
     if (currentSort.column) {
         holdings.sort((a, b) => {
-            const getMarketValue = (h) => {
-                let p = h.currentPrice;
-                if (displayCurrency === "USD" && h.currency === "THB") p /= exchangeRateUSDTHB;
-                else if (displayCurrency === "THB" && h.currency === "USD") p *= exchangeRateUSDTHB;
-                return h.shares * p;
-            };
-            const getCostBasis = (h) => {
-                let c = h.avgCost;
-                if (displayCurrency === "USD" && h.currency === "THB") c /= exchangeRateUSDTHB;
-                else if (displayCurrency === "THB" && h.currency === "USD") c *= exchangeRateUSDTHB;
-                return h.shares * c;
-            };
+            const getMarketValue = (h) => h.shares * convertCurrency(h.currentPrice, h.currency, displayCurrency);
+            const getCostBasis = (h) => h.shares * convertCurrency(h.avgCost, h.currency, displayCurrency);
             
             let valA, valB;
             switch (currentSort.column) {
@@ -70,30 +60,15 @@ function updateDashboard() {
     // Pre-pass: calculate total market value for weight % computation
     let preTotalMarketValue = 0;
     holdings.forEach(pos => {
-        let mv = pos.shares * pos.currentPrice;
-        if (displayCurrency === "USD" && pos.currency === "THB") mv /= exchangeRateUSDTHB;
-        else if (displayCurrency === "THB" && pos.currency === "USD") mv *= exchangeRateUSDTHB;
-        preTotalMarketValue += mv;
+        preTotalMarketValue += pos.shares * convertCurrency(pos.currentPrice, pos.currency, displayCurrency);
     });
 
     holdings.forEach((pos, index) => {
-        let avgCost = pos.avgCost;
-        let currentPrice = pos.currentPrice;
-        let costBasis = pos.shares * avgCost;
-        let marketValue = pos.shares * currentPrice;
-
         // Perform currency conversion to the display currency on the fly
-        if (displayCurrency === "USD" && pos.currency === "THB") {
-            avgCost = pos.avgCost / exchangeRateUSDTHB;
-            currentPrice = pos.currentPrice / exchangeRateUSDTHB;
-            costBasis = (pos.shares * pos.avgCost) / exchangeRateUSDTHB;
-            marketValue = (pos.shares * pos.currentPrice) / exchangeRateUSDTHB;
-        } else if (displayCurrency === "THB" && pos.currency === "USD") {
-            avgCost = pos.avgCost * exchangeRateUSDTHB;
-            currentPrice = pos.currentPrice * exchangeRateUSDTHB;
-            costBasis = (pos.shares * pos.avgCost) * exchangeRateUSDTHB;
-            marketValue = (pos.shares * pos.currentPrice) * exchangeRateUSDTHB;
-        }
+        const avgCost = convertCurrency(pos.avgCost, pos.currency, displayCurrency);
+        const currentPrice = convertCurrency(pos.currentPrice, pos.currency, displayCurrency);
+        const costBasis = pos.shares * avgCost;
+        const marketValue = pos.shares * currentPrice;
 
         const gainLoss = marketValue - costBasis;
         const gainLossPct = costBasis > 0 ? (gainLoss / costBasis) * 100 : 0;
@@ -261,16 +236,7 @@ function renderChart() {
     }
 
     const labels = holdings.map(h => h.ticker);
-    const data = holdings.map(h => {
-        let price = h.currentPrice;
-        // Convert price to display currency
-        if (displayCurrency === "USD" && h.currency === "THB") {
-            price = h.currentPrice / exchangeRateUSDTHB;
-        } else if (displayCurrency === "THB" && h.currency === "USD") {
-            price = h.currentPrice * exchangeRateUSDTHB;
-        }
-        return h.shares * price;
-    });
+    const data = holdings.map(h => h.shares * convertCurrency(h.currentPrice, h.currency, displayCurrency));
     
     allocationChart = new Chart(ctx, {
         type: "doughnut",
@@ -347,6 +313,8 @@ function handleIngest(event) {
     const shares = parseFloat(document.getElementById("ingest-shares").value);
     const avgCost = parseFloat(document.getElementById("ingest-avg-cost").value);
     const currency = document.getElementById("ingest-currency").value;
+    const manualPriceRaw = document.getElementById("ingest-market-price").value;
+    const manualPrice = manualPriceRaw !== "" ? parseFloat(manualPriceRaw) : null;
 
     fetch('/api/ingest', {
         method: 'POST',
@@ -354,7 +322,7 @@ function handleIngest(event) {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            type: txType, assetType, ticker, companyName, sector, portfolio, shares, avgCost, currency
+            type: txType, assetType, ticker, companyName, sector, portfolio, shares, avgCost, currency, manualPrice
         })
     })
     .then(response => response.json())
@@ -370,7 +338,7 @@ function handleIngest(event) {
             fetch('/api/holdings')
                 .then(r => r.json())
                 .then(hData => {
-                    holdings = hData.map(h => ({...h, currentPrice: h.avgCost}));
+                    holdings = hData.map(h => ({...h, currentPrice: h.manualPrice || h.avgCost}));
                     updateDashboard();
                     fetchLivePrices(); // Re-trigger live price fetch for the new asset
                 });
@@ -713,6 +681,12 @@ async function autoFillCompanyName() {
         const costInput = document.getElementById("ingest-avg-cost");
         if (data.price && !costInput.value) {
             costInput.value = data.price.toFixed(2);
+        }
+
+        // Auto-select the trading currency Yahoo reports (e.g., EUR for .PA/.DE tickers)
+        const currencySelect2 = document.getElementById("ingest-currency");
+        if (data.currency && currencySelect2 && [...currencySelect2.options].some(o => o.value === data.currency)) {
+            currencySelect2.value = data.currency;
         }
         
         // Auto-select Cryptocurrency sector if applicable

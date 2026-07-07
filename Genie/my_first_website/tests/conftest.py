@@ -52,7 +52,8 @@ def _build_schema(db_path):
             company_name TEXT,
             sector TEXT,
             domain TEXT,
-            portfolio_id INTEGER
+            portfolio_id INTEGER,
+            manual_price REAL
         );
         CREATE TABLE transactions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,

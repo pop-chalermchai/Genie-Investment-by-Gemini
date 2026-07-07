@@ -32,7 +32,7 @@ async function openStockDetail(ticker) {
         if (!response.ok) throw new Error("Failed to load stock data");
         const data = await response.json();
         
-        const sym = data.currency === "THB" ? "฿" : "$";
+        const sym = currencySymbol(data.currency);
         
         document.getElementById("modal-stock-name").innerText = data.longName || data.ticker;
         
@@ -346,7 +346,7 @@ function handleAddSubPortfolio(e) {
 // ---------------------------------------------
 // EDIT ASSET MODAL
 // ---------------------------------------------
-function openEditAssetModal(ticker, portfolio, currency, shares, avgCost, portfolioId) {
+function openEditAssetModal(ticker, portfolio, currency, shares, avgCost, portfolioId, manualPrice) {
     document.getElementById("edit-asset-ticker").value = ticker;
     document.getElementById("edit-asset-portfolio").value = portfolio;
     document.getElementById("edit-asset-portfolio-id").value = portfolioId || '';
@@ -354,6 +354,7 @@ function openEditAssetModal(ticker, portfolio, currency, shares, avgCost, portfo
     document.getElementById("edit-asset-display").innerText = `${ticker} (in ${portfolio})`;
     document.getElementById("edit-asset-shares").value = shares;
     document.getElementById("edit-asset-price").value = avgCost;
+    document.getElementById("edit-asset-market-price").value = manualPrice || '';
     document.getElementById("edit-asset-modal").classList.add("active");
 }
 
@@ -369,11 +370,13 @@ function handleEditAsset(e) {
     const currency = document.getElementById("edit-asset-currency").value;
     const shares = parseFloat(document.getElementById("edit-asset-shares").value);
     const price = parseFloat(document.getElementById("edit-asset-price").value);
+    const manualPriceRaw = document.getElementById("edit-asset-market-price").value;
+    const manualPrice = manualPriceRaw !== "" ? parseFloat(manualPriceRaw) : null; // null clears the override
 
     fetch('/api/asset-adjustment', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ticker, portfolio, portfolioId: portfolioId ? parseInt(portfolioId) : null, currency, shares, price })
+        body: JSON.stringify({ ticker, portfolio, portfolioId: portfolioId ? parseInt(portfolioId) : null, currency, shares, price, manualPrice })
     })
     .then(r => r.json())
     .then(data => {

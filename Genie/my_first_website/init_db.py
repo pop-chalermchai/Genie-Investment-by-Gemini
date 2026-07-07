@@ -41,6 +41,7 @@ def init_db():
             company_name TEXT,
             sector TEXT,
             portfolio_id INTEGER,
+            manual_price REAL,
             FOREIGN KEY (portfolio_id) REFERENCES portfolios (id)
         )
     ''')

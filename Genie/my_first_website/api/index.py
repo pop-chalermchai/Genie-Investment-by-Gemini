@@ -429,6 +429,7 @@ def get_stock_chart():
 _HOLDINGS_QUERY = '''
     SELECT
         a.ticker, a.company_name as "companyName", a.sector, a.domain,
+        a.manual_price as "manualPrice",
         p.name as portfolio, p.id as "portfolioId", p.parent_id as "parentId",
         (SELECT name FROM portfolios WHERE id = p.parent_id) as "parentPortfolio",
         t.currency, SUM(t.shares) as shares,
@@ -637,6 +638,10 @@ def _insert_transaction_row(cursor, is_postgres, user_id, tx):
     price = float(tx.get('avgCost', 0))
     currency = tx.get('currency', 'USD')
     tx_date = tx.get('date')
+    manual_price = tx.get('manualPrice')
+    manual_price = float(manual_price) if manual_price not in (None, '') else None
+    if manual_price is not None and manual_price <= 0:
+        manual_price = None
 
     if not all([ticker, company_name, portfolio_name, shares > 0, price > 0]):
         raise ValueError(f"Missing required fields or invalid amounts for ticker {ticker}")
@@ -660,6 +665,11 @@ def _insert_transaction_row(cursor, is_postgres, user_id, tx):
             asset_id = cursor.fetchone()[0]
         else:
             asset_id = cursor.lastrowid
+
+    # Optional user-entered market price (override for assets that can't be
+    # priced automatically). Only touch it when the caller provided a value.
+    if manual_price is not None:
+        execute_sql(cursor, is_postgres, "UPDATE assets SET manual_price=? WHERE id=?", (manual_price, asset_id))
 
     if tx_date:
         execute_sql(cursor, is_postgres, "INSERT INTO transactions (asset_id, type, shares, price, currency, transaction_date) VALUES (?, ?, ?, ?, ?, ?)",
@@ -784,6 +794,15 @@ def adjust_asset():
         if not a_rows:
             raise ValueError("Asset not found")
         asset_id = a_rows[0]['id']
+
+        # Manual market price override: a positive number sets it, empty/null
+        # clears it (back to automatic live pricing). Key absent = leave as-is.
+        if 'manualPrice' in data:
+            mp = data.get('manualPrice')
+            mp = float(mp) if mp not in (None, '') else None
+            if mp is not None and mp <= 0:
+                mp = None
+            execute_sql(cursor, is_postgres, "UPDATE assets SET manual_price=? WHERE id=?", (mp, asset_id))
 
         execute_sql(cursor, is_postgres, "DELETE FROM transactions WHERE asset_id=?", (asset_id,))
         if new_shares > 0:

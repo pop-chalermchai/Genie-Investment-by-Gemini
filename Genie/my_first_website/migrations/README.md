@@ -12,6 +12,7 @@ This replaces the old `migrate_db()` startup hack (see Product Roadmap step 3).
 | `002_backfill_owner.sql` | Assigns all existing rows to the owner's UUID, then sets `NOT NULL` | After creating the owner's auth user |
 | `003_rls.sql` | Enables Row-Level Security policies (defense-in-depth) | After 002 |
 | `004_profiles.sql` | Per-user profile table (display name, avatar, currency/theme/language preferences) + RLS | After 003 |
+| `005_manual_price.sql` | Adds nullable `assets.manual_price` — user-entered market-price override for assets that can't be priced automatically | Applied 2026-07-07 |
 
 ## Step-by-step (multi-user go-live)
 

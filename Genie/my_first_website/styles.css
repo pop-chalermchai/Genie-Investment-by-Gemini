@@ -514,8 +514,10 @@ header::before {
     font-family: var(--font-mono);
 }
 
-.cell-positive { color: var(--color-positive); font-weight: 600; }
-.cell-negative { color: var(--color-negative); font-weight: 600; }
+.cell-positive,
+.positions-table td.cell-positive { color: var(--color-positive); font-weight: 600; }
+.cell-negative,
+.positions-table td.cell-negative { color: var(--color-negative); font-weight: 600; }
 
 /* Visuals Column */
 .visuals-column {

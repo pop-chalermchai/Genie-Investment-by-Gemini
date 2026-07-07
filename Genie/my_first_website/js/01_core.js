@@ -15,7 +15,24 @@ let activeReportTab = "overview";
 let allocationChart = null;
 let displayCurrency = "USD";
 let exchangeRateUSDTHB = 32.505;
+let exchangeRateEURUSD = 1.08;
+
+// Central currency conversion — all portfolio math goes through here.
+// Rates are expressed as USD per 1 unit of each currency; converting A→B
+// pivots through USD so adding a new currency is a one-line change.
+function convertCurrency(amount, from, to) {
+    if (!from || !to || from === to) return amount;
+    const usdPerUnit = { USD: 1, THB: 1 / exchangeRateUSDTHB, EUR: exchangeRateEURUSD };
+    const f = usdPerUnit[from] ?? 1;
+    const t = usdPerUnit[to] ?? 1;
+    return amount * (f / t);
+}
+
+function currencySymbol(code) {
+    return { USD: "$", THB: "฿", EUR: "€" }[code] || "$";
+}
 let currentSort = { column: null, direction: 'asc' };
+let portfolioSort = { column: null, direction: 'asc' };
 let isManageMode = false;
 
 // ==========================================================================
@@ -57,6 +74,16 @@ function sortTable(column) {
         currentSort.direction = 'asc';
     }
     updateDashboard();
+}
+
+function sortPortfolioTable(column) {
+    if (portfolioSort.column === column) {
+        portfolioSort.direction = portfolioSort.direction === 'asc' ? 'desc' : 'asc';
+    } else {
+        portfolioSort.column = column;
+        portfolioSort.direction = 'asc';
+    }
+    renderPortfolioPage();
 }
 
 // ==========================================================================
@@ -227,6 +254,32 @@ function renderPortfolioPage() {
         return parentMatch && subMatch;
     });
 
+    // Apply sorting (mirrors the main dashboard table)
+    if (portfolioSort.column) {
+        const getMarketValue = (h) => h.shares * convertCurrency(h.currentPrice, h.currency, displayCurrency);
+        const getCostBasis = (h) => h.shares * convertCurrency(h.avgCost, h.currency, displayCurrency);
+
+        filteredHoldings.sort((a, b) => {
+            let valA, valB;
+            switch (portfolioSort.column) {
+                case 'ticker': valA = a.ticker; valB = b.ticker; break;
+                case 'companyName': valA = a.companyName; valB = b.companyName; break;
+                case 'portfolio': valA = a.portfolio; valB = b.portfolio; break;
+                case 'shares': valA = a.shares; valB = b.shares; break;
+                case 'avgCost': valA = getCostBasis(a)/a.shares; valB = getCostBasis(b)/b.shares; break;
+                case 'marketPrice': valA = getMarketValue(a)/a.shares; valB = getMarketValue(b)/b.shares; break;
+                case 'marketValue': valA = getMarketValue(a); valB = getMarketValue(b); break;
+                case 'weight': valA = getMarketValue(a); valB = getMarketValue(b); break;
+                case 'return': valA = getMarketValue(a) - getCostBasis(a); valB = getMarketValue(b) - getCostBasis(b); break;
+                default: valA = a.ticker; valB = b.ticker;
+            }
+
+            if (valA < valB) return portfolioSort.direction === 'asc' ? -1 : 1;
+            if (valA > valB) return portfolioSort.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }
+
     if (filteredHoldings.length === 0) {
         tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--text-secondary);padding:24px;">No holdings in this portfolio.</td></tr>`;
         return;
@@ -236,29 +289,14 @@ function renderPortfolioPage() {
     // so weights sum to 100% within this view
     let viewTotalMarketValue = 0;
     filteredHoldings.forEach(pos => {
-        let mv = pos.shares * pos.currentPrice;
-        if (displayCurrency === "USD" && pos.currency === "THB") mv /= exchangeRateUSDTHB;
-        else if (displayCurrency === "THB" && pos.currency === "USD") mv *= exchangeRateUSDTHB;
-        viewTotalMarketValue += mv;
+        viewTotalMarketValue += pos.shares * convertCurrency(pos.currentPrice, pos.currency, displayCurrency);
     });
 
     filteredHoldings.forEach(pos => {
-        let avgCost = pos.avgCost;
-        let currentPrice = pos.currentPrice;
-        let costBasis = pos.shares * avgCost;
-        let marketValue = pos.shares * currentPrice;
-
-        if (displayCurrency === "USD" && pos.currency === "THB") {
-            avgCost = pos.avgCost / exchangeRateUSDTHB;
-            currentPrice = pos.currentPrice / exchangeRateUSDTHB;
-            costBasis = (pos.shares * pos.avgCost) / exchangeRateUSDTHB;
-            marketValue = (pos.shares * pos.currentPrice) / exchangeRateUSDTHB;
-        } else if (displayCurrency === "THB" && pos.currency === "USD") {
-            avgCost = pos.avgCost * exchangeRateUSDTHB;
-            currentPrice = pos.currentPrice * exchangeRateUSDTHB;
-            costBasis = (pos.shares * pos.avgCost) * exchangeRateUSDTHB;
-            marketValue = (pos.shares * pos.currentPrice) * exchangeRateUSDTHB;
-        }
+        const avgCost = convertCurrency(pos.avgCost, pos.currency, displayCurrency);
+        const currentPrice = convertCurrency(pos.currentPrice, pos.currency, displayCurrency);
+        const costBasis = pos.shares * avgCost;
+        const marketValue = pos.shares * currentPrice;
 
         const gainLoss = marketValue - costBasis;
         const gainLossPct = costBasis > 0 ? (gainLoss / costBasis) * 100 : 0;
@@ -287,7 +325,7 @@ function renderPortfolioPage() {
             <td class="text-right ${gainLoss >= 0 ? 'cell-positive' : 'cell-negative'}">
                 <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px;">
                     <span>${symbol}${formatNumber(gainLoss, 2)} (${gainLossPct >= 0 ? '+' : ''}${gainLossPct.toFixed(1)}%)</span>
-                    <button onclick="event.stopPropagation(); openEditAssetModal('${pos.ticker}', '${pos.portfolio}', '${pos.currency}', ${pos.shares}, ${pos.avgCost}, ${pos.portfolioId})" title="Edit Asset" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:1rem;padding:0;">✎</button>
+                    <button onclick="event.stopPropagation(); openEditAssetModal('${pos.ticker}', '${pos.portfolio}', '${pos.currency}', ${pos.shares}, ${pos.avgCost}, ${pos.portfolioId}, ${pos.manualPrice ?? null})" title="Edit Asset" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:1rem;padding:0;">✎</button>
                 </div>
             </td>
         `;
@@ -309,7 +347,7 @@ function deleteParentPortfolio(pName) {
                     fetch('/api/portfolios?t=' + Date.now()).then(res => res.json())
                 ])
                 .then(([hData, pData]) => {
-                    holdings = hData.map(h => ({...h, currentPrice: h.avgCost}));
+                    holdings = hData.map(h => ({...h, currentPrice: h.manualPrice || h.avgCost}));
                     portfoliosList = pData;
                     populateDropdowns();
                     updateDashboard();
