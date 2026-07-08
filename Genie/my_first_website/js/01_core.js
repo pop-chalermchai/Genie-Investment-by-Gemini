@@ -11,7 +11,6 @@ let activeSubPortfolio = null;
 let activeTab = "dashboard";
 let activeReport = "mu";
 let activeLanguage = "en";
-let activeReportTab = "overview";
 let allocationChart = null;
 let displayCurrency = "USD";
 let exchangeRateUSDTHB = 32.505;
@@ -178,7 +177,7 @@ const teamProfiles = {
 // ==========================================================================
 let researchReports = {};
 let researchFilterMode = 'all'; // 'all' | 'positive' | 'negative'
-let researchSortBy = 'sector';  // 'sector' | 'ticker' | 'upside'
+let researchSortBy = 'date';    // 'date' | 'sector' | 'ticker' | 'upside'
 let researchViewMode = 'list';  // 'list' | 'table'
 
 // === PORTFOLIO DRILL-DOWN NAVIGATION ===

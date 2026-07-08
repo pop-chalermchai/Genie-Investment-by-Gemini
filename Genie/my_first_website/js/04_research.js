@@ -3,8 +3,52 @@ let collapsedSectors = {}; // Remember collapsed states client-side
 function selectReport(reportId) {
     activeReport = reportId;
     localStorage.setItem('genie-last-report', reportId);
+    openResearchReader();
+}
+
+// ── Full-page reader navigation ────────────────────────────────────
+function openResearchReader() {
+    document.getElementById("research-feed-view").style.display = "none";
+    document.getElementById("research-reader-view").style.display = "";
     renderReport();
+    window.scrollTo({ top: 0 });
+}
+
+function closeResearchReader() {
+    document.getElementById("research-reader-view").style.display = "none";
+    document.getElementById("research-feed-view").style.display = "";
     renderReportList();
+}
+
+function scrollToReaderSection(section) {
+    document.getElementById("reader-sec-" + section)?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function formatResearchDate(iso) {
+    if (!iso) return "—";
+    const d = new Date(iso + "T00:00:00");
+    if (isNaN(d)) return iso;
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+function escapeHtml(s) {
+    const div = document.createElement("div");
+    div.textContent = s;
+    return div.innerHTML;
+}
+
+// Pull the recommendation strip (the first blockquote of the overview —
+// "RECOMMENDATION: … | TARGET PRICE: …" / "คำแนะนำ: …") for the feed row.
+function getReportSummaryLine(report) {
+    const raw = report[activeLanguage + "_overview"] || report.en_overview || "";
+    const m = raw.match(/^>\s?\S.*(?:\n>\s?.*)*/m); // first blockquote block
+    if (!m) return "";
+    return m[0]
+        .replace(/^>\s?/gm, "")
+        .replace(/\*\*|__|`|\*/g, "")
+        .replace(/\s*\n\s*/g, " · ")
+        .replace(/[ \t]{2,}/g, " ")
+        .trim();
 }
 
 function setLanguage(lang) {
@@ -13,14 +57,7 @@ function setLanguage(lang) {
     document.getElementById("lang-th").classList.remove("active");
     document.getElementById("lang-" + lang).classList.add("active");
     renderReport();
-}
-
-function setReportTab(tab) {
-    activeReportTab = tab;
-    document.getElementById("tab-overview").classList.remove("active");
-    document.getElementById("tab-dcf").classList.remove("active");
-    document.getElementById("tab-" + tab).classList.add("active");
-    renderReport();
+    renderReportList(); // feed summary lines are localized too
 }
 
 function getUpsidePct(report) {
@@ -38,8 +75,11 @@ function getFilteredSortedReports() {
         reports.sort((a, b) => a.ticker.localeCompare(b.ticker));
     } else if (researchSortBy === 'upside') {
         reports.sort((a, b) => (getUpsidePct(b) ?? -Infinity) - (getUpsidePct(a) ?? -Infinity));
-    } else {
+    } else if (researchSortBy === 'sector') {
         reports.sort((a, b) => (a.sector || 'Other').localeCompare(b.sector || 'Other') || a.ticker.localeCompare(b.ticker));
+    } else {
+        // Default: research date, newest first (undated last)
+        reports.sort((a, b) => (b.researchDate || '').localeCompare(a.researchDate || '') || a.ticker.localeCompare(b.ticker));
     }
     return { reports, query };
 }
@@ -48,36 +88,32 @@ function makeReportRow(report) {
     const recColor = report.isPositive ? 'var(--color-positive)' : 'var(--color-negative)';
     const recBg    = report.isPositive ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)';
     const recLabel = (report.rating || 'N/A').split(' ')[0].replace(/[^A-Z/]/gi, '') || 'N/A';
-    const ptLine   = report.priceTarget
-        ? `<span style="font-size:0.68rem;color:var(--text-secondary);font-family:var(--font-mono);">PT: $${parseFloat(report.priceTarget).toFixed(2)}</span>`
-        : '';
-    const btn = document.createElement("button");
-    btn.className = "report-list-item " + (activeReport === report.key ? "active" : "");
-    btn.id = "report-item-" + report.key;
-    btn.style.flex = "1";
-    btn.onclick = () => selectReport(report.key);
-    btn.innerHTML = `
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
-            <span style="font-size:0.68rem;font-weight:700;padding:1px 5px;border-radius:3px;background:${recBg};color:${recColor};white-space:nowrap;">${recLabel}</span>
-            <span class="report-ticker">${report.ticker}</span>
-            ${ptLine}
-        </div>
-        <span class="report-name" style="font-size:0.78rem;">${report.companyName}</span>
-    `;
-    const actions = document.createElement("div");
-    actions.className = "report-row-actions";
-    const editBtn = document.createElement("button");
-    editBtn.title = "Edit"; editBtn.innerHTML = "✏️";
-    editBtn.onclick = (e) => { e.stopPropagation(); openEditReportModal(report.key); };
-    editBtn.style.cssText = "padding:2px 6px;border:1px solid var(--border-dim);background:var(--bg-card-solid);border-radius:4px;cursor:pointer;font-size:0.75rem;line-height:1;";
-    const delBtn = document.createElement("button");
-    delBtn.title = "Delete"; delBtn.innerHTML = "🗑";
-    delBtn.onclick = (e) => { e.stopPropagation(); deleteReport(report.key); };
-    delBtn.style.cssText = "padding:2px 6px;border:1px solid var(--border-dim);background:var(--bg-card-solid);border-radius:4px;cursor:pointer;font-size:0.75rem;line-height:1;";
-    actions.appendChild(editBtn); actions.appendChild(delBtn);
+
+    const upside = getUpsidePct(report);
+    const rightMeta = report.priceTarget
+        ? `<span style="font-family:var(--font-mono);font-size:0.78rem;color:var(--text-primary);white-space:nowrap;">PT $${parseFloat(report.priceTarget).toFixed(2)}</span>` +
+          (upside !== null
+            ? `<span style="font-family:var(--font-mono);font-size:0.78rem;font-weight:700;white-space:nowrap;color:${upside >= 0 ? 'var(--color-positive)' : 'var(--color-negative)'};">${upside >= 0 ? '+' : ''}${upside.toFixed(1)}%</span>`
+            : '')
+        : `<span style="font-size:0.75rem;color:var(--text-secondary);white-space:nowrap;">${report.sector || ''}</span>`;
+
     const rowEl = document.createElement("div");
-    rowEl.className = "report-row";
-    rowEl.appendChild(btn); rowEl.appendChild(actions);
+    rowEl.className = "research-feed-row";
+    rowEl.id = "report-item-" + report.key;
+    rowEl.onclick = () => selectReport(report.key);
+    const summary = getReportSummaryLine(report);
+    rowEl.innerHTML = `
+        <span class="feed-date">${formatResearchDate(report.researchDate)}</span>
+        <span class="feed-rating" style="background:${recBg};color:${recColor};">${recLabel}</span>
+        <span class="feed-main">
+            <span class="feed-title">
+                <span class="report-ticker">${report.ticker}</span>
+                <span class="feed-company">${report.companyName}</span>
+            </span>
+            ${summary ? `<span class="feed-summary">${escapeHtml(summary)}</span>` : ''}
+        </span>
+        <span class="feed-right">${rightMeta}<span class="feed-chevron">›</span></span>
+    `;
     return rowEl;
 }
 
@@ -86,6 +122,9 @@ function renderReportList() {
     if (!container) return;
     container.innerHTML = "";
     const { reports, query } = getFilteredSortedReports();
+
+    const countEl = document.getElementById("research-feed-count");
+    if (countEl) countEl.textContent = `${reports.length} report${reports.length === 1 ? '' : 's'}`;
 
     if (researchSortBy === 'sector' && !query) {
         // Grouped by sector
@@ -110,8 +149,12 @@ function renderReportList() {
     } else {
         // Flat sorted list
         const wrapper = document.createElement("div");
-        wrapper.style.cssText = "display:flex;flex-direction:column;gap:6px;margin-top:6px;";
-        if (reports.length === 0) wrapper.innerHTML = `<div style="color:var(--text-secondary);font-size:0.82rem;text-align:center;padding:20px 0;">No reports match.</div>`;
+        wrapper.style.cssText = "display:flex;flex-direction:column;gap:8px;margin-top:14px;";
+        if (reports.length === 0) {
+            wrapper.innerHTML = Object.keys(researchReports).length === 0
+                ? `<div style="color:var(--text-secondary);font-size:0.85rem;text-align:center;padding:40px 0;">No research reports yet — hit <strong>+ New</strong> to write your first one.</div>`
+                : `<div style="color:var(--text-secondary);font-size:0.82rem;text-align:center;padding:24px 0;">No reports match the current filter.</div>`;
+        }
         reports.forEach(r => wrapper.appendChild(makeReportRow(r)));
         container.appendChild(wrapper);
     }
@@ -152,7 +195,7 @@ function renderResearchTable() {
     const { reports } = getFilteredSortedReports();
     tbody.innerHTML = '';
     if (reports.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-secondary);padding:30px 0;">No reports match the current filter.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text-secondary);padding:30px 0;">No reports match the current filter.</td></tr>`;
         return;
     }
     reports.forEach(r => {
@@ -164,8 +207,9 @@ function renderResearchTable() {
         const recLabel    = (r.rating || 'N/A').split(' ')[0].replace(/[^A-Z/]/gi, '') || 'N/A';
         const tr = document.createElement('tr');
         tr.style.cursor = 'pointer';
-        tr.onclick = () => { setResearchViewMode('list'); selectReport(r.key); };
+        tr.onclick = () => selectReport(r.key);
         tr.innerHTML = `
+            <td style="font-family:var(--font-mono);font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;">${formatResearchDate(r.researchDate)}</td>
             <td style="font-family:var(--font-mono);font-weight:700;color:var(--accent-neon);">${r.ticker}</td>
             <td style="color:var(--text-primary);font-size:0.85rem;">${r.companyName}</td>
             <td style="color:var(--text-secondary);font-size:0.82rem;">${r.sector || '—'}</td>
@@ -194,6 +238,7 @@ function openAddReportModal() {
     reportModalEditKey = null;
     document.getElementById('report-modal-title').textContent = 'New Research Report';
     document.getElementById('report-form').reset();
+    document.getElementById('rform-date').value = new Date().toISOString().slice(0, 10);
     document.getElementById('rform-edit-key').value = '';
     document.getElementById('rform-key').readOnly = false;
     document.getElementById('rform-key').style.opacity = '1';
@@ -222,6 +267,7 @@ function openEditReportModal(key) {
     document.getElementById('rform-price-target').value = r.priceTarget || '';
     document.getElementById('rform-analysis-price').value = r.analysisPrice || '';
     document.getElementById('rform-is-positive').checked = !!r.isPositive;
+    document.getElementById('rform-date').value = r.researchDate || '';
     document.getElementById('rform-en-overview').value = r.en_overview || '';
     document.getElementById('rform-th-overview').value = r.th_overview || '';
     document.getElementById('rform-en-dcf').value = r.en_dcf || '';
@@ -268,6 +314,7 @@ async function saveReport(event) {
         price_target: parseFloat(document.getElementById('rform-price-target').value) || null,
         analysis_price: parseFloat(document.getElementById('rform-analysis-price').value) || null,
         is_positive: document.getElementById('rform-is-positive').checked,
+        research_date: document.getElementById('rform-date').value || null,
         en_overview: document.getElementById('rform-en-overview').value,
         th_overview: document.getElementById('rform-th-overview').value,
         en_dcf: document.getElementById('rform-en-dcf').value,
@@ -313,7 +360,11 @@ async function deleteReport(key) {
             activeReport = remaining.length > 0 ? remaining[0] : null;
         }
         await loadResearchReports();
-        renderReport();
+        // If the deleted report was open in the reader, return to the feed
+        const readerEl = document.getElementById("research-reader-view");
+        if (readerEl && readerEl.style.display !== "none") {
+            closeResearchReader();
+        }
     } catch (err) {
         alert('Delete failed: ' + err.message);
     }
@@ -325,10 +376,17 @@ function renderReport() {
         document.getElementById("report-article-content").innerHTML =
             `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;gap:12px;opacity:0.5;">
                 <svg viewBox="0 0 24 24" style="width:40px;height:40px;fill:var(--text-secondary);"><path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09L12 3zm6.8 9.18L12 15.9l-6.8-3.72V10.1l6.8 3.71 6.8-3.71v2.08zM12 11.9L5.2 8.18 12 4.45l6.8 3.73L12 11.9z"/></svg>
-                <p style="color:var(--text-secondary);font-size:0.88rem;margin:0;">Select a report from the sidebar to begin reading.</p>
+                <p style="color:var(--text-secondary);font-size:0.88rem;margin:0;">Select a report from the research feed to begin reading.</p>
             </div>`;
         return;
     }
+
+    // Research date (reader top bar + meta ribbon)
+    const dateStr = formatResearchDate(reportData.researchDate);
+    const readerDateEl = document.getElementById("reader-date");
+    if (readerDateEl) readerDateEl.textContent = reportData.researchDate ? `Research date: ${dateStr}` : "";
+    const metaDateEl = document.getElementById("meta-val-date");
+    if (metaDateEl) metaDateEl.textContent = dateStr;
 
     // Update Ribbon values
     document.getElementById("viewer-main-title").innerText = `${reportData.companyName} (${reportData.ticker})`;
@@ -345,18 +403,30 @@ function renderReport() {
     const langLabel = activeLanguage === "en" ? "Serene (English Feed)" : "Serene (Localized Thai)";
     document.getElementById("meta-val-lang").innerText = langLabel;
 
-    // Load actual localized HTML body content
+    // Load localized body content — Overview and Reverse DCF render as one
+    // continuous page with anchor sections for the jump chips.
     const reportContainer = document.getElementById("report-article-content");
-    const contentKey = activeLanguage + "_" + activeReportTab;
-    const rawText = reportData[contentKey];
-    if (rawText) {
-        // Report bodies are freeform markdown rendered to HTML — sanitize to
-        // strip any embedded scripts/handlers before injecting.
-        const html = marked.parse(rawText);
-        reportContainer.innerHTML = window.DOMPurify ? DOMPurify.sanitize(html) : html;
-    } else {
-        reportContainer.innerHTML = "<em>Content not available for this tab.</em>";
+    const overviewRaw = reportData[activeLanguage + "_overview"];
+    const dcfRaw = reportData[activeLanguage + "_dcf"];
+
+    let html = "";
+    if (overviewRaw) {
+        html += `<div id="reader-sec-overview">${marked.parse(overviewRaw)}</div>`;
     }
+    if (dcfRaw) {
+        html += `<hr style="border:none;border-top:1px solid var(--border-dim);margin:36px 0;">`;
+        html += `<div id="reader-sec-dcf">${marked.parse(dcfRaw)}</div>`;
+    }
+    if (!html) {
+        html = "<em>Content not available for this report.</em>";
+    }
+    // Report bodies are freeform markdown rendered to HTML — sanitize to
+    // strip any embedded scripts/handlers before injecting.
+    reportContainer.innerHTML = window.DOMPurify ? DOMPurify.sanitize(html) : html;
+
+    // Hide the DCF jump chip when the report has no DCF section
+    const dcfChip = document.getElementById("jump-chip-dcf");
+    if (dcfChip) dcfChip.style.display = dcfRaw ? "" : "none";
 
     // Fetch and update the live stock price in report ribbon
     updateReportLivePrice(reportData.ticker);

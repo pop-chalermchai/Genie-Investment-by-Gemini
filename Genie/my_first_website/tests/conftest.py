@@ -71,7 +71,7 @@ def _build_schema(db_path):
             prepared_by TEXT, audited_by TEXT, rating TEXT,
             is_positive BOOLEAN, price_target REAL, analysis_price REAL, sector TEXT,
             en_overview TEXT, th_overview TEXT, en_dcf TEXT, th_dcf TEXT,
-            user_id TEXT
+            user_id TEXT, research_date DATE
         );
         CREATE TABLE profiles (
             user_id            TEXT PRIMARY KEY,

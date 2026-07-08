@@ -459,6 +459,7 @@ def _load_reports(cursor, is_postgres, user_id):
             "isPositive": bool(r['is_positive']),
             "priceTarget": r.get('price_target'),
             "analysisPrice": r.get('analysis_price'),
+            "researchDate": str(r['research_date'])[:10] if r.get('research_date') else None,
             "en_overview": r['en_overview'],
             "th_overview": r['th_overview'],
             "en_dcf": r['en_dcf'],
@@ -466,6 +467,18 @@ def _load_reports(cursor, is_postgres, user_id):
             "sector": r.get('sector')
         }
     return reports
+
+
+def _parse_research_date(value, default=None):
+    """Validate an optional YYYY-MM-DD research date; fall back to default."""
+    value = (value or '').strip()[:10]
+    if not value:
+        return default
+    try:
+        datetime.strptime(value, '%Y-%m-%d')
+        return value
+    except ValueError:
+        return default
 
 
 @app.route('/api/init-data', methods=['GET'])
@@ -870,6 +883,8 @@ def add_research_report():
         th_overview = data.get('th_overview', '')
         en_dcf = data.get('en_dcf', '')
         th_dcf = data.get('th_dcf', '')
+        research_date = _parse_research_date(data.get('research_date'),
+                                             default=datetime.now().strftime('%Y-%m-%d'))
 
         if not report_key or not ticker or not company_name:
             raise ValueError("report_key, ticker, and company_name are required")
@@ -881,13 +896,13 @@ def add_research_report():
             INSERT INTO research_reports (
                 report_key, ticker, company_name, subtitle, prepared_by, audited_by,
                 rating, is_positive, price_target, analysis_price, sector,
-                en_overview, th_overview, en_dcf, th_dcf, user_id
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                en_overview, th_overview, en_dcf, th_dcf, user_id, research_date
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         '''
         execute_sql(cursor, is_postgres, query, (
             report_key, ticker, company_name, subtitle, prepared_by, audited_by,
             rating, 1 if is_positive else 0, price_target, analysis_price, sector,
-            en_overview, th_overview, en_dcf, th_dcf, g.user_id
+            en_overview, th_overview, en_dcf, th_dcf, g.user_id, research_date
         ))
 
         conn.commit()
@@ -920,6 +935,8 @@ def edit_research_report():
         th_overview = data.get('th_overview', '')
         en_dcf = data.get('en_dcf', '')
         th_dcf = data.get('th_dcf', '')
+        # None keeps the existing date via COALESCE
+        research_date = _parse_research_date(data.get('research_date'))
 
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
@@ -928,13 +945,14 @@ def edit_research_report():
             UPDATE research_reports
             SET ticker=?, company_name=?, subtitle=?, prepared_by=?, audited_by=?,
                 rating=?, is_positive=?, price_target=?, analysis_price=?, sector=?,
-                en_overview=?, th_overview=?, en_dcf=?, th_dcf=?
+                en_overview=?, th_overview=?, en_dcf=?, th_dcf=?,
+                research_date=COALESCE(?, research_date)
             WHERE report_key=? AND user_id=?
         '''
         execute_sql(cursor, is_postgres, query, (
             ticker, company_name, subtitle, prepared_by, audited_by,
             rating, 1 if is_positive else 0, price_target, analysis_price, sector,
-            en_overview, th_overview, en_dcf, th_dcf, report_key, g.user_id
+            en_overview, th_overview, en_dcf, th_dcf, research_date, report_key, g.user_id
         ))
 
         conn.commit()
