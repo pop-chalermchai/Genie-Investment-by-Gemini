@@ -15,11 +15,13 @@ function formatShares(shares) {
 // ==========================================================================
 // PORTFOLIO MANAGEMENT
 // ==========================================================================
+// Fallback only for the brief window before /api/sectors has loaded.
 const DEFAULT_SECTORS = ["Technology", "Industrial Goods", "Consumer Cyclical", "Financial Services", "Cryptocurrency", "Thai Mutual Fund"];
 
 function populateSectorOptions() {
-    // Union of defaults + every sector already used by holdings, sorted
-    const sectors = new Set(DEFAULT_SECTORS);
+    // Master list from the server, unioned with any sector already on a
+    // holding (belt-and-suspenders in case a legacy asset predates the list).
+    const sectors = new Set(sectorsList.length ? sectorsList.map(s => s.name) : DEFAULT_SECTORS);
     holdings.forEach(h => { if (h.sector) sectors.add(h.sector); });
     const sorted = [...sectors].sort((a, b) => a.localeCompare(b));
 
@@ -47,6 +49,13 @@ function populateSectorOptions() {
         });
         if ([...sectorFilter.options].some(o => o.value === current)) sectorFilter.value = current;
     }
+}
+
+function loadSectorsList() {
+    return fetch('/api/sectors?t=' + Date.now())
+        .then(r => r.json())
+        .then(data => { sectorsList = Array.isArray(data) ? data : []; populateSectorOptions(); })
+        .catch(err => console.warn("Failed to reload sectors:", err));
 }
 
 function populateDropdowns() {

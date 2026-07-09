@@ -229,10 +229,10 @@
                                         <input type="text" id="ingest-name" placeholder="e.g., Tesla, Inc." required>
                                     </div>
                                     <div class="form-group span-2">
-                                        <label for="ingest-sector">Sector</label>
-                                        <input id="ingest-sector" list="sector-options" value="Technology" placeholder="Pick or type a new sector" required autocomplete="off">
+                                        <label for="ingest-sector">Sector <span style="font-weight:400;color:var(--text-secondary);">(optional — auto-detected from ticker)</span></label>
+                                        <input id="ingest-sector" list="sector-options" placeholder="Auto-detected from ticker, or type your own" autocomplete="off">
                                         <datalist id="sector-options">
-                                            <!-- Populated dynamically from existing holdings + defaults -->
+                                            <!-- Populated dynamically from sector master data -->
                                         </datalist>
                                     </div>
                                     <div class="form-group span-2">
@@ -1378,12 +1378,12 @@
     <script src="purify.min.js"></script>
     <script src="auth.js?v=2"></script>
     <!-- App modules: sequential split of the former app.js — load order matters -->
-    <script src="js/01_core.js?v=4"></script>
-    <script src="js/02_init.js?v=4"></script>
-    <script src="js/03_dashboard.js?v=4"></script>
-    <script src="js/04_research.js?v=4"></script>
-    <script src="js/05_transactions.js?v=4"></script>
-    <script src="js/06_modals.js?v=4"></script>
-    <script src="js/07_import_misc.js?v=4"></script>
+    <script src="js/01_core.js?v=5"></script>
+    <script src="js/02_init.js?v=5"></script>
+    <script src="js/03_dashboard.js?v=5"></script>
+    <script src="js/04_research.js?v=5"></script>
+    <script src="js/05_transactions.js?v=5"></script>
+    <script src="js/06_modals.js?v=5"></script>
+    <script src="js/07_import_misc.js?v=5"></script>
 </body>
 </html>

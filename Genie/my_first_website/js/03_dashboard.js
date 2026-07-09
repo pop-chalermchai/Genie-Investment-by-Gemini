@@ -115,7 +115,7 @@ function updateDashboard() {
 
         row.innerHTML = `
             <td style="text-align:center;">${logoHtml}<span style="font-family:var(--font-mono);font-weight:700;font-size:0.82rem;color:var(--accent-neon);letter-spacing:0.5px;">${pos.ticker}</span>${researchLink}</td>
-            <td><strong>${pos.companyName}</strong><br><span style="font-size: 0.72rem; color: var(--text-secondary);">${pos.sector}</span></td>
+            <td><strong>${pos.companyName}</strong><br><span style="font-size: 0.72rem; color: var(--text-secondary);">${pos.sector || ''}</span></td>
             <td><span class="portfolio-badge" ${getBadgeStyle(subName)}>${subName}</span></td>
             <td class="text-right table-shares">${formatShares(pos.shares)}</td>
             <td class="text-right table-currency">${symbol}${avgCost.toFixed(2)}</td>
@@ -339,7 +339,7 @@ function handleIngest(event) {
                 .then(r => r.json())
                 .then(hData => {
                     holdings = hData.map(h => ({...h, currentPrice: h.manualPrice || h.avgCost}));
-                    populateSectorOptions(); // a newly typed sector becomes filterable immediately
+                    loadSectorsList(); // a newly typed sector becomes a suggestion immediately
                     updateDashboard();
                     fetchLivePrices(); // Re-trigger live price fetch for the new asset
                 });
@@ -384,7 +384,7 @@ function toggleAssetType() {
         if (sharesLabel) sharesLabel.innerText = "Shares (Qty)";
         tickerInput.placeholder = "e.g., TSLA or AAPL";
         if (currencySelect) currencySelect.value = "USD";
-        if (sectorSelect && sectorSelect.value === "Thai Mutual Fund") sectorSelect.value = "Technology";
+        if (sectorSelect && sectorSelect.value === "Thai Mutual Fund") sectorSelect.value = "";
     }
 }
 
@@ -663,13 +663,23 @@ async function autoFillCompanyName() {
     }
     
     if (!ticker || nameInput.value.trim() !== "") return;
-    
+
     nameInput.placeholder = "Auto-fetching name...";
+    const sectorInput = document.getElementById("ingest-sector");
+    const sectorWasEmpty = sectorInput && sectorInput.value.trim() === "";
+    if (sectorWasEmpty) sectorInput.placeholder = "Auto-detecting sector...";
+
     try {
+        // Sector lookup is best-effort and must never block name/price fill —
+        // run it alongside, not in series, and swallow its own failures.
+        const sectorPromise = sectorWasEmpty
+            ? fetch(`/api/stock/sector?ticker=${ticker}`).then(r => r.json()).catch(() => null)
+            : Promise.resolve(null);
+
         const response = await fetch(`/api/stock?ticker=${ticker}`);
         if (!response.ok) throw new Error("API error");
         const data = await response.json();
-        
+
         if (data.longName) {
             nameInput.value = data.longName;
         } else if (data.shortName) {
@@ -677,7 +687,7 @@ async function autoFillCompanyName() {
         } else {
             nameInput.placeholder = "e.g., Tesla, Inc.";
         }
-        
+
         // Auto-fill price as a hint to avg cost if it's empty
         const costInput = document.getElementById("ingest-avg-cost");
         if (data.price && !costInput.value) {
@@ -689,15 +699,24 @@ async function autoFillCompanyName() {
         if (data.currency && currencySelect2 && [...currencySelect2.options].some(o => o.value === data.currency)) {
             currencySelect2.value = data.currency;
         }
-        
-        // Auto-select Cryptocurrency sector if applicable
-        const sectorInput = document.getElementById("ingest-sector");
-        if (ticker.endsWith("-USD") && sectorInput) {
-            sectorInput.value = "Cryptocurrency";
+
+        // Auto-fill sector from Yahoo (optional field — leave blank if unknown)
+        const sectorData = await sectorPromise;
+        if (sectorWasEmpty && sectorInput) {
+            if (sectorData && sectorData.sector) {
+                sectorInput.value = sectorData.sector;
+            }
+            // Crypto tickers: Yahoo's search endpoint doesn't classify a sector
+            // for them, so fall back to the app's own convention.
+            if (ticker.endsWith("-USD") && sectorInput.value.trim() === "") {
+                sectorInput.value = "Cryptocurrency";
+            }
+            sectorInput.placeholder = "Pick or type a new sector";
         }
     } catch (err) {
         console.warn("Failed to auto-fill name for", ticker, err);
         nameInput.placeholder = "e.g., Tesla, Inc.";
+        if (sectorWasEmpty && sectorInput) sectorInput.placeholder = "Pick or type a new sector";
     }
 }
 

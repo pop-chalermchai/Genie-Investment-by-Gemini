@@ -4,6 +4,7 @@
 let holdings = [];
 let portfoliosList = [];
 let categoriesList = [];
+let sectorsList = []; // per-user sector master data — [{id, name}]
 let cachedParentTotals = {};
 let activeParentPortfolio = null;
 let activeSubPortfolio = null;
@@ -307,7 +308,7 @@ function renderPortfolioPage() {
         row.onclick = () => openStockDetail(pos.ticker);
         row.innerHTML = `
             <td><span class="ticker-badge">${pos.ticker}</span></td>
-            <td><strong>${pos.companyName}</strong><br><span style="font-size:0.72rem;color:var(--text-secondary);">${pos.sector}</span></td>
+            <td><strong>${pos.companyName}</strong><br><span style="font-size:0.72rem;color:var(--text-secondary);">${pos.sector || ''}</span></td>
             <td><span class="portfolio-badge" ${getBadgeStyle(pos.portfolio)}>${pos.portfolio}</span></td>
             <td class="text-right table-shares">${formatShares(pos.shares)}</td>
             <td class="text-right table-currency">${symbol}${avgCost.toFixed(2)}</td>

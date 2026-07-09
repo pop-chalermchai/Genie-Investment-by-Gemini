@@ -15,6 +15,7 @@ This replaces the old `migrate_db()` startup hack (see Product Roadmap step 3).
 | `005_manual_price.sql` | Adds nullable `assets.manual_price` — user-entered market-price override for assets that can't be priced automatically | Applied 2026-07-07 |
 | `006_research_date.sql` | Adds `research_reports.research_date` for the date-sorted research feed; backfills existing rows to the migration date | Applied 2026-07-08 |
 | `007_user_roles.sql` | Adds `profiles.role` (admin/user) — research authoring + thai_funds sync become admin-only; owner backfilled as admin | Applied 2026-07-09 |
+| `008_sectors.sql` | Adds per-user `sectors` master-data table (ingest combobox + dashboard filter) + RLS; seeds defaults + every sector already on an existing asset | Applied 2026-07-10 |
 
 ## Step-by-step (multi-user go-live)
 

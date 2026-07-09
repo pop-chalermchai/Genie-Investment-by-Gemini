@@ -1,14 +1,16 @@
 function fetchInitData(onComplete = null) {
     return Promise.all([
         fetch('/api/init-data?t=' + Date.now()).then(res => res.json()),
-        fetch('/api/categories?t=' + Date.now()).then(res => res.json())
+        fetch('/api/categories?t=' + Date.now()).then(res => res.json()),
+        fetch('/api/sectors?t=' + Date.now()).then(res => res.json())
     ])
-    .then(([initData, catsData]) => {
+    .then(([initData, catsData, sectorsData]) => {
         holdings = initData.holdings.map(h => ({...h, currentPrice: h.manualPrice || h.avgCost}));
         researchReports = initData.reports;
         portfoliosList = initData.portfolios;
         categoriesList = catsData;
-        
+        sectorsList = Array.isArray(sectorsData) ? sectorsData : [];
+
         populateDropdowns();
         updateDashboard();
         renderReportList();

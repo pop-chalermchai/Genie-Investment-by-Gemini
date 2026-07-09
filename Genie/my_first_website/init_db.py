@@ -19,6 +19,15 @@ def init_db():
         )
     ''')
 
+    # 1b. ตาราง sectors (master data สำหรับ dropdown/autocomplete — ไม่ใช่ FK)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS sectors (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            user_id TEXT NOT NULL
+        )
+    ''')
+
     # 2. ตาราง portfolios (แฟ้มจัดเก็บพอร์ต)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS portfolios (

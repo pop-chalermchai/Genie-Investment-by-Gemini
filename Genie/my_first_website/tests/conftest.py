@@ -83,6 +83,11 @@ def _build_schema(db_path):
             role               TEXT NOT NULL DEFAULT 'user',
             updated_at         DATETIME DEFAULT CURRENT_TIMESTAMP
         );
+        CREATE TABLE sectors (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            user_id TEXT NOT NULL
+        );
         CREATE TABLE thai_funds (
             proj_id TEXT PRIMARY KEY, proj_abbr_name TEXT, proj_name_th TEXT,
             proj_name_en TEXT, fund_status TEXT, amc_name_en TEXT,

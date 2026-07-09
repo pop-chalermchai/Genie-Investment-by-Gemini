@@ -618,6 +618,39 @@ def get_stock():
         return _err(e)
 
 
+@app.route('/api/stock/sector', methods=['GET'])
+@require_auth
+@rate_limited
+def get_stock_sector():
+    """Best-effort sector/industry lookup for the ingest auto-fill. Uses Yahoo's
+    search endpoint (works without the auth 'crumb' the quoteSummary endpoint now
+    requires). Not called on every price refresh — only once, when a ticker is
+    first typed — so the extra request doesn't touch the hot polling path."""
+    ticker = request.args.get('ticker')
+    if not ticker:
+        return jsonify({"error": "Missing ticker parameter"}), 400
+
+    ticker = ticker.upper()
+    url = f"https://query1.finance.yahoo.com/v1/finance/search?q={urllib.parse.quote(ticker)}&quotesCount=1&newsCount=0"
+    req = urllib.request.Request(
+        url,
+        headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=6) as response:
+            data = json.loads(response.read().decode())
+        quotes = data.get('quotes') or []
+        match = next((q for q in quotes if q.get('symbol', '').upper() == ticker), quotes[0] if quotes else None)
+        return jsonify({
+            "ticker": ticker,
+            "sector": (match or {}).get('sectorDisp'),
+            "industry": (match or {}).get('industryDisp'),
+        })
+    except Exception:
+        # Best-effort: sector auto-fill failing should never block ingest.
+        return jsonify({"ticker": ticker, "sector": None, "industry": None})
+
+
 def _get_or_create_category(cursor, is_postgres, user_id, category_name):
     """Return the id of the user's category by name, creating it if missing."""
     execute_sql(cursor, is_postgres, "SELECT id FROM categories WHERE name=? AND user_id=?", (category_name, user_id))
@@ -677,7 +710,7 @@ def _insert_transaction_row(cursor, is_postgres, user_id, tx):
     tx_type = tx.get('type', 'BUY').upper()
     ticker = tx.get('ticker')
     company_name = tx.get('companyName')
-    sector = tx.get('sector', 'Technology')
+    sector = (tx.get('sector') or '').strip() or None  # optional — no default
     portfolio_name = tx.get('portfolio')
     shares = float(tx.get('shares', 0))
     price = float(tx.get('avgCost', 0))
@@ -710,6 +743,10 @@ def _insert_transaction_row(cursor, is_postgres, user_id, tx):
             asset_id = cursor.fetchone()[0]
         else:
             asset_id = cursor.lastrowid
+
+    # A freehand-typed sector becomes part of the user's master list too, so
+    # it shows up as a suggestion next time without any extra step.
+    _ensure_sector(cursor, is_postgres, user_id, sector)
 
     # Optional user-entered market price (override for assets that can't be
     # priced automatically). Only touch it when the caller provided a value.
@@ -1256,6 +1293,80 @@ def delete_category():
         execute_sql(cursor, is_postgres, "UPDATE portfolios SET category_id = NULL WHERE category_id = ? AND user_id=?", (cat_id, g.user_id))
         # Delete category (only if owned)
         execute_sql(cursor, is_postgres, "DELETE FROM categories WHERE id = ? AND user_id=?", (cat_id, g.user_id))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        return _err(e)
+
+
+# ── Sectors (per-user master data for the ingest combobox / dashboard filter) ──
+# `assets.sector` stays free-text — this table is a suggestion list, not a
+# foreign key, so deleting a sector here never touches existing holdings.
+
+def _ensure_sector(cursor, is_postgres, user_id, name):
+    """Add `name` to the user's sector master list if it's new (case-insensitive
+    dedupe). No-op on blank input. Best-effort: never raises."""
+    name = (name or '').strip()
+    if not name:
+        return
+    try:
+        execute_sql(cursor, is_postgres, "SELECT id FROM sectors WHERE user_id=? AND LOWER(name)=LOWER(?)", (user_id, name))
+        if not fetch_all_as_dict(cursor, is_postgres):
+            execute_sql(cursor, is_postgres, "INSERT INTO sectors (name, user_id) VALUES (?, ?)", (name, user_id))
+    except Exception:
+        app.logger.exception("Failed to auto-add sector %r", name)
+
+
+@app.route('/api/sectors', methods=['GET'])
+@require_auth
+def get_sectors():
+    try:
+        conn, is_postgres = get_db_connection()
+        cursor = conn.cursor()
+        execute_sql(cursor, is_postgres, "SELECT id, name FROM sectors WHERE user_id=? ORDER BY name", (g.user_id,))
+        rows = fetch_all_as_dict(cursor, is_postgres)
+        conn.close()
+        return jsonify(rows)
+    except Exception as e:
+        return _err(e)
+
+
+@app.route('/api/sectors', methods=['POST'])
+@require_auth
+def add_sector():
+    try:
+        data = request.get_json(force=True)
+        name = (data.get('name') or '').strip()
+        if not name:
+            raise ValueError("Sector name is required")
+
+        conn, is_postgres = get_db_connection()
+        cursor = conn.cursor()
+        execute_sql(cursor, is_postgres, "SELECT id FROM sectors WHERE user_id=? AND LOWER(name)=LOWER(?)", (g.user_id, name))
+        if fetch_all_as_dict(cursor, is_postgres):
+            conn.close()
+            raise ValueError(f"Sector '{name}' already exists.")
+
+        execute_sql(cursor, is_postgres, "INSERT INTO sectors (name, user_id) VALUES (?, ?)", (name, g.user_id))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        return _err(e)
+
+
+@app.route('/api/sectors', methods=['DELETE'])
+@require_auth
+def delete_sector():
+    try:
+        sector_id = request.args.get('id')
+        if not sector_id:
+            raise ValueError("Sector id required")
+
+        conn, is_postgres = get_db_connection()
+        cursor = conn.cursor()
+        execute_sql(cursor, is_postgres, "DELETE FROM sectors WHERE id=? AND user_id=?", (sector_id, g.user_id))
         conn.commit()
         conn.close()
         return jsonify({"success": True})
