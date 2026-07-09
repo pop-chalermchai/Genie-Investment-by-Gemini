@@ -142,9 +142,7 @@
                                 <label for="sector-filter" class="visually-hidden">Filter by Sector</label>
                                 <select id="sector-filter" onchange="filterPositions()">
                                     <option value="ALL">All Sectors</option>
-                                    <option value="Technology">Technology</option>
-                                    <option value="Industrial Goods">Industrial Goods</option>
-                                    <option value="Financial Services">Financial Services</option>
+                                    <!-- Populated dynamically from holdings -->
                                 </select>
                             </div>
                             <div class="filter-wrapper">
@@ -232,14 +230,10 @@
                                     </div>
                                     <div class="form-group span-2">
                                         <label for="ingest-sector">Sector</label>
-                                        <select id="ingest-sector" required>
-                                            <option value="Technology">Technology</option>
-                                            <option value="Industrial Goods">Industrial Goods</option>
-                                            <option value="Consumer Cyclical">Consumer Cyclical</option>
-                                            <option value="Financial Services">Financial Services</option>
-                                            <option value="Cryptocurrency">Cryptocurrency</option>
-                                            <option value="Thai Mutual Fund">Thai Mutual Fund</option>
-                                        </select>
+                                        <input id="ingest-sector" list="sector-options" value="Technology" placeholder="Pick or type a new sector" required autocomplete="off">
+                                        <datalist id="sector-options">
+                                            <!-- Populated dynamically from existing holdings + defaults -->
+                                        </datalist>
                                     </div>
                                     <div class="form-group span-2">
                                         <label for="ingest-portfolio">Sub-Portfolio</label>
@@ -689,7 +683,7 @@
                                 <button class="lang-btn" id="lang-th" onclick="setLanguage('th')">TH</button>
                             </div>
                             <span id="research-feed-count" style="font-size:0.75rem;color:var(--text-secondary);font-family:var(--font-mono);white-space:nowrap;"></span>
-                            <button onclick="openAddReportModal()" style="padding:7px 14px;font-size:0.78rem;font-weight:700;background:linear-gradient(90deg,var(--accent-neon),#0088FF);color:#FDF6E3;border:none;border-radius:6px;cursor:pointer;letter-spacing:0.3px;white-space:nowrap;">+ New</button>
+                            <button id="btn-new-report" onclick="openAddReportModal()" style="display:none;padding:7px 14px;font-size:0.78rem;font-weight:700;background:linear-gradient(90deg,var(--accent-neon),#0088FF);color:#FDF6E3;border:none;border-radius:6px;cursor:pointer;letter-spacing:0.3px;white-space:nowrap;">+ New</button>
                         </div>
 
                         <div id="report-list-container">
@@ -727,7 +721,7 @@
                     <div class="glass-panel" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 18px;margin-bottom:16px;flex-wrap:wrap;">
                         <button class="btn-back" onclick="closeResearchReader()">← Research</button>
                         <span id="reader-date" style="font-family:var(--font-mono);font-size:0.8rem;color:var(--text-secondary);"></span>
-                        <div style="display:flex;gap:8px;">
+                        <div id="reader-admin-actions" style="display:none;gap:8px;">
                             <button onclick="openEditReportModal(activeReport)" style="padding:6px 14px;font-size:0.78rem;font-weight:600;border:1px solid var(--border-dim);background:var(--bg-card-solid);color:var(--text-primary);border-radius:6px;cursor:pointer;">✏️ Edit</button>
                             <button onclick="deleteReport(activeReport)" style="padding:6px 14px;font-size:0.78rem;font-weight:600;border:1px solid rgba(220,50,47,0.4);background:var(--bg-card-solid);color:var(--color-negative);border-radius:6px;cursor:pointer;">🗑 Delete</button>
                         </div>
@@ -1382,14 +1376,14 @@
     <script src="xlsx.full.min.js"></script>
     <script src="marked.min.js"></script>
     <script src="purify.min.js"></script>
-    <script src="auth.js?v=1"></script>
+    <script src="auth.js?v=2"></script>
     <!-- App modules: sequential split of the former app.js — load order matters -->
-    <script src="js/01_core.js?v=3"></script>
-    <script src="js/02_init.js?v=3"></script>
-    <script src="js/03_dashboard.js?v=3"></script>
-    <script src="js/04_research.js?v=3"></script>
-    <script src="js/05_transactions.js?v=3"></script>
-    <script src="js/06_modals.js?v=3"></script>
-    <script src="js/07_import_misc.js?v=3"></script>
+    <script src="js/01_core.js?v=4"></script>
+    <script src="js/02_init.js?v=4"></script>
+    <script src="js/03_dashboard.js?v=4"></script>
+    <script src="js/04_research.js?v=4"></script>
+    <script src="js/05_transactions.js?v=4"></script>
+    <script src="js/06_modals.js?v=4"></script>
+    <script src="js/07_import_misc.js?v=4"></script>
 </body>
 </html>

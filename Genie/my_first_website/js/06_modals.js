@@ -438,6 +438,13 @@ function applyProfile(profile) {
     if (avatarEl) avatarEl.innerText = profile.avatar_emoji || "🧞";
     if (nameEl) nameEl.innerText = profile.display_name || "Profile";
 
+    // Role-gated UI: research authoring is admin-only (backend enforces too)
+    const isAdmin = profile.role === "admin";
+    const newReportBtn = document.getElementById("btn-new-report");
+    if (newReportBtn) newReportBtn.style.display = isAdmin ? "" : "none";
+    const readerActions = document.getElementById("reader-admin-actions");
+    if (readerActions) readerActions.style.display = isAdmin ? "flex" : "none";
+
     // Preferences
     if (profile.preferred_theme) setTheme(profile.preferred_theme);
     if (profile.preferred_currency && profile.preferred_currency !== displayCurrency) {

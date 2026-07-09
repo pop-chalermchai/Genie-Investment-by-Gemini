@@ -14,6 +14,7 @@ This replaces the old `migrate_db()` startup hack (see Product Roadmap step 3).
 | `004_profiles.sql` | Per-user profile table (display name, avatar, currency/theme/language preferences) + RLS | After 003 |
 | `005_manual_price.sql` | Adds nullable `assets.manual_price` — user-entered market-price override for assets that can't be priced automatically | Applied 2026-07-07 |
 | `006_research_date.sql` | Adds `research_reports.research_date` for the date-sorted research feed; backfills existing rows to the migration date | Applied 2026-07-08 |
+| `007_user_roles.sql` | Adds `profiles.role` (admin/user) — research authoring + thai_funds sync become admin-only; owner backfilled as admin | Applied 2026-07-09 |
 
 ## Step-by-step (multi-user go-live)
 

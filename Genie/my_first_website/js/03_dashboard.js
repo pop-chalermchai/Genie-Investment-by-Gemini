@@ -339,6 +339,7 @@ function handleIngest(event) {
                 .then(r => r.json())
                 .then(hData => {
                     holdings = hData.map(h => ({...h, currentPrice: h.manualPrice || h.avgCost}));
+                    populateSectorOptions(); // a newly typed sector becomes filterable immediately
                     updateDashboard();
                     fetchLivePrices(); // Re-trigger live price fetch for the new asset
                 });

@@ -15,7 +15,43 @@ function formatShares(shares) {
 // ==========================================================================
 // PORTFOLIO MANAGEMENT
 // ==========================================================================
+const DEFAULT_SECTORS = ["Technology", "Industrial Goods", "Consumer Cyclical", "Financial Services", "Cryptocurrency", "Thai Mutual Fund"];
+
+function populateSectorOptions() {
+    // Union of defaults + every sector already used by holdings, sorted
+    const sectors = new Set(DEFAULT_SECTORS);
+    holdings.forEach(h => { if (h.sector) sectors.add(h.sector); });
+    const sorted = [...sectors].sort((a, b) => a.localeCompare(b));
+
+    // Quick Ingest combobox suggestions (free text still allowed)
+    const datalist = document.getElementById("sector-options");
+    if (datalist) {
+        datalist.innerHTML = "";
+        sorted.forEach(s => {
+            const opt = document.createElement("option");
+            opt.value = s;
+            datalist.appendChild(opt);
+        });
+    }
+
+    // Dashboard sector filter — keep the current selection if it still exists
+    const sectorFilter = document.getElementById("sector-filter");
+    if (sectorFilter) {
+        const current = sectorFilter.value;
+        sectorFilter.innerHTML = '<option value="ALL">All Sectors</option>';
+        sorted.forEach(s => {
+            const opt = document.createElement("option");
+            opt.value = s;
+            opt.text = s;
+            sectorFilter.appendChild(opt);
+        });
+        if ([...sectorFilter.options].some(o => o.value === current)) sectorFilter.value = current;
+    }
+}
+
 function populateDropdowns() {
+    populateSectorOptions();
+
     // Populate portfolio filter
     const portfolioFilter = document.getElementById("portfolio-filter");
     if (portfolioFilter) {

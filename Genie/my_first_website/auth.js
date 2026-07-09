@@ -120,6 +120,44 @@
     });
   }
 
+  // Self-service signup. With email confirmation ON, GoTrue returns the bare
+  // user (no session) and sends a confirmation link; with confirmation OFF it
+  // returns a full session like login. Both shapes are handled by the caller.
+  function signup(email, password, displayName) {
+    return fetch(AUTH_BASE + "/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY },
+      body: JSON.stringify({
+        email: email,
+        password: password,
+        data: { display_name: displayName || "" },
+      }),
+    }).then(function (r) {
+      return r.json().then(function (data) {
+        if (!r.ok) {
+          throw new Error(data.error_description || data.msg || data.error || "Signup failed");
+        }
+        return data;
+      });
+    });
+  }
+
+  // Display name typed at signup is applied to the profile after the first
+  // successful login (the profile row is created server-side on first access).
+  var PENDING_NAME_KEY = "genie-pending-display-name";
+
+  function applyPendingDisplayName() {
+    var name = localStorage.getItem(PENDING_NAME_KEY);
+    if (!name) return Promise.resolve();
+    return fetch("/api/profile", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ display_name: name }),
+    }).then(function (r) {
+      if (r.ok) localStorage.removeItem(PENDING_NAME_KEY);
+    }).catch(function () {});
+  }
+
   function logout() {
     var s = loadSession();
     clearSession();
@@ -171,7 +209,7 @@
     );
   };
 
-  // ── Login overlay UI ────────────────────────────────────────────────────────
+  // ── Login / Signup overlay UI ───────────────────────────────────────────────
   function showLogin() {
     if (document.getElementById("genie-auth-overlay")) return;
     var overlay = document.createElement("div");
@@ -180,14 +218,20 @@
       '<div class="genie-auth-card">' +
       '  <img src="./assets/Genie.png?v=2" alt="Genie" class="genie-auth-logo" onerror="this.style.display=\'none\'"/>' +
       '  <h2>Genie Investment</h2>' +
-      '  <p class="genie-auth-sub">Sign in to continue</p>' +
+      '  <p class="genie-auth-sub" id="genie-auth-sub">Sign in to continue</p>' +
       '  <form id="genie-auth-form">' +
+      '    <input id="genie-auth-name" type="text" placeholder="Display name" autocomplete="name" maxlength="60" style="display:none;" />' +
       '    <input id="genie-auth-email" type="email" placeholder="Email" autocomplete="username" required />' +
-      '    <input id="genie-auth-pass" type="password" placeholder="Password" autocomplete="current-password" required />' +
+      '    <input id="genie-auth-pass" type="password" placeholder="Password" autocomplete="current-password" required minlength="6" />' +
+      '    <input id="genie-auth-pass2" type="password" placeholder="Confirm password" autocomplete="new-password" minlength="6" style="display:none;" />' +
       '    <button type="submit" id="genie-auth-btn">Sign in</button>' +
       '    <div id="genie-auth-err" class="genie-auth-err"></div>' +
       "  </form>" +
-      '  <p class="genie-auth-note">Access is invite-only. Contact the owner to be added.</p>' +
+      '  <div id="genie-auth-success" style="display:none;">' +
+      '    <p class="genie-auth-success-msg">🎉 Account created!<br>Check your email for a confirmation link, then come back and sign in.</p>' +
+      '    <button type="button" id="genie-auth-back-btn">← Back to sign in</button>' +
+      "  </div>" +
+      '  <p class="genie-auth-note"><a href="#" id="genie-auth-toggle">New here? Create an account →</a></p>' +
       "</div>";
     document.body.appendChild(overlay);
 
@@ -207,30 +251,96 @@
       "font-size:.95rem;cursor:pointer;margin-top:4px;}" +
       "#genie-auth-btn:disabled{opacity:.6;cursor:default;}" +
       ".genie-auth-err{color:#ff6b6b;font-size:.82rem;min-height:18px;margin-top:10px;}" +
-      ".genie-auth-note{color:#6b7186;font-size:.75rem;margin:18px 0 0;}";
+      ".genie-auth-note{color:#6b7186;font-size:.75rem;margin:18px 0 0;}" +
+      ".genie-auth-note a{color:#5b8cff;text-decoration:none;}" +
+      ".genie-auth-success-msg{color:#7ee2a8;font-size:.9rem;line-height:1.6;margin:8px 0 16px;}" +
+      "#genie-auth-back-btn{width:100%;padding:12px;border:1px solid #2d3346;border-radius:10px;background:#0e1119;" +
+      "color:#e8eaf0;font-size:.9rem;cursor:pointer;}";
     document.head.appendChild(style);
 
+    var mode = "signin"; // 'signin' | 'signup'
     var form = document.getElementById("genie-auth-form");
     var btn = document.getElementById("genie-auth-btn");
     var err = document.getElementById("genie-auth-err");
+    var sub = document.getElementById("genie-auth-sub");
+    var nameEl = document.getElementById("genie-auth-name");
+    var passEl = document.getElementById("genie-auth-pass");
+    var pass2El = document.getElementById("genie-auth-pass2");
+    var toggle = document.getElementById("genie-auth-toggle");
+    var successEl = document.getElementById("genie-auth-success");
+
+    function setMode(m) {
+      mode = m;
+      err.textContent = "";
+      form.style.display = "";
+      successEl.style.display = "none";
+      var isUp = m === "signup";
+      nameEl.style.display = isUp ? "" : "none";
+      pass2El.style.display = isUp ? "" : "none";
+      pass2El.required = isUp;
+      passEl.setAttribute("autocomplete", isUp ? "new-password" : "current-password");
+      sub.textContent = isUp ? "Create your account" : "Sign in to continue";
+      btn.textContent = isUp ? "Create account" : "Sign in";
+      toggle.textContent = isUp ? "← Already have an account? Sign in" : "New here? Create an account →";
+    }
+
+    toggle.addEventListener("click", function (e) {
+      e.preventDefault();
+      setMode(mode === "signin" ? "signup" : "signin");
+    });
+
+    document.getElementById("genie-auth-back-btn").addEventListener("click", function () {
+      setMode("signin");
+    });
+
+    function doSignin(email, pass) {
+      btn.textContent = "Signing in…";
+      return login(email, pass).then(function () {
+        // Apply the display name captured at signup (if any), then enter the app.
+        return applyPendingDisplayName().finally(function () {
+          window.location.reload();
+        });
+      });
+    }
+
+    function doSignup(email, pass) {
+      if (pass !== pass2El.value) {
+        return Promise.reject(new Error("Passwords do not match"));
+      }
+      var displayName = nameEl.value.trim();
+      if (displayName) localStorage.setItem(PENDING_NAME_KEY, displayName);
+      btn.textContent = "Creating account…";
+      return signup(email, pass, displayName).then(function (data) {
+        var user = data.user || (data.id ? data : null);
+        // GoTrue masks duplicate emails as a "success" with no identities.
+        if (user && user.identities && user.identities.length === 0) {
+          throw new Error("This email is already registered — try signing in.");
+        }
+        if (data.access_token) {
+          // Email confirmation is disabled — we already have a session.
+          saveSession(data);
+          return applyPendingDisplayName().finally(function () {
+            window.location.reload();
+          });
+        }
+        // Confirmation email sent — show the success panel.
+        form.style.display = "none";
+        successEl.style.display = "";
+      });
+    }
+
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       err.textContent = "";
       btn.disabled = true;
-      btn.textContent = "Signing in…";
-      login(
-        document.getElementById("genie-auth-email").value.trim(),
-        document.getElementById("genie-auth-pass").value
-      ).then(
-        function () {
-          window.location.reload();
-        },
-        function (ex) {
-          err.textContent = ex.message || "Login failed";
-          btn.disabled = false;
-          btn.textContent = "Sign in";
-        }
-      );
+      var email = document.getElementById("genie-auth-email").value.trim();
+      var pass = passEl.value;
+      var run = mode === "signup" ? doSignup(email, pass) : doSignin(email, pass);
+      run.catch(function (ex) {
+        err.textContent = ex.message || (mode === "signup" ? "Signup failed" : "Login failed");
+        btn.disabled = false;
+        btn.textContent = mode === "signup" ? "Create account" : "Sign in";
+      });
     });
   }
 

@@ -264,6 +264,32 @@ def require_auth(fn):
     return wrapper
 
 
+def _get_user_role(cursor, is_postgres, user_id):
+    execute_sql(cursor, is_postgres, "SELECT role FROM profiles WHERE user_id=?", (user_id,))
+    rows = fetch_all_as_dict(cursor, is_postgres)
+    return (rows[0].get('role') or 'user') if rows else 'user'
+
+
+def require_admin(fn):
+    """Gate an endpoint to admin users. Must sit under @require_auth.
+
+    Admin-only surface: research-report authoring and shared thai_funds sync.
+    In pure local dev (auth off) the single dev user is treated as admin.
+    """
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        if not _auth_enforced():
+            return fn(*args, **kwargs)
+        conn, is_postgres = get_db_connection()
+        cursor = conn.cursor()
+        role = _get_user_role(cursor, is_postgres, g.user_id)
+        conn.close()
+        if role != 'admin':
+            return jsonify({"error": "Admin access required"}), 403
+        return fn(*args, **kwargs)
+    return wrapper
+
+
 def ensure_user_seeded(cursor, is_postgres, user_id):
     """Give a brand-new user the default categories on first load."""
     execute_sql(cursor, is_postgres, "SELECT COUNT(*) AS n FROM categories WHERE user_id=?", (user_id,))
@@ -445,7 +471,13 @@ _HOLDINGS_QUERY = '''
 
 
 def _load_reports(cursor, is_postgres, user_id):
-    execute_sql(cursor, is_postgres, 'SELECT * FROM research_reports WHERE user_id=?', (user_id,))
+    # Admin-authored reports are published to every user (read-only for
+    # non-admins — the write endpoints are @require_admin). Own reports are
+    # included too for backward compatibility.
+    execute_sql(cursor, is_postgres, '''
+        SELECT * FROM research_reports
+        WHERE user_id=? OR user_id IN (SELECT user_id FROM profiles WHERE role='admin')
+    ''', (user_id,))
     rows = fetch_all_as_dict(cursor, is_postgres)
     reports = {}
     for r in rows:
@@ -865,6 +897,7 @@ def delete_portfolio():
 
 @app.route('/api/research-report', methods=['POST'])
 @require_auth
+@require_admin
 def add_research_report():
     try:
         data = request.get_json(force=True)
@@ -914,6 +947,7 @@ def add_research_report():
 
 @app.route('/api/research-report', methods=['PUT'])
 @require_auth
+@require_admin
 def edit_research_report():
     report_key = request.args.get('key')
     if not report_key:
@@ -964,6 +998,7 @@ def edit_research_report():
 
 @app.route('/api/research-report', methods=['DELETE'])
 @require_auth
+@require_admin
 def delete_research_report():
     report_key = request.args.get('key')
     if not report_key:
@@ -1309,6 +1344,7 @@ def get_thai_fund():
 
 @app.route('/api/thai-fund/sync', methods=['POST'])
 @require_auth
+@require_admin
 @rate_limited
 def sync_thai_funds():
     if not SEC_FACTSHEET_KEY:

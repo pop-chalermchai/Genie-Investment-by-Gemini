@@ -80,6 +80,7 @@ def _build_schema(db_path):
             preferred_currency TEXT NOT NULL DEFAULT 'USD',
             preferred_theme    TEXT NOT NULL DEFAULT 'light',
             preferred_language TEXT NOT NULL DEFAULT 'en',
+            role               TEXT NOT NULL DEFAULT 'user',
             updated_at         DATETIME DEFAULT CURRENT_TIMESTAMP
         );
         CREATE TABLE thai_funds (
@@ -151,6 +152,19 @@ def multiuser():
 
 def auth_headers(user_id):
     return {"Authorization": f"Bearer {make_token(user_id)}"}
+
+
+@pytest.fixture()
+def multiuser_db():
+    """Like `multiuser`, but also yields the SQLite path so role tests can
+    promote a user to admin directly (there is deliberately no API for that)."""
+    fd, tmp_db = tempfile.mkstemp(suffix=".db")
+    os.close(fd)
+    _build_schema(tmp_db)
+    mod = _load_app(tmp_db, jwt_secret=TEST_JWT_SECRET)
+    with mod.app.test_client() as c:
+        yield c, make_token, tmp_db
+    os.remove(tmp_db)
 
 
 @pytest.fixture()
