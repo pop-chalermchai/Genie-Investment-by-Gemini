@@ -1,4 +1,5 @@
 let collapsedSectors = {}; // Remember collapsed states client-side
+let collapsedDates = {};   // Same, keyed by research date (feed grouping)
 
 function selectReport(reportId) {
     activeReport = reportId;
@@ -29,6 +30,18 @@ function formatResearchDate(iso) {
     const d = new Date(iso + "T00:00:00");
     if (isNaN(d)) return iso;
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+// Full date header for a feed group — e.g. "19 กรกฎาคม 2026" (TH) / "July 19, 2026" (EN)
+function formatGroupDateHeader(iso) {
+    if (!iso || iso === "undated") return activeLanguage === "th" ? "ไม่ระบุวันที่" : "Undated";
+    const d = new Date(iso + "T00:00:00");
+    if (isNaN(d)) return iso;
+    // Force the Gregorian calendar for th-TH — it defaults to the Buddhist Era
+    // (year + 543) otherwise, which doesn't match the rest of the app's dates.
+    return activeLanguage === "th"
+        ? d.toLocaleDateString("th-TH-u-ca-gregory", { day: "numeric", month: "long", year: "numeric" })
+        : d.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" });
 }
 
 function escapeHtml(s) {
@@ -144,6 +157,32 @@ function renderReportList() {
             wrapper.style.cssText = "display:flex;flex-direction:column;gap:6px;margin-top:6px;padding-left:8px;";
             if (isCollapsed) wrapper.style.display = "none";
             groups[sector].forEach(r => wrapper.appendChild(makeReportRow(r)));
+            container.appendChild(wrapper);
+        });
+    } else if (researchSortBy === 'date' && !query) {
+        // Grouped by research date (diary/timeline view) — reports arrive
+        // already newest-first from getFilteredSortedReports(), so grouping
+        // by insertion order keeps dates in that same order.
+        const groups = {};
+        reports.forEach(r => { const d = r.researchDate || "undated"; if (!groups[d]) groups[d] = []; groups[d].push(r); });
+        Object.keys(groups).forEach(dateKey => {
+            const isCollapsed = collapsedDates[dateKey] === true;
+            const dayReports = groups[dateKey];
+            const groupHeader = document.createElement("div");
+            groupHeader.className = "report-date-header";
+            groupHeader.style.cssText = "display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg-card-solid);border:1px solid var(--border-dim);border-radius:6px;margin-top:10px;cursor:pointer;font-size:0.78rem;font-weight:700;color:var(--text-primary);user-select:none;transition:var(--transition);";
+            groupHeader.onmouseover = () => { groupHeader.style.background = "rgba(147,161,161,0.15)"; };
+            groupHeader.onmouseout  = () => { groupHeader.style.background = "var(--bg-card-solid)"; };
+            groupHeader.onclick = () => { collapsedDates[dateKey] = !isCollapsed; renderReportList(); };
+            const label = activeLanguage === "th" ? "รายงาน" : (dayReports.length === 1 ? "report" : "reports");
+            groupHeader.innerHTML = `<span>${formatGroupDateHeader(dateKey)} · ${dayReports.length} ${label}</span><span style="font-size:0.65rem;display:inline-block;transform:${isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)'};">▼</span>`;
+            container.appendChild(groupHeader);
+            const wrapper = document.createElement("div");
+            wrapper.style.cssText = "display:flex;flex-direction:column;gap:6px;margin-top:6px;padding-left:8px;";
+            if (isCollapsed) wrapper.style.display = "none";
+            // Dispatch point for a future mixed feed (reports + news items) —
+            // for now every entry in a date group is a full research report.
+            dayReports.forEach(r => wrapper.appendChild(makeReportRow(r)));
             container.appendChild(wrapper);
         });
     } else {
