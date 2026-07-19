@@ -7,6 +7,11 @@ import urllib.parse
 db_path = "/Users/popular/Desktop/Genie/my_first_website/portfolio.db"
 env_path = "/Users/popular/Desktop/Genie/my_first_website/.env"
 
+# Production owner of all research reports (see migrations/002_backfill_owner.sql).
+# Local SQLite tags reports with the placeholder "local-dev-user", which is not a
+# valid Supabase auth UUID, so we always write this real owner id instead.
+PROD_OWNER_ID = "c2de9b2d-1916-4970-86a9-35999d4778d2"
+
 # 1. Read all reports from SQLite
 print("Reading reports from local SQLite...")
 conn_sqlite = sqlite3.connect(db_path)
@@ -56,9 +61,9 @@ try:
     # 4. Upsert all reports into Supabase
     query = """
         INSERT INTO research_reports (
-            report_key, ticker, company_name, subtitle, prepared_by, audited_by, rating, is_positive, price_target, analysis_price, en_overview, th_overview, en_dcf, th_dcf, sector
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        ON CONFLICT (report_key) DO UPDATE SET
+            report_key, ticker, company_name, subtitle, prepared_by, audited_by, rating, is_positive, price_target, analysis_price, en_overview, th_overview, en_dcf, th_dcf, sector, user_id
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        ON CONFLICT (user_id, report_key) DO UPDATE SET
             ticker = EXCLUDED.ticker,
             company_name = EXCLUDED.company_name,
             subtitle = EXCLUDED.subtitle,
@@ -80,7 +85,7 @@ try:
             r['report_key'], r['ticker'], r['company_name'], r['subtitle'],
             r['prepared_by'], r['audited_by'], r['rating'], bool(r['is_positive']),
             r['price_target'], r['analysis_price'],
-            r['en_overview'], r['th_overview'], r['en_dcf'], r['th_dcf'], r['sector']
+            r['en_overview'], r['th_overview'], r['en_dcf'], r['th_dcf'], r['sector'], PROD_OWNER_ID
         ))
         print(f" - Upserted report: {r['report_key']}")
         
