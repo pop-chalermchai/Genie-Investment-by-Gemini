@@ -37,7 +37,13 @@ For today's date, use `WebSearch` to find:
   Fed commentary, major index moves)
 - Recent news for each ticker in the universe from step 1
 
-Skip a ticker if there's nothing notable that day — don't force an item.
+**Only use major, reputable financial outlets** — Reuters, Bloomberg, CNBC,
+The Wall Street Journal, and Yahoo Finance. Discard results from anywhere
+else (blogs, forums, low-quality aggregators, unverified social posts), even
+if they seem relevant — accuracy and credibility matter more than coverage.
+
+Skip a ticker if there's nothing notable that day from these sources — don't
+force an item or fall back to a weaker source just to fill a gap.
 
 ### 3. Draft
 Write each finding as one short item:
@@ -64,6 +70,8 @@ non-versioned bulletins.
 
 ## Notes
 - Manual only — no scheduled/cron run exists yet
+- Sources restricted to Reuters, Bloomberg, CNBC, WSJ, Yahoo Finance —
+  no blogs, forums, or unverified aggregators
 - Always show the draft before publishing; never auto-publish
 - Ticker universe is computed fresh each run (union of live portfolio
   holdings + research coverage) — no hardcoded list to maintain as tickers
