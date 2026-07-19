@@ -7,9 +7,7 @@ Each ticker runs its own **independent lane** — no global phase blocking. Vale
 ```
 [Valerie RKLB]──→[Christian RKLB]──→[Genie: apply RKLB corrections]─┐
 [Valerie CIFR]──→[Christian CIFR]──→[Genie: apply CIFR corrections]─┤──→[Serene: batch all]
-[Valerie OKLO]──→[Christian OKLO]──→[Genie: apply OKLO corrections]─┘   [Mateo ×N parallel]
-                                                                               │
-                                                                         [deploy_report.py ×N]
+[Valerie OKLO]──→[Christian OKLO]──→[Genie: apply OKLO corrections]─┘
 ```
 
 **Sequencing rules:**
@@ -17,8 +15,9 @@ Each ticker runs its own **independent lane** — no global phase blocking. Vale
 2. As EACH Valerie finishes → immediately spawn Christian for that ticker (don't wait for other tickers)
 3. As EACH Christian finishes → Genie applies corrections immediately (see Phase 2 → Genie step)
 4. Once ALL tickers have AUDITED files → spawn ONE Serene session for all tickers (batched, sequentially)
-5. In parallel with Serene → spawn Mateo for all tickers (background)
-6. Once Serene and Mateo finish → run `deploy_report.py` for each ticker
+5. Once ALL tickers have Thai translations → run Phase 4 (Database Deploy) for all tickers
+
+> Pipeline currently ends after Phase 4 (database deploy). Cover art (Mateo) is still on hold until re-added to this SOP.
 
 ---
 
@@ -89,7 +88,7 @@ After each Christian agent completes, Genie applies corrections and creates AUDI
 
 ---
 
-## Phase 3: Localization (Serene — batched) & Visuals (Mateo — parallel)
+## Phase 3: Localization (Serene — batched)
 
 Trigger only after ALL tickers have both AUDITED files ready.
 
@@ -106,38 +105,19 @@ Trigger only after ALL tickers have both AUDITED files ready.
 >
 > Maintain flawless formatting continuity with the English originals. Preserve all tables, headers, and markdown structure."
 
-### Mateo — parallel (background), one spawn per ticker
-
-**Prompt to Mateo:**
-> "Read the audited financial report for `{TICKER}` at `research/{TICKER}/03_Valerie_{TICKER}_Overview_AUDITED.md`. Based on the company's sector, business model, and key insights, use your `generate_image` tool to create a high-impact institutional cover art image. Save it as `research/{TICKER}/{ticker_lowercase}_cover_art.png`."
+Cover art (Mateo) is paused — do not run it until this SOP is updated to bring it back. Once all tickers have Thai translations, proceed to Phase 4 below to load the reports into the database.
 
 ---
 
-## Phase 4: Database Injection (deploy_report.py)
+## Phase 4: Database Deploy
 
-Once Serene and Mateo complete, Genie runs the deploy script for each ticker. **Do NOT read markdown files into context** — the script handles file I/O directly.
+After a ticker (or batch of tickers) has both AUDITED files and both Thai translation files, load the data into the database:
 
-```bash
-cd /Users/popular/Desktop/Genie/my_first_website
-
-python3 deploy_report.py \
-  --ticker {TICKER} \
-  --company "{COMPANY_NAME}" \
-  --sector "{SECTOR}" \
-  --rating "{RATING}" \
-  --positive \
-  --pt {PRICE_TARGET} \
-  --price {ANALYSIS_PRICE}
-```
-
-Use `--negative` instead of `--positive` for AVOID/SELL ratings.
-Use `--mode update` to overwrite an existing report (e.g. re-deploying with corrections).
-Use `--key {TICKER}_{YEAR}` to override the default report key.
-
-Confirm `✓ SUCCESS` output for each ticker before reporting completion.
-
-> **Server must be running:** `python server.py` on port 8000.
-> If server is not running, instruct Pop to start it before deploy.
+1. Add the uppercase `{TICKER}` string into the `tickers` array inside [insert_all.py](file:///Users/popular/Desktop/Genie/my_first_website/insert_all.py).
+2. Run `python3 insert_all.py` inside `my_first_website/` to clean and load the reports into the local SQLite `portfolio.db`.
+   - `insert_all.py` reads the **AUDITED** overview (`03_Valerie_{TICKER}_Overview_AUDITED.md`) and **AUDITED** DCF (`03_Valerie_{TICKER}_ReverseDCF_AUDITED.md`) files, falling back to the raw `01_`/`02_` drafts only if no AUDITED file exists yet.
+3. Run `python3 sync_reports_to_supabase.py` to synchronize the changes to the live production database.
+4. **Do NOT** use `deploy_report.py` — it is obsolete, formats keys with `_2026` suffixes, and will create duplicate entries on the dashboard.
 
 ---
 
@@ -152,7 +132,6 @@ Confirm `✓ SUCCESS` output for each ticker before reporting completion.
 | Genie apply | `03_Valerie_{TICKER}_ReverseDCF_AUDITED.md` | Genie (copy + edit) |
 | Phase 3 | `04_Serene_{TICKER}_Overview_TH.md` | Serene |
 | Phase 3 | `04_Serene_{TICKER}_ReverseDCF_TH.md` | Serene |
-| Phase 3 | `{ticker}_cover_art.png` | Mateo |
 
 ---
 
@@ -160,11 +139,11 @@ Confirm `✓ SUCCESS` output for each ticker before reporting completion.
 
 - If a Valerie or Christian agent hits a session limit: re-spawn for the affected ticker only
 - If Serene hits a limit mid-batch: re-spawn with remaining tickers only (skip completed ones)
-- Parallel spawns maximum: 3 Valerie + 3 Mateo (background). Never more than 3 heavy agents simultaneously
+- Parallel spawns maximum: 3 Valerie (background). Never more than 3 heavy agents simultaneously
 - If repeated limit hits occur: stagger spawns by 2–3 minutes instead of launching all at once
 
 ---
 
 ## Web Modal (Quick Updates)
 
-The `+ New` button on the Equity Research page is available for minor edits to existing reports. For full pipeline injection, always use `deploy_report.py`.
+The `+ New` button on the Equity Research page is available for minor edits to existing reports. For full pipeline injection, use Phase 4 (Database Deploy) above — do not use `deploy_report.py`, which is obsolete.

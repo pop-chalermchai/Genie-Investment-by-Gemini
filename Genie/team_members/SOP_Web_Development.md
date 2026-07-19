@@ -13,17 +13,20 @@ To mitigate production downtime risks, maintain clean Git history (audit trail),
 
 ```mermaid
 graph TD
-    A["1. Local Development & Validation<br>(http://localhost:8000)"] -->|Verify no console errors / full functionality| B["2. Code Review Gate<br>(Lex — The Code Sentinel)"]
+    A["1. Local Development & Validation<br>(http://127.0.0.1:8000)"] -->|Verify no console errors / full functionality| B["2. Code Review Gate<br>(Lex — The Code Sentinel)"]
     B -->|✅ APPROVED — CLEAR TO COMMIT| C["3. Targeted Code Commit<br>(git commit -m '...')"]
     B -->|🚫 REJECTED — Fix required, re-submit| A
-    C -->|Stage and record verified code| D["4. Deploy to GitHub<br>(git push origin main)"]
-    D -->|Trigger Vercel Automatic Build| E["5. Production Verification<br>(Hard Reload / Cache Clearance)"]
+    C -->|Stage and record verified code| D["4. Push to GitHub<br>(git push origin main)"]
+    D -->|Audit trail only — does NOT deploy| E["5. Manual Deploy to Vercel<br>(./deploy.sh)"]
+    E --> F["6. Production Verification<br>(Hard Reload / Cache Clearance)"]
 ```
 
 ### Phase 1: Local Development & Validation (Local Testing)
 1. **Start Local Server:** Always run the local development server before editing files.
-   * **Command:** `python3 my_first_website/server.py`
-   * **Address:** `http://localhost:8000`
+   * **Command:** `python3 api/index.py` (run from inside `my_first_website/`)
+   * **Address:** `http://127.0.0.1:8000`
+   * Do NOT use `server.py` — it is legacy, SQLite-only, and does not support Supabase.
+   * Reads `DATABASE_URL` from `.env` and connects to Supabase automatically; falls back to local SQLite `portfolio.db` if `.env` has no `DATABASE_URL`.
 2. **Development:** Implement features or bug fixes directly within the workspace folder (`/my_first_website/`).
 3. **Local Audit:** Open the local site in a web browser. Test all interactive features, inspect the developer console for warnings/errors, and ensure layout responsiveness.
 
@@ -41,9 +44,12 @@ Before any code is staged for commit, invoke **Lex (The Code Sentinel)** to perf
 2. **Commit Message:** Write clear, professional, and audit-ready commit messages explaining the change (e.g., `git commit -m "Implement HTML5 History API path routing (pushState/popstate)"`). Avoid generic messages like "fix" or "update".
 
 ### Phase 5: Production Deployment & Final Verification
-1. **Push to GitHub:** Push the clean commits to the remote repository:
+1. **Push to GitHub:** Push the clean commits to the remote repository (audit trail — this does NOT trigger a deploy):
    * **Command:** `git push origin main`
-2. **Vercel Automatic Build:** Allow Vercel to automatically compile the build from GitHub (takes 1-2 minutes).
+2. **Manual Deploy to Vercel:** Vercel's Git Auto-Build is disabled (`vercel.json` → `"git": { "deploymentEnabled": false }`) because it fails to build the Python Lambdas correctly. Deploys must be triggered manually from the command line:
+   * **Command:** `cd my_first_website && ./deploy.sh` (code-only deploy, safe — does not touch the database)
+   * Use `./deploy.sh --sync` only when intentionally overwriting Supabase with local SQLite data (⚠️ deletes any data users added on production).
+   * Alternative manual command: `cd ~/Desktop && npx vercel --prod` (must run from git root, not from `my_first_website/`).
 3. **Hard Reload (Cache Clearance):** Clear browser caches to load the updated Javascript/CSS files:
    * **macOS:** `Cmd + Shift + R` (or hold `Shift` and click the refresh button)
    * **Windows/Linux:** `Ctrl + F5`

@@ -15,17 +15,19 @@ def clean_markdown(text):
     return text.strip()
 
 def extract_info(ticker):
-    path = f"/Users/popular/Desktop/Genie/research/{ticker}/01_Valerie_{ticker}_Overview.md"
-    # Fallback to older file naming format if needed
+    # Prefer the audited overview (post-Christian corrections); fall back to the raw draft
+    path = f"/Users/popular/Desktop/Genie/research/{ticker}/03_Valerie_{ticker}_Overview_AUDITED.md"
     if not os.path.exists(path):
-        # Scan folder for a file that contains "Overview" and ends in .md
+        path = f"/Users/popular/Desktop/Genie/research/{ticker}/01_Valerie_{ticker}_Overview.md"
+    if not os.path.exists(path):
+        # Scan folder for any file that contains "Overview" and ends in .md, preferring AUDITED
         folder = f"/Users/popular/Desktop/Genie/research/{ticker}"
         if os.path.exists(folder):
-            for f in os.listdir(folder):
-                if "overview" in f.lower() and f.endswith(".md") and not "audited" in f.lower() and not "_th" in f.lower():
-                    path = os.path.join(folder, f)
-                    break
-                    
+            candidates = [f for f in os.listdir(folder) if "overview" in f.lower() and f.endswith(".md") and "_th" not in f.lower()]
+            candidates.sort(key=lambda f: 0 if "audited" in f.lower() else 1)
+            if candidates:
+                path = os.path.join(folder, candidates[0])
+
     try:
         with open(path, "r", encoding="utf-8") as f:
             content = f.read()
