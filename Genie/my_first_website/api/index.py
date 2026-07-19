@@ -501,6 +501,48 @@ def _load_reports(cursor, is_postgres, user_id):
     return reports
 
 
+def _ensure_feed_items_table(cursor, is_postgres):
+    if is_postgres:
+        return  # created by migrations/009_feed_items.sql
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS feed_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT,
+            item_date TEXT,
+            item_type TEXT,
+            tickers TEXT,
+            summary TEXT,
+            source_name TEXT,
+            source_url TEXT,
+            created_at TEXT
+        )
+    ''')
+
+
+def _load_feed_items(cursor, is_postgres, user_id):
+    # Same admin-authored, published-to-all-users model as _load_reports().
+    _ensure_feed_items_table(cursor, is_postgres)
+    execute_sql(cursor, is_postgres, '''
+        SELECT * FROM feed_items
+        WHERE user_id=? OR user_id IN (SELECT user_id FROM profiles WHERE role='admin')
+        ORDER BY item_date DESC, created_at DESC
+    ''', (user_id,))
+    rows = fetch_all_as_dict(cursor, is_postgres)
+    items = []
+    for r in rows:
+        tickers_raw = r.get('tickers') or ''
+        items.append({
+            "id": r['id'],
+            "itemDate": str(r['item_date'])[:10] if r.get('item_date') else None,
+            "itemType": r.get('item_type') or 'news',
+            "tickers": [t.strip() for t in tickers_raw.split(',') if t.strip()],
+            "summary": r['summary'],
+            "sourceName": r.get('source_name'),
+            "sourceUrl": r.get('source_url'),
+        })
+    return items
+
+
 def _parse_research_date(value, default=None):
     """Validate an optional YYYY-MM-DD research date; fall back to default."""
     value = (value or '').strip()[:10]
@@ -531,6 +573,9 @@ def get_init_data():
         # 2. Reports
         reports = _load_reports(cursor, is_postgres, g.user_id)
 
+        # 2b. Feed items (daily digest — macro/news bulletins)
+        feed_items = _load_feed_items(cursor, is_postgres, g.user_id)
+
         # 3. Portfolios
         portfolios_query = """
             SELECT
@@ -547,6 +592,7 @@ def get_init_data():
         return jsonify({
             "holdings": holdings,
             "reports": reports,
+            "feedItems": feed_items,
             "portfolios": ports
         })
     except Exception as e:
@@ -576,6 +622,19 @@ def get_reports():
         reports = _load_reports(cursor, is_postgres, g.user_id)
         conn.close()
         return jsonify(reports)
+    except Exception as e:
+        return _err(e)
+
+
+@app.route('/api/feed-items', methods=['GET'])
+@require_auth
+def get_feed_items():
+    try:
+        conn, is_postgres = get_db_connection()
+        cursor = conn.cursor()
+        items = _load_feed_items(cursor, is_postgres, g.user_id)
+        conn.close()
+        return jsonify(items)
     except Exception as e:
         return _err(e)
 
@@ -1045,6 +1104,61 @@ def delete_research_report():
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
         execute_sql(cursor, is_postgres, "DELETE FROM research_reports WHERE report_key=? AND user_id=?", (report_key, g.user_id))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        return _err(e)
+
+
+@app.route('/api/feed-item', methods=['POST'])
+@require_auth
+@require_admin
+def add_feed_item():
+    try:
+        data = request.get_json(force=True)
+        item_date = _parse_research_date(data.get('item_date'),
+                                          default=datetime.now().strftime('%Y-%m-%d'))
+        item_type = (data.get('item_type') or 'news').strip()
+        tickers = (data.get('tickers') or '').strip().upper()
+        summary = (data.get('summary') or '').strip()
+        source_name = data.get('source_name', '')
+        source_url = data.get('source_url', '')
+
+        if not summary:
+            raise ValueError("summary is required")
+
+        conn, is_postgres = get_db_connection()
+        cursor = conn.cursor()
+        _ensure_feed_items_table(cursor, is_postgres)
+
+        query = '''
+            INSERT INTO feed_items (user_id, item_date, item_type, tickers, summary, source_name, source_url)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        '''
+        execute_sql(cursor, is_postgres, query, (
+            g.user_id, item_date, item_type, tickers, summary, source_name, source_url
+        ))
+
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        return _err(e)
+
+
+@app.route('/api/feed-item', methods=['DELETE'])
+@require_auth
+@require_admin
+def delete_feed_item():
+    item_id = request.args.get('id')
+    if not item_id:
+        return jsonify({"error": "id required"}), 400
+
+    try:
+        conn, is_postgres = get_db_connection()
+        cursor = conn.cursor()
+        execute_sql(cursor, is_postgres, "DELETE FROM feed_items WHERE id=? AND user_id=?", (item_id, g.user_id))
         conn.commit()
         conn.close()
         return jsonify({"success": True})

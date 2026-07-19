@@ -16,6 +16,7 @@ This replaces the old `migrate_db()` startup hack (see Product Roadmap step 3).
 | `006_research_date.sql` | Adds `research_reports.research_date` for the date-sorted research feed; backfills existing rows to the migration date | Applied 2026-07-08 |
 | `007_user_roles.sql` | Adds `profiles.role` (admin/user) — research authoring + thai_funds sync become admin-only; owner backfilled as admin | Applied 2026-07-09 |
 | `008_sectors.sql` | Adds per-user `sectors` master-data table (ingest combobox + dashboard filter) + RLS; seeds defaults + every sector already on an existing asset | Applied 2026-07-10 |
+| `009_feed_items.sql` | Adds `feed_items` table for admin-authored macro/news bulletins shown in the research feed's date groups, alongside full reports + RLS | Applied 2026-07-19 |
 
 ## Step-by-step (multi-user go-live)
 

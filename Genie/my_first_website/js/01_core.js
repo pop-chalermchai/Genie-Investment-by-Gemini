@@ -177,6 +177,7 @@ const teamProfiles = {
 // RESEARCH REPORTS DATABASE (ENGLISH & THAI)
 // ==========================================================================
 let researchReports = {};
+let feedItems = [];              // Daily digest items (macro/news bulletins) — see js/04_research.js
 let researchFilterMode = 'all'; // 'all' | 'positive' | 'negative'
 let researchSortBy = 'date';    // 'date' | 'sector' | 'ticker' | 'upside'
 let researchViewMode = 'list';  // 'list' | 'table'

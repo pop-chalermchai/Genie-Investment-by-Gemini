@@ -130,6 +130,32 @@ function makeReportRow(report) {
     return rowEl;
 }
 
+// Compact one-liner for a daily-digest feed item (macro/news bulletin) —
+// ticker chip(s) + summary + source link, no reader/click-through.
+function makeFeedItemRow(item) {
+    const tickerChips = (item.tickers || []).map(t =>
+        `<span class="feed-rating" style="background:rgba(0,136,255,0.12);color:var(--accent-neon);margin-right:4px;">$${escapeHtml(t)}</span>`
+    ).join('');
+    const tag = item.itemType === 'macro'
+        ? `<span class="feed-rating" style="background:rgba(147,161,161,0.18);color:var(--text-secondary);">${activeLanguage === 'th' ? 'มหภาค' : 'MACRO'}</span>`
+        : tickerChips;
+    const sourceHtml = item.sourceUrl
+        ? `<a href="${escapeHtml(item.sourceUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation();" style="font-size:0.72rem;color:var(--text-secondary);text-decoration:none;white-space:nowrap;">${escapeHtml(item.sourceName || (activeLanguage === 'th' ? 'แหล่งข่าว' : 'Source'))}</a>`
+        : (item.sourceName ? `<span style="font-size:0.72rem;color:var(--text-secondary);white-space:nowrap;">${escapeHtml(item.sourceName)}</span>` : '');
+
+    const rowEl = document.createElement("div");
+    rowEl.className = "research-feed-row feed-item-row";
+    rowEl.style.cursor = "default";
+    rowEl.innerHTML = `
+        <span style="display:flex;flex-wrap:wrap;gap:4px;flex-shrink:0;max-width:180px;">${tag}</span>
+        <span class="feed-main">
+            <span class="feed-summary" style="color:var(--text-primary);-webkit-line-clamp:3;">${escapeHtml(item.summary)}</span>
+        </span>
+        <span class="feed-right">${sourceHtml}</span>
+    `;
+    return rowEl;
+}
+
 function renderReportList() {
     const container = document.getElementById("report-list-container");
     if (!container) return;
@@ -160,29 +186,37 @@ function renderReportList() {
             container.appendChild(wrapper);
         });
     } else if (researchSortBy === 'date' && !query) {
-        // Grouped by research date (diary/timeline view) — reports arrive
-        // already newest-first from getFilteredSortedReports(), so grouping
-        // by insertion order keeps dates in that same order.
+        // Grouped by date (diary/timeline view) — reports arrive already
+        // newest-first from getFilteredSortedReports(). Daily-digest feed
+        // items (macro/news bulletins) are merged in under the same date
+        // key — a date may have items but no report, or vice versa.
         const groups = {};
-        reports.forEach(r => { const d = r.researchDate || "undated"; if (!groups[d]) groups[d] = []; groups[d].push(r); });
-        Object.keys(groups).forEach(dateKey => {
+        const getGroup = d => { if (!groups[d]) groups[d] = { reports: [], items: [] }; return groups[d]; };
+        reports.forEach(r => getGroup(r.researchDate || "undated").reports.push(r));
+        feedItems.forEach(it => getGroup(it.itemDate || "undated").items.push(it));
+        const dateKeys = Object.keys(groups).sort((a, b) => {
+            if (a === "undated") return 1;
+            if (b === "undated") return -1;
+            return b.localeCompare(a);
+        });
+        dateKeys.forEach(dateKey => {
             const isCollapsed = collapsedDates[dateKey] === true;
-            const dayReports = groups[dateKey];
+            const { reports: dayReports, items: dayItems } = groups[dateKey];
+            const total = dayReports.length + dayItems.length;
             const groupHeader = document.createElement("div");
             groupHeader.className = "report-date-header";
             groupHeader.style.cssText = "display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg-card-solid);border:1px solid var(--border-dim);border-radius:6px;margin-top:10px;cursor:pointer;font-size:0.78rem;font-weight:700;color:var(--text-primary);user-select:none;transition:var(--transition);";
             groupHeader.onmouseover = () => { groupHeader.style.background = "rgba(147,161,161,0.15)"; };
             groupHeader.onmouseout  = () => { groupHeader.style.background = "var(--bg-card-solid)"; };
             groupHeader.onclick = () => { collapsedDates[dateKey] = !isCollapsed; renderReportList(); };
-            const label = activeLanguage === "th" ? "รายงาน" : (dayReports.length === 1 ? "report" : "reports");
-            groupHeader.innerHTML = `<span>${formatGroupDateHeader(dateKey)} · ${dayReports.length} ${label}</span><span style="font-size:0.65rem;display:inline-block;transform:${isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)'};">▼</span>`;
+            const label = activeLanguage === "th" ? "รายการ" : (total === 1 ? "item" : "items");
+            groupHeader.innerHTML = `<span>${formatGroupDateHeader(dateKey)} · ${total} ${label}</span><span style="font-size:0.65rem;display:inline-block;transform:${isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)'};">▼</span>`;
             container.appendChild(groupHeader);
             const wrapper = document.createElement("div");
             wrapper.style.cssText = "display:flex;flex-direction:column;gap:6px;margin-top:6px;padding-left:8px;";
             if (isCollapsed) wrapper.style.display = "none";
-            // Dispatch point for a future mixed feed (reports + news items) —
-            // for now every entry in a date group is a full research report.
             dayReports.forEach(r => wrapper.appendChild(makeReportRow(r)));
+            dayItems.forEach(it => wrapper.appendChild(makeFeedItemRow(it)));
             container.appendChild(wrapper);
         });
     } else {
@@ -264,8 +298,12 @@ function renderResearchTable() {
 // ── Research Report Modal ──────────────────────────────────────────
 
 async function loadResearchReports() {
-    const data = await fetch('/api/reports').then(r => r.json());
-    researchReports = data;
+    const [reportsData, itemsData] = await Promise.all([
+        fetch('/api/reports').then(r => r.json()),
+        fetch('/api/feed-items').then(r => r.ok ? r.json() : [])
+    ]);
+    researchReports = reportsData;
+    feedItems = Array.isArray(itemsData) ? itemsData : [];
     renderReportList();
 }
 

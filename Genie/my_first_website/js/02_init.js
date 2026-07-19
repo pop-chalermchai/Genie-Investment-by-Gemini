@@ -7,6 +7,7 @@ function fetchInitData(onComplete = null) {
     .then(([initData, catsData, sectorsData]) => {
         holdings = initData.holdings.map(h => ({...h, currentPrice: h.manualPrice || h.avgCost}));
         researchReports = initData.reports;
+        feedItems = Array.isArray(initData.feedItems) ? initData.feedItems : [];
         portfoliosList = initData.portfolios;
         categoriesList = catsData;
         sectorsList = Array.isArray(sectorsData) ? sectorsData : [];
