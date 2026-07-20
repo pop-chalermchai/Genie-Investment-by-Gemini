@@ -71,6 +71,7 @@ function setLanguage(lang) {
     document.getElementById("lang-" + lang).classList.add("active");
     renderReport();
     renderReportList(); // feed summary lines are localized too
+    if (activeDigestDate) renderDigestReader();
 }
 
 function getUpsidePct(report) {
@@ -130,9 +131,46 @@ function makeReportRow(report) {
     return rowEl;
 }
 
-// Compact one-liner for a daily-digest feed item (macro/news bulletin) —
-// ticker chip(s) + summary + source link, no reader/click-through.
-function makeFeedItemRow(item) {
+// One digest run, collapsed to a single compact row in the feed — click
+// opens the digest reader (see openDigestReader) to read every item on one
+// page. Filed under `digestDate` (the day the run happened), not under any
+// individual item's own news date.
+function makeDigestRow(bundle) {
+    const items = bundle.items;
+    const tickerSet = [];
+    items.forEach(it => (it.tickers || []).forEach(t => { if (!tickerSet.includes(t)) tickerSet.push(t); }));
+    const hasMacro = items.some(it => it.itemType === 'macro');
+
+    // Same row anatomy as a report row (feed-date / one feed-rating badge /
+    // feed-main / feed-right + chevron) so digest rows hold a fixed, single-
+    // line height instead of growing with the ticker count.
+    const MAX_TICKERS_SHOWN = 4;
+    const tickerPreview = tickerSet.slice(0, MAX_TICKERS_SHOWN).map(t => '$' + t).join(', ')
+        + (tickerSet.length > MAX_TICKERS_SHOWN ? ` +${tickerSet.length - MAX_TICKERS_SHOWN}` : '')
+        + (hasMacro ? (tickerSet.length ? ' · ' : '') + (activeLanguage === 'th' ? 'มหภาค' : 'Macro') : '');
+
+    const title = activeLanguage === 'th' ? 'สรุปข่าวประจำวัน' : 'Daily Digest';
+    const countLabel = activeLanguage === 'th' ? `${items.length} ข่าว` : `${items.length} ${items.length === 1 ? 'story' : 'stories'}`;
+
+    const rowEl = document.createElement("div");
+    rowEl.className = "research-feed-row";
+    rowEl.onclick = () => openDigestReader(bundle.digestDate);
+    rowEl.innerHTML = `
+        <span class="feed-date">${formatResearchDate(bundle.digestDate)}</span>
+        <span class="feed-rating" style="background:rgba(0,136,255,0.12);color:var(--accent-neon);">📰 ${activeLanguage === 'th' ? 'สรุป' : 'DIGEST'}</span>
+        <span class="feed-main">
+            <span class="feed-title"><span class="feed-company">${title} — ${countLabel}</span></span>
+            <span class="feed-summary">${escapeHtml(tickerPreview)}</span>
+        </span>
+        <span class="feed-right"><span class="feed-chevron">›</span></span>
+    `;
+    return rowEl;
+}
+
+// Full-detail block for a single item inside the digest reader (not
+// line-clamped) — shows the item's own news date since that can differ
+// from the digest's run date.
+function makeDigestItemBlock(item) {
     const tickerChips = (item.tickers || []).map(t =>
         `<span class="feed-rating" style="background:rgba(0,136,255,0.12);color:var(--accent-neon);margin-right:4px;">$${escapeHtml(t)}</span>`
     ).join('');
@@ -140,20 +178,57 @@ function makeFeedItemRow(item) {
         ? `<span class="feed-rating" style="background:rgba(147,161,161,0.18);color:var(--text-secondary);">${activeLanguage === 'th' ? 'มหภาค' : 'MACRO'}</span>`
         : tickerChips;
     const sourceHtml = item.sourceUrl
-        ? `<a href="${escapeHtml(item.sourceUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation();" style="font-size:0.72rem;color:var(--text-secondary);text-decoration:none;white-space:nowrap;">${escapeHtml(item.sourceName || (activeLanguage === 'th' ? 'แหล่งข่าว' : 'Source'))}</a>`
-        : (item.sourceName ? `<span style="font-size:0.72rem;color:var(--text-secondary);white-space:nowrap;">${escapeHtml(item.sourceName)}</span>` : '');
+        ? `<a href="${escapeHtml(item.sourceUrl)}" target="_blank" rel="noopener" style="font-size:0.76rem;color:var(--accent-neon);text-decoration:none;">${escapeHtml(item.sourceName || (activeLanguage === 'th' ? 'แหล่งข่าว' : 'Source'))} ↗</a>`
+        : (item.sourceName ? `<span style="font-size:0.76rem;color:var(--text-secondary);">${escapeHtml(item.sourceName)}</span>` : '');
 
-    const rowEl = document.createElement("div");
-    rowEl.className = "research-feed-row feed-item-row";
-    rowEl.style.cursor = "default";
-    rowEl.innerHTML = `
-        <span style="display:flex;flex-wrap:wrap;gap:4px;flex-shrink:0;max-width:180px;">${tag}</span>
-        <span class="feed-main">
-            <span class="feed-summary" style="color:var(--text-primary);-webkit-line-clamp:3;">${escapeHtml((activeLanguage === 'th' && item.th_summary) ? item.th_summary : item.summary)}</span>
-        </span>
-        <span class="feed-right">${sourceHtml}</span>
+    const block = document.createElement("div");
+    block.style.cssText = "padding:16px 0;border-bottom:1px solid var(--border-dim);";
+    block.innerHTML = `
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:8px;">
+            <span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text-secondary);">${formatGroupDateHeader(item.itemDate)}</span>
+            ${tag}
+        </div>
+        <p style="margin:0 0 8px 0;color:var(--text-primary);font-size:0.92rem;line-height:1.6;">${escapeHtml((activeLanguage === 'th' && item.th_summary) ? item.th_summary : item.summary)}</p>
+        ${sourceHtml}
     `;
-    return rowEl;
+    return block;
+}
+
+// ── Digest reader navigation ───────────────────────────────────────
+function openDigestReader(digestDate) {
+    activeDigestDate = digestDate;
+    document.getElementById("research-feed-view").style.display = "none";
+    document.getElementById("digest-reader-view").style.display = "";
+    renderDigestReader();
+    window.scrollTo({ top: 0 });
+}
+
+function closeDigestReader() {
+    activeDigestDate = null;
+    document.getElementById("digest-reader-view").style.display = "none";
+    document.getElementById("research-feed-view").style.display = "";
+    renderReportList();
+}
+
+function renderDigestReader() {
+    if (!activeDigestDate) return;
+    const items = feedItems
+        .filter(it => (it.digestDate || it.itemDate) === activeDigestDate)
+        .sort((a, b) => (b.itemDate || '').localeCompare(a.itemDate || ''));
+
+    const titleEl = document.getElementById("digest-reader-title");
+    if (titleEl) {
+        titleEl.textContent = (activeLanguage === 'th' ? 'สรุปข่าวประจำวัน — ' : 'Daily Digest — ') + formatGroupDateHeader(activeDigestDate);
+    }
+    const countEl = document.getElementById("digest-reader-count");
+    if (countEl) {
+        countEl.textContent = activeLanguage === 'th' ? `${items.length} ข่าว` : `${items.length} ${items.length === 1 ? 'story' : 'stories'}`;
+    }
+
+    const container = document.getElementById("digest-reader-content");
+    if (!container) return;
+    container.innerHTML = "";
+    items.forEach(it => container.appendChild(makeDigestItemBlock(it)));
 }
 
 function renderReportList() {
@@ -188,12 +263,19 @@ function renderReportList() {
     } else if (researchSortBy === 'date' && !query) {
         // Grouped by date (diary/timeline view) — reports arrive already
         // newest-first from getFilteredSortedReports(). Daily-digest feed
-        // items (macro/news bulletins) are merged in under the same date
-        // key — a date may have items but no report, or vice versa.
+        // items are bundled by digestDate (the day the run happened, not
+        // each item's own — possibly older — news date) into ONE row per
+        // run, merged in under that date alongside any full reports.
         const groups = {};
         const getGroup = d => { if (!groups[d]) groups[d] = { reports: [], items: [] }; return groups[d]; };
         reports.forEach(r => getGroup(r.researchDate || "undated").reports.push(r));
-        feedItems.forEach(it => getGroup(it.itemDate || "undated").items.push(it));
+        const digestBundles = {};
+        feedItems.forEach(it => {
+            const d = it.digestDate || it.itemDate || "undated";
+            if (!digestBundles[d]) digestBundles[d] = { digestDate: d, items: [] };
+            digestBundles[d].items.push(it);
+        });
+        Object.values(digestBundles).forEach(b => getGroup(b.digestDate).items.push(b));
         const dateKeys = Object.keys(groups).sort((a, b) => {
             if (a === "undated") return 1;
             if (b === "undated") return -1;
@@ -216,7 +298,7 @@ function renderReportList() {
             wrapper.style.cssText = "display:flex;flex-direction:column;gap:6px;margin-top:6px;padding-left:8px;";
             if (isCollapsed) wrapper.style.display = "none";
             dayReports.forEach(r => wrapper.appendChild(makeReportRow(r)));
-            dayItems.forEach(it => wrapper.appendChild(makeFeedItemRow(it)));
+            dayItems.forEach(bundle => wrapper.appendChild(makeDigestRow(bundle)));
             container.appendChild(wrapper);
         });
     } else {

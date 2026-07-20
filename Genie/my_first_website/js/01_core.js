@@ -178,6 +178,7 @@ const teamProfiles = {
 // ==========================================================================
 let researchReports = {};
 let feedItems = [];              // Daily digest items (macro/news bulletins) — see js/04_research.js
+let activeDigestDate = null;     // Digest currently open in the digest reader (see openDigestReader)
 let researchFilterMode = 'all'; // 'all' | 'positive' | 'negative'
 let researchSortBy = 'date';    // 'date' | 'sector' | 'ticker' | 'upside'
 let researchViewMode = 'list';  // 'list' | 'table'

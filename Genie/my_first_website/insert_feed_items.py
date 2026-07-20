@@ -3,6 +3,7 @@ import json
 import pg8000
 import ssl
 import urllib.parse
+from datetime import date
 
 env_path = "/Users/popular/Desktop/Genie/my_first_website/.env"
 
@@ -52,9 +53,15 @@ def main():
     )
     print("✅ Connected to Supabase.")
 
+    # digest_date is the day this run happened — the feed files every item
+    # from one run under this single date, regardless of each item's own
+    # (possibly older) item_date. A per-item "digest_date" override is
+    # honored for backfilling past runs, but defaults to today.
+    run_date = date.today().isoformat()
+
     query = """
-        INSERT INTO feed_items (user_id, item_date, item_type, tickers, summary, th_summary, source_name, source_url)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        INSERT INTO feed_items (user_id, item_date, digest_date, item_type, tickers, summary, th_summary, source_name, source_url)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
 
     try:
@@ -66,6 +73,7 @@ def main():
             cursor.execute(query, (
                 PROD_OWNER_ID,
                 item["item_date"],
+                item.get("digest_date", run_date),
                 item.get("item_type", "news"),
                 tickers,
                 item["summary"],

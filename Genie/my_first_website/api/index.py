@@ -509,6 +509,7 @@ def _ensure_feed_items_table(cursor, is_postgres):
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id TEXT,
             item_date TEXT,
+            digest_date TEXT,
             item_type TEXT,
             tickers TEXT,
             summary TEXT,
@@ -535,6 +536,7 @@ def _load_feed_items(cursor, is_postgres, user_id):
         items.append({
             "id": r['id'],
             "itemDate": str(r['item_date'])[:10] if r.get('item_date') else None,
+            "digestDate": str(r['digest_date'])[:10] if r.get('digest_date') else None,
             "itemType": r.get('item_type') or 'news',
             "tickers": [t.strip() for t in tickers_raw.split(',') if t.strip()],
             "summary": r['summary'],
@@ -1119,8 +1121,9 @@ def delete_research_report():
 def add_feed_item():
     try:
         data = request.get_json(force=True)
-        item_date = _parse_research_date(data.get('item_date'),
-                                          default=datetime.now().strftime('%Y-%m-%d'))
+        today = datetime.now().strftime('%Y-%m-%d')
+        item_date = _parse_research_date(data.get('item_date'), default=today)
+        digest_date = _parse_research_date(data.get('digest_date'), default=today)
         item_type = (data.get('item_type') or 'news').strip()
         tickers = (data.get('tickers') or '').strip().upper()
         summary = (data.get('summary') or '').strip()
@@ -1136,11 +1139,11 @@ def add_feed_item():
         _ensure_feed_items_table(cursor, is_postgres)
 
         query = '''
-            INSERT INTO feed_items (user_id, item_date, item_type, tickers, summary, th_summary, source_name, source_url)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO feed_items (user_id, item_date, digest_date, item_type, tickers, summary, th_summary, source_name, source_url)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         '''
         execute_sql(cursor, is_postgres, query, (
-            g.user_id, item_date, item_type, tickers, summary, th_summary, source_name, source_url
+            g.user_id, item_date, digest_date, item_type, tickers, summary, th_summary, source_name, source_url
         ))
 
         conn.commit()

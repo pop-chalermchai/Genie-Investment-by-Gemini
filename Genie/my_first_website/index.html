@@ -777,6 +777,18 @@
                         </article>
                     </div>
                 </div><!-- /research-reader-view -->
+
+                <!-- ===== DAILY DIGEST READER ===== -->
+                <div id="digest-reader-view" style="display:none;">
+                    <div class="glass-panel" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 18px;margin-bottom:16px;flex-wrap:wrap;">
+                        <button class="btn-back" onclick="closeDigestReader()">← Research</button>
+                        <span id="digest-reader-count" style="font-family:var(--font-mono);font-size:0.8rem;color:var(--text-secondary);"></span>
+                    </div>
+                    <div class="glass-panel" style="padding:24px 28px;">
+                        <h1 id="digest-reader-title" style="margin:0 0 16px 0;font-size:1.3rem;color:var(--text-primary);">Daily Digest</h1>
+                        <div id="digest-reader-content"></div>
+                    </div>
+                </div><!-- /digest-reader-view -->
             </section>
 
             <!-- SECTION 4: TRANSACTIONS (ACTIVITY LOG) -->

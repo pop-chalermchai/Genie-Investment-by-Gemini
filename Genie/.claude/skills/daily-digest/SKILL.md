@@ -61,7 +61,10 @@ Write each finding as one short item, in English first:
 
 `item_type` is `"macro"` or `"news"`; `tickers` may be empty for pure macro
 items. `item_date` is the date the news actually happened, not the date the
-digest is being run.
+digest is being run — it only controls each item's order *inside* the
+digest when it's opened. The feed itself files the whole run as one row
+under today's date (`digest_date`, auto-stamped by `insert_feed_items.py`);
+don't set `digest_date` per item unless deliberately backfilling a past run.
 
 **Thai translation:** draft `th_summary` for every item too — same persona
 and tone as Serene's Thai research writing (see `research/*/04_Serene_*_TH.md`
@@ -90,6 +93,10 @@ non-versioned bulletins.
   no blogs, forums, or unverified aggregators
 - Items older than 7 days are discarded; `item_date` is the news's actual
   date, not the digest run date
+- The feed shows one run as a single "📰 Daily Digest" row filed under
+  `digest_date` (the run date) — clicking it opens a reader listing every
+  item on one page, sorted by `item_date` newest-first. A date can have a
+  digest row, full research reports, or both.
 - Every item gets a `th_summary` (Thai translation) by default alongside
   the English `summary`; UI falls back to English if it's missing
 - Always show the draft before publishing; never auto-publish
