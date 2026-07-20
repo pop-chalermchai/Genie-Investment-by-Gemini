@@ -17,6 +17,7 @@ This replaces the old `migrate_db()` startup hack (see Product Roadmap step 3).
 | `007_user_roles.sql` | Adds `profiles.role` (admin/user) — research authoring + thai_funds sync become admin-only; owner backfilled as admin | Applied 2026-07-09 |
 | `008_sectors.sql` | Adds per-user `sectors` master-data table (ingest combobox + dashboard filter) + RLS; seeds defaults + every sector already on an existing asset | Applied 2026-07-10 |
 | `009_feed_items.sql` | Adds `feed_items` table for admin-authored macro/news bulletins shown in the research feed's date groups, alongside full reports + RLS | Applied 2026-07-19 |
+| `010_feed_items_th.sql` | Adds nullable `feed_items.th_summary` for Thai-translated digest items (falls back to English `summary` when absent) | Applied 2026-07-20 |
 
 ## Step-by-step (multi-user go-live)
 

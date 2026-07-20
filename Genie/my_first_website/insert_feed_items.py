@@ -53,8 +53,8 @@ def main():
     print("✅ Connected to Supabase.")
 
     query = """
-        INSERT INTO feed_items (user_id, item_date, item_type, tickers, summary, source_name, source_url)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        INSERT INTO feed_items (user_id, item_date, item_type, tickers, summary, th_summary, source_name, source_url)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
     """
 
     try:
@@ -69,6 +69,7 @@ def main():
                 item.get("item_type", "news"),
                 tickers,
                 item["summary"],
+                item.get("th_summary"),
                 item.get("source_name"),
                 item.get("source_url"),
             ))

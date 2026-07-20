@@ -149,7 +149,7 @@ function makeFeedItemRow(item) {
     rowEl.innerHTML = `
         <span style="display:flex;flex-wrap:wrap;gap:4px;flex-shrink:0;max-width:180px;">${tag}</span>
         <span class="feed-main">
-            <span class="feed-summary" style="color:var(--text-primary);-webkit-line-clamp:3;">${escapeHtml(item.summary)}</span>
+            <span class="feed-summary" style="color:var(--text-primary);-webkit-line-clamp:3;">${escapeHtml((activeLanguage === 'th' && item.th_summary) ? item.th_summary : item.summary)}</span>
         </span>
         <span class="feed-right">${sourceHtml}</span>
     `;

@@ -512,6 +512,7 @@ def _ensure_feed_items_table(cursor, is_postgres):
             item_type TEXT,
             tickers TEXT,
             summary TEXT,
+            th_summary TEXT,
             source_name TEXT,
             source_url TEXT,
             created_at TEXT
@@ -537,6 +538,7 @@ def _load_feed_items(cursor, is_postgres, user_id):
             "itemType": r.get('item_type') or 'news',
             "tickers": [t.strip() for t in tickers_raw.split(',') if t.strip()],
             "summary": r['summary'],
+            "th_summary": r.get('th_summary'),
             "sourceName": r.get('source_name'),
             "sourceUrl": r.get('source_url'),
         })
@@ -1122,6 +1124,7 @@ def add_feed_item():
         item_type = (data.get('item_type') or 'news').strip()
         tickers = (data.get('tickers') or '').strip().upper()
         summary = (data.get('summary') or '').strip()
+        th_summary = (data.get('th_summary') or '').strip() or None
         source_name = data.get('source_name', '')
         source_url = data.get('source_url', '')
 
@@ -1133,11 +1136,11 @@ def add_feed_item():
         _ensure_feed_items_table(cursor, is_postgres)
 
         query = '''
-            INSERT INTO feed_items (user_id, item_date, item_type, tickers, summary, source_name, source_url)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO feed_items (user_id, item_date, item_type, tickers, summary, th_summary, source_name, source_url)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         '''
         execute_sql(cursor, is_postgres, query, (
-            g.user_id, item_date, item_type, tickers, summary, source_name, source_url
+            g.user_id, item_date, item_type, tickers, summary, th_summary, source_name, source_url
         ))
 
         conn.commit()

@@ -32,7 +32,7 @@ Falls back to the `tickers` array in `insert_all.py` if `research_reports`
 isn't populated locally.
 
 ### 2. Research
-For today's date, use `WebSearch` to find:
+Use `WebSearch` to find:
 - Key macro/economic news relevant to investors (rates, inflation prints,
   Fed commentary, major index moves)
 - Recent news for each ticker in the universe from step 1
@@ -42,20 +42,36 @@ The Wall Street Journal, and Yahoo Finance. Discard results from anywhere
 else (blogs, forums, low-quality aggregators, unverified social posts), even
 if they seem relevant — accuracy and credibility matter more than coverage.
 
-Skip a ticker if there's nothing notable that day from these sources — don't
-force an item or fall back to a weaker source just to fill a gap.
+**Freshness — cap item age at 7 days.** WebSearch ranks by relevance, not
+publish date, so it will surface things like a stock's 9-day losing streak or
+an M&A deal from two weeks ago mixed in with today's breaking news. Discard
+anything older than 7 days. For everything else, identify the actual date the
+news broke (not today's date) and use that as `item_date` — items land under
+their real date header in the feed, not bunched under the day the digest was
+run. Skip a ticker if there's nothing notable in the last 7 days from these
+sources — don't force an item or fall back to a weaker source just to fill a
+gap.
 
 ### 3. Draft
-Write each finding as one short item:
+Write each finding as one short item, in English first:
 
 ```json
-{ "item_date": "YYYY-MM-DD", "item_type": "macro", "tickers": ["NVDA", "AMD"], "summary": "one-line summary", "source_name": "...", "source_url": "..." }
+{ "item_date": "YYYY-MM-DD", "item_type": "macro", "tickers": ["NVDA", "AMD"], "summary": "one-line summary", "th_summary": "หนึ่งบรรทัดสรุปเป็นภาษาไทย", "source_name": "...", "source_url": "..." }
 ```
 
 `item_type` is `"macro"` or `"news"`; `tickers` may be empty for pure macro
-items. Show the full drafted list to the user in chat and wait for explicit
-approval or edits — this is published, shared content the moment it's
-inserted; do not publish without confirmation.
+items. `item_date` is the date the news actually happened, not the date the
+digest is being run.
+
+**Thai translation:** draft `th_summary` for every item too — same persona
+and tone as Serene's Thai research writing (see `research/*/04_Serene_*_TH.md`
+for style reference). It's optional at the schema level (falls back to the
+English `summary` in the UI if omitted), but include it by default; only skip
+it if the user says otherwise for a given run.
+
+Show the full drafted list (both languages) to the user in chat and wait for
+explicit approval or edits — this is published, shared content the moment
+it's inserted; do not publish without confirmation.
 
 ### 4. Publish
 On approval, write the approved items to a JSON file and run:
@@ -72,6 +88,10 @@ non-versioned bulletins.
 - Manual only — no scheduled/cron run exists yet
 - Sources restricted to Reuters, Bloomberg, CNBC, WSJ, Yahoo Finance —
   no blogs, forums, or unverified aggregators
+- Items older than 7 days are discarded; `item_date` is the news's actual
+  date, not the digest run date
+- Every item gets a `th_summary` (Thai translation) by default alongside
+  the English `summary`; UI falls back to English if it's missing
 - Always show the draft before publishing; never auto-publish
 - Ticker universe is computed fresh each run (union of live portfolio
   holdings + research coverage) — no hardcoded list to maintain as tickers
