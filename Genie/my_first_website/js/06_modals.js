@@ -438,6 +438,14 @@ function applyProfile(profile) {
     if (avatarEl) avatarEl.innerText = profile.avatar_emoji || "🧞";
     if (nameEl) nameEl.innerText = profile.display_name || "Profile";
 
+    // Workspace label — belongs to whoever is signed in, never a hardcoded name
+    const workspaceEl = document.getElementById("portfolio-title");
+    if (workspaceEl) {
+        workspaceEl.innerText = profile.display_name
+            ? profile.display_name + "'s Portfolios"
+            : "My Portfolios";
+    }
+
     // Role-gated UI: research authoring is admin-only (backend enforces too)
     const isAdmin = profile.role === "admin";
     const newReportBtn = document.getElementById("btn-new-report");

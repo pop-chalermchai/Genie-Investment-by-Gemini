@@ -15,7 +15,7 @@ Welcome to **Genie**, your personal investment research and portfolio orchestrat
 ---
 
 ## 💼 Portfolio Planning & Management
-- **Dashboard web app**: [Genie App (Vercel)](https://genie-investment-by-gemini.vercel.app/) / [Local App](http://localhost:8000/)
+- **Dashboard web app**: [Genie — genieports.com](https://genieports.com/) / [Local App](http://localhost:8000/)
 - **Workspace Notes**: [[notes/general_notes|general notes]]
 
 ---

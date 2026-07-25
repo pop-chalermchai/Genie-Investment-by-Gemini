@@ -31,4 +31,4 @@ cd "$GIT_ROOT"
 npx vercel --prod
 
 echo ""
-echo "✅ Deploy complete — https://genie-investment-by-gemini.vercel.app"
+echo "✅ Deploy complete — https://genieports.com"

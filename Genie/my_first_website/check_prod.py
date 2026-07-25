@@ -21,7 +21,7 @@ import sys
 import urllib.error
 import urllib.request
 
-BASE = "https://genie-investment-by-gemini.vercel.app"
+BASE = "https://genieports.com"
 SUPABASE_URL = "https://jkndlurskolcmifmsctm.supabase.co"
 # Public anon key — same value that ships in auth.js; safe to commit.
 SUPABASE_ANON_KEY = (

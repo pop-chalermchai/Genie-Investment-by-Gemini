@@ -5,7 +5,7 @@ description: Verify production Genie Investment app is healthy — logs in with 
 
 # Check Production
 
-Smoke-test the live production app at https://genie-investment-by-gemini.vercel.app
+Smoke-test the live production app at https://genieports.com
 
 The app enforces Supabase Auth on every `/api/*` route, so the check logs in
 as a dedicated smoke-test user first.

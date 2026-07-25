@@ -39,7 +39,8 @@ cd ~/Desktop && npx vercel --prod
 ## Vercel project
 - **Project name:** `genie-investment-by-gemini`
 - **Team:** `popular-s-projects1`
-- **Production URL:** https://genie-investment-by-gemini.vercel.app
+- **Production URL:** https://genieports.com (custom domain, registered via Vercel)
+- **Fallback URL:** https://genie-investment-by-gemini.vercel.app (still serves the same deployment)
 - **Root directory (in Vercel settings):** `Genie/my_first_website`
 - `.vercel/project.json` is committed — DO NOT delete it
 - Must run `npx vercel --prod` from git root (`~/Desktop`), NOT from `my_first_website/`
