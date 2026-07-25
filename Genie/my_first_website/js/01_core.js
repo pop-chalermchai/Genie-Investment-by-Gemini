@@ -128,7 +128,7 @@ const teamProfiles = {
         guardrails: [
             "Translate all core financial ratios into standardized Thai industry equivalents.",
             "Ensure definitions of DCF assumptions remain perfectly aligned with international standards.",
-            "Highlight English vocabularies and structures to support Pop's language growth."
+            "Highlight English vocabularies and structures to support the reader's language growth."
         ]
     },
     mateo: {
