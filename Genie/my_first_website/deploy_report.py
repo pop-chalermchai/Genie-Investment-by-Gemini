@@ -93,6 +93,9 @@ def deploy(args):
         req = urllib.request.Request(url, data=body, method="POST")
 
     req.add_header("Content-Type", "application/json")
+    token = os.environ.get("GENIE_DEPLOY_TOKEN")
+    if token:
+        req.add_header("Authorization", f"Bearer {token}")
 
     print(f"  Sending {args.mode.upper()} → {url}")
     try:
