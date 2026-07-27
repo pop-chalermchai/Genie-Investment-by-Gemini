@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  One-off probe: proves the `claude` CLI can authenticate when launchd starts it
+  (launchd jobs don't always inherit the login keychain / OAuth session that an
+  interactive Terminal has). Costs one trivial API call instead of a full digest.
+
+  Run it:
+    launchctl load /Users/popular/Desktop/Genie/my_first_website/scripts/genie-auth-probe.plist
+    sleep 20 && cat /tmp/genie_auth_probe.txt
+    launchctl unload /Users/popular/Desktop/Genie/my_first_website/scripts/genie-auth-probe.plist
+
+  Expect "AUTH_OK" and "exit=0". Anything about login/credentials means the
+  weekly job needs an ANTHROPIC_API_KEY in its plist instead of OAuth.
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.genie.auth-probe</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>-c</string>
+        <string>export PATH=/Users/popular/.nvm/versions/node/v24.17.0/bin:/usr/bin:/bin; cd /Users/popular/Desktop/Genie/my_first_website; claude -p "Reply with exactly: AUTH_OK" --permission-mode dontAsk --output-format text; echo "exit=$?"</string>
+    </array>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/genie_auth_probe.txt</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/genie_auth_probe.txt</string>
+
+    <key>RunAtLoad</key>
+    <true/>
+</dict>
+</plist>

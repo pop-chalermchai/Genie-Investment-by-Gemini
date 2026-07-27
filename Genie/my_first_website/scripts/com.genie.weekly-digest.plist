@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.genie.weekly-digest</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/popular/Desktop/Genie/my_first_website/weekly_digest.sh</string>
+    </array>
+
+    <!-- Weekday 0 = Sunday, 08:00 local time. If the Mac is asleep or off at
+         08:00, launchd runs the job once as soon as it wakes. -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Weekday</key>
+        <integer>0</integer>
+        <key>Hour</key>
+        <integer>8</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/popular/Desktop/Genie/my_first_website</string>
+
+    <key>StandardOutPath</key>
+    <string>/Users/popular/Desktop/Genie/digests/logs/launchd.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/popular/Desktop/Genie/digests/logs/launchd.err.log</string>
+
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>

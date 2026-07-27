@@ -87,8 +87,29 @@ This inserts straight into Supabase `feed_items` (same owner id as research
 reports) — no local SQLite staging step, since these are lightweight,
 non-versioned bulletins.
 
+## Automated weekly draft (added 2026-07-27)
+
+`weekly_digest.sh` + `~/Library/LaunchAgents/com.genie.weekly-digest.plist` run
+steps 1-3 unattended every **Sunday 08:00** and stop there — publishing stays
+manual, so the "never auto-publish" rule below still holds. Sunday cadence lines
+up with the 7-day freshness cap exactly: no gaps, no overlap between runs.
+
+Output lands in `Genie/digests/` (gitignored) as `draft_YYYY-MM-DD.json` (ready
+for `insert_feed_items.py`) plus a `.md` review page, followed by a macOS
+notification. Review the `.md`, then publish with the command printed at its end.
+
+The runner passes a narrow `--allowedTools` list whose only Bash grant is
+`Bash(python3 -c:*)` — enough for the step-1 SQLite query, not enough to reach
+`insert_feed_items.py`. Publishing is blocked mechanically, not just by prompt
+instruction. `--permission-mode dontAsk` keeps it from hanging on a prompt at
+08:00 with nobody there, and a 60-minute watchdog kills a stuck run.
+
+macOS TCC gotcha: launchd agents get no access to `~/Desktop` by default, so
+`/bin/bash` needs **Full Disk Access** (System Settings → Privacy & Security).
+Without it the job dies instantly with `Operation not permitted`.
+
 ## Notes
-- Manual only — no scheduled/cron run exists yet
+- Weekly draft is automated (see above); publishing is always manual
 - Sources restricted to Reuters, Bloomberg, CNBC, WSJ, Yahoo Finance —
   no blogs, forums, or unverified aggregators
 - Items older than 7 days are discarded; `item_date` is the news's actual
