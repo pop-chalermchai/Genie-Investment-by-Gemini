@@ -97,17 +97,17 @@ async function fetchStockChartData() {
         // Filter out null values from prices
         const prices = data.close.map((p, i) => p !== null ? p : (data.close[i-1] || data.close[i+1] || 0));
         
-        // Decide glowing chart line color based on performance
+        // Decide line color based on performance
         const firstPrice = prices[0] || 0;
         const lastPrice = prices[prices.length - 1] || 0;
         const isUp = lastPrice >= firstPrice;
         
-        const strokeColor = isUp ? "#10B981" : "#EF4444"; // Green vs Red
-        const glowColor = isUp ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)";
+        const strokeColor = isUp ? "#088177" : "#b55b64"; // N26 Brand Teal vs N26 Rhubarb
+        const glowColor = "transparent"; // N26 flat design: no gradient fill under line
         
         const gradient = ctx.createLinearGradient(0, 0, 0, 250);
         gradient.addColorStop(0, glowColor);
-        gradient.addColorStop(1, "rgba(3, 7, 18, 0)");
+        gradient.addColorStop(1, glowColor);
         
         stockDetailChartInstance = new Chart(ctx, {
             type: 'line',
@@ -118,15 +118,15 @@ async function fetchStockChartData() {
                     data: prices,
                     borderColor: strokeColor,
                     borderWidth: 2,
-                    backgroundColor: gradient,
-                    fill: true,
-                    tension: 0.2,
+                    backgroundColor: "transparent",
+                    fill: false, // N26 style: line only, no fill
+                    tension: 0, // N26 style: sharp lines rather than curved
                     pointRadius: prices.length > 50 ? 0 : 2,
                     pointHoverRadius: 5,
                     pointBackgroundColor: strokeColor,
                     pointBorderColor: "#fff",
-                    shadowColor: strokeColor,
-                    shadowBlur: 10
+                    shadowColor: "transparent", // No shadows
+                    shadowBlur: 0
                 }]
             },
             options: {
@@ -135,14 +135,14 @@ async function fetchStockChartData() {
                 legend: { display: false },
                 scales: {
                     xAxes: [{
-                        gridLines: { color: "rgba(255, 255, 255, 0.03)" },
-                        ticks: { fontColor: "rgba(255, 255, 255, 0.4)", fontSize: 10, maxTicksLimit: 8 }
+                        gridLines: { display: false, color: "transparent", drawBorder: false },
+                        ticks: { fontColor: "#6d6d6d", fontSize: 11, maxTicksLimit: 8 }
                     }],
                     yAxes: [{
-                        gridLines: { color: "rgba(255, 255, 255, 0.03)" },
+                        gridLines: { display: false, color: "transparent", drawBorder: false },
                         ticks: { 
-                            fontColor: "rgba(255, 255, 255, 0.4)", 
-                            fontSize: 10,
+                            fontColor: "#6d6d6d", 
+                            fontSize: 11,
                             callback: function(value) {
                                 return value.toLocaleString();
                             }

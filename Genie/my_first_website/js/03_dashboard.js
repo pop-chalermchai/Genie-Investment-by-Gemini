@@ -245,19 +245,19 @@ function renderChart() {
             datasets: [{
                 data: data,
                 backgroundColor: [
-                    "rgba(202, 138, 4, 0.65)",  // Quest Gold
-                    "rgba(245, 208, 97, 0.65)",  // Lighter Gold Accent
-                    "rgba(139, 92, 246, 0.65)",  // Royal Purple
-                    "rgba(34, 197, 94, 0.65)"   // Jade Green
+                    "#088177",  // N26 Teal
+                    "#b55b64",  // N26 Rhubarb
+                    "#a67931",  // N26 Gold
+                    "#205b6b"   // N26 Slate-Blue
                 ],
                 borderColor: [
-                    "#CA8A04",
-                    "#F5D061",
-                    "#8B5CF6",
-                    "#22C55E"
+                    "#ffffff",
+                    "#ffffff",
+                    "#ffffff",
+                    "#ffffff"
                 ],
-                borderWidth: 1.5,
-                hoverOffset: 12
+                borderWidth: 2,
+                hoverOffset: 4
             }]
         },
         options: {
@@ -267,10 +267,11 @@ function renderChart() {
                 legend: {
                     position: "bottom",
                     labels: {
-                        color: "#94A3B8",
+                        color: "#1b1b1b", /* N26 Ink */
                         font: {
                             family: "Inter",
-                            size: 11
+                            size: 14,
+                            weight: "500"
                         },
                         boxWidth: 12,
                         padding: 15

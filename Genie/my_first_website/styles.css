@@ -2,38 +2,44 @@
    VISUAL DNA: SOLARIZED LIGHT THEME & MINIMALIST LAYOUT
    ========================================================================== */
 :root {
-    --bg-obsidian: #FDF6E3;         /* Solarized Light Base3 Cream Background */
-    --bg-card: rgba(238, 232, 213, 0.85); /* Solarized Light Base2 Translucent Card */
-    --bg-card-solid: #EEE8D5;       /* Solarized Light Base2 Solid Card */
-    --accent-neon: #268BD2;         /* Solarized Light Blue Accent */
-    --accent-gold: #B58900;         /* Solarized Light Yellow/Gold Accent */
-    --border-dim: rgba(147, 161, 161, 0.25); /* Solarized Light Muted Border */
-    --border-glow: rgba(38, 139, 210, 0.15); /* Soft Solarized Blue Glow */
+    /* N26 Canvas & Cards */
+    --bg-obsidian: #faf8f5;         /* Canvas Cream */
+    --bg-card: #ffffff;             /* Canvas Light (Solid, no glass) */
+    --bg-card-solid: #f2f2f2;       /* Canvas Cream Strong */
     
-    --text-primary: #073642;        /* Solarized Light Base02 (Very Dark Gray-Teal) for maximum contrast */
-    --text-emphasis: #002B36;       /* Solarized Light Base03 (Extremely Dark Gray-Teal) for headers/metrics */
-    --text-secondary: #586E75;      /* Solarized Light Base01 (Dark Gray-Teal) */
-    --text-muted: #657B83;          /* Solarized Light Base00 (Medium Gray-Teal) */
+    /* N26 Accents */
+    --accent-neon: #088177;         /* Brand Teal */
+    --accent-gold: #b55b64;         /* Rhubarb */
     
-    /* Semantic Colors */
-    --color-positive: #859900;      /* Solarized Light Green */
-    --color-negative: #DC322F;      /* Solarized Light Red */
-    --color-warning: #CB4B16;       /* Solarized Light Orange */
+    /* N26 Borders */
+    --border-dim: #e9e9e9;          /* Surface Gray */
+    --border-glow: transparent;     /* No glow */
     
-    /* Brand Accent Gradients */
-    --grad-neon-gold: linear-gradient(135deg, #268BD2 0%, #2AA198 100%); /* Blue to Cyan */
-    --grad-obsidian: linear-gradient(185deg, #EEE8D5 0%, #FDF6E3 100%);
+    /* N26 Typography Colors */
+    --text-primary: #1b1b1b;        /* Ink */
+    --text-emphasis: #088177;       /* Brand Teal for emphasis */
+    --text-secondary: #6d6d6d;      /* Ink Muted */
+    --text-muted: #d9d9d9;          /* Hairline/Muted */
+    
+    /* Semantic Colors (Keep basic green/red for now) */
+    --color-positive: #005451;      /* Deep Teal as positive */
+    --color-negative: #b55b64;      /* Rhubarb as negative */
+    --color-warning: #a67931;       /* Gold as warning */
+    
+    /* Remove Gradients - Make them solid N26 Teal */
+    --grad-neon-gold: #088177; 
+    --grad-obsidian: #faf8f5;
     
     /* Font Definitions */
-    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-sans: 'Inter Variable', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --font-mono: 'Fira Code', monospace;
     
-    /* Shadows & Glows */
-    --shadow-premium: 0 8px 30px rgba(88, 110, 117, 0.1), 0 0 1px rgba(88, 110, 117, 0.15);
-    --glow-cyan: 0 0 20px rgba(38, 139, 210, 0.2);
-    --glow-gold: 0 0 20px rgba(181, 137, 0, 0.15);
+    /* Flat Shadows & Glows */
+    --shadow-premium: 0 9px 7px rgba(0,0,0,0.03); /* N26 light shadow level 2 */
+    --glow-cyan: none;
+    --glow-gold: none;
     
-    --transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+    --transition: all 0.2s ease;
 }
 
 /* Solarized Dark Theme Overrides */
@@ -73,113 +79,106 @@ body {
     color: var(--text-primary);
     font-family: var(--font-sans);
     line-height: 1.6;
+    letter-spacing: 0.3px; /* N26 body tracking */
     overflow-x: hidden;
     min-height: 100vh;
     position: relative;
 }
 
-/* Import clean Inter font styling globally for headers & UI labels */
-h1, h2, h3, h4, h5, h6, 
-.logo-title, .nav-tab, .metric-title, .section-title, 
-th, .btn, .tab-label, .modal-title, .agent-name, 
-.meta-label, .portfolio-meta, .control-bar label {
+/* N26 Typography: 400 weight for display, normal casing */
+h1, h2, h3, h4, h5, h6, .logo-title, .section-title, .modal-title, .agent-name {
     font-family: var(--font-sans) !important;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
+    font-weight: 400 !important;
+    letter-spacing: normal !important;
+    text-transform: none !important;
+}
+
+/* N26 Labels: 500 weight */
+.nav-tab, .metric-title, th, .btn, .tab-label, .meta-label, .portfolio-meta, .control-bar label {
+    font-family: var(--font-sans) !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.3px !important;
+    text-transform: none !important;
 }
 
 /* Minimalist Ambient Glow Orbs */
 .glow-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    pointer-events: none;
-    z-index: -1;
-    overflow: hidden;
+    display: none !important; /* N26: No ambient glows */
 }
 
-.glow-orb {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(140px);
-    opacity: 0.05; /* Extremely subtle for light mode */
-    mix-blend-mode: normal;
-    animation: pulse 12s infinite alternate ease-in-out;
-}
-
-.orb-1 {
-    top: -10%;
-    left: 10%;
-    width: 45vw;
-    height: 45vw;
-    background: radial-gradient(circle, var(--accent-neon) 0%, transparent 80%);
-}
-
-.orb-2 {
-    bottom: -10%;
-    right: 5%;
-    width: 50vw;
-    height: 50vw;
-    background: radial-gradient(circle, var(--accent-gold) 0%, transparent 80%);
-    animation-delay: -6s;
-}
-
-@keyframes pulse {
-    0% { transform: scale(1) translate(0, 0); opacity: 0.04; }
-    100% { transform: scale(1.1) translate(2%, 3%); opacity: 0.07; }
-}
-
-/* Glassmorphism Clean Panel Base */
+/* Flat Card Base (N26) */
 .glass-panel {
     background: var(--bg-card);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
     border: 1px solid var(--border-dim);
-    border-radius: 8px; /* Clean, modern border radius */
-    box-shadow: var(--shadow-premium);
+    border-radius: 8px; /* N26 cards are 8px or 24px */
+    box-shadow: none; /* Flat */
     transition: var(--transition);
 }
 
 .glass-panel:hover {
-    border-color: rgba(38, 139, 210, 0.4);
-    box-shadow: 0 10px 30px rgba(88, 110, 117, 0.15);
+    border-color: var(--accent-neon);
+    box-shadow: var(--shadow-premium);
 }
 
 /* Layout Container */
 .dashboard-container {
-    max-width: 1560px;
-    margin: 0 auto;
-    padding: 30px 24px;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 25px;
     min-height: 100vh;
+}
+
+/* N26 Inner Container */
+.n26-container {
+    max-width: 1464px;
+    margin: 0 auto;
+    padding: 0 24px;
+    width: 100%;
+}
+
+/* N26 Hero Band */
+.hero-band-teal {
+    background-color: var(--accent-neon);
+    color: #ffffff;
+    padding: 80px 24px 132px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+.hero-band-teal h1 {
+    font-size: 58px;
+    line-height: 64px;
+    font-weight: 400 !important;
+    margin-bottom: 16px;
+    color: #ffffff;
+}
+@media (min-width: 768px) {
+    .hero-band-teal h1 {
+        font-size: 80px;
+        line-height: 88px;
+    }
+}
+.hero-band-teal p {
+    font-size: 20px;
+    font-weight: 400;
+    max-width: 600px;
 }
 
 /* ==========================================================================
    HEADER COMPONENT (C-SUITE NAVIGATION & LOGO)
    ========================================================================== */
 header {
-    padding: 20px 30px;
+    background-color: var(--bg-card);
+    padding: 12px 24px;
+    min-height: 63px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     position: relative;
-    overflow: hidden;
-}
-
-header::before {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent 0%, var(--accent-neon) 50%, var(--accent-gold) 100%);
-    opacity: 0.6;
+    border-bottom: 1px solid var(--border-dim);
 }
 
 .header-left {
@@ -647,21 +646,22 @@ header::before {
 
 .btn {
     width: 100%;
-    background: linear-gradient(90deg, var(--accent-neon) 0%, #0088FF 100%);
+    background: var(--accent-neon);
     border: none;
-    color: #030712;
-    padding: 12px;
-    border-radius: 8px;
-    font-weight: 700;
-    font-size: 0.9rem;
+    color: #ffffff;
+    padding: 12px 24px;
+    border-radius: 6px; /* N26 6px button rule */
+    font-weight: 500;
+    font-size: 16px;
+    letter-spacing: 0.3px;
     cursor: pointer;
     transition: var(--transition);
 }
 
 .btn-primary:hover {
-    box-shadow: var(--glow-cyan);
-    transform: translateY(-1px);
-    filter: brightness(1.1);
+    background: #005451; /* Brand Teal Deep */
+    box-shadow: none;
+    transform: none;
 }
 
 /* ==========================================================================
