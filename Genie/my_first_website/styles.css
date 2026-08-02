@@ -378,18 +378,50 @@ header::before {
 }
 
 /* ==========================================================================
-   MAIN DASHBOARD WORKSPACE GRID
+   MAIN DASHBOARD WORKSPACE
    ========================================================================== */
-.workspace-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 400px;
+.workspace-subtabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-dim);
+}
+
+.workspace-subtab {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-secondary);
+    padding: 10px 4px;
+    margin-bottom: -1px;
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.workspace-subtab + .workspace-subtab {
+    margin-left: 18px;
+}
+
+.workspace-subtab:hover {
+    color: var(--text-primary);
+}
+
+.workspace-subtab.active {
+    color: var(--accent-neon);
+    border-bottom-color: var(--accent-neon);
+}
+
+.workspace-view {
+    display: none;
+    flex-direction: column;
     gap: 20px;
 }
 
-.positions-column {
+.workspace-view.active-content {
     display: flex;
-    flex-direction: column;
-    gap: 20px;
 }
 
 /* Control bar */
@@ -521,11 +553,11 @@ header::before {
 .cell-negative,
 .positions-table td.cell-negative { color: var(--color-negative); font-weight: 600; }
 
-/* Visuals Column */
-.visuals-column {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+/* Visuals workspace view: chart + ingest form side by side */
+#workspace-view-visuals.active-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
 }
 
 .chart-card {
@@ -1452,10 +1484,17 @@ footer {
 /* ==========================================================================
    RESPONSIVE DESIGN (MEDIA QUERIES)
    ========================================================================== */
-@media (max-width: 1200px) {
-    .workspace-layout {
-        grid-template-columns: 1fr;
+@media (max-width: 1280px) {
+    .positions-table {
+        font-size: 0.8rem;
     }
+    .positions-table th,
+    .positions-table td {
+        padding: 12px 10px;
+    }
+}
+
+@media (max-width: 1200px) {
     .metrics-grid {
         grid-template-columns: 1fr 1fr;
     }
@@ -1465,6 +1504,9 @@ footer {
 }
 
 @media (max-width: 900px) {
+    #workspace-view-visuals.active-content {
+        grid-template-columns: 1fr;
+    }
     .research-layout {
         grid-template-columns: 1fr;
     }
@@ -1672,11 +1714,6 @@ footer {
     #btn-refresh-prices {
         margin-left: 0 !important;
         padding: 7px 12px !important;
-    }
-
-    /* ── Workspace layout: sidebar collapses below content ── */
-    .workspace-layout {
-        grid-template-columns: 1fr;
     }
 
     /* ── Quick ingest form ── */

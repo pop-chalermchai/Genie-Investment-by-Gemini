@@ -133,10 +133,13 @@
                 </div>
                 <div id="manage-tree-panel"></div>
 
-                <!-- MAIN WORKSPACE GRID -->
-                <div class="workspace-layout">
-                    <!-- LEFT COLUMN: POSITIONS & CONTROLS -->
-                    <div class="positions-column">
+                <!-- MAIN WORKSPACE -->
+                <div class="workspace-subtabs">
+                    <button class="workspace-subtab active" id="wtab-holdings" onclick="switchWorkspaceView('holdings')">Holdings</button>
+                    <button class="workspace-subtab" id="wtab-visuals" onclick="switchWorkspaceView('visuals')">Allocation & Add Position</button>
+                </div>
+
+                <div class="workspace-view active-content" id="workspace-view-holdings">
                         <!-- CONTROL BAR -->
                         <div class="control-bar glass-panel">
                             <div class="search-wrapper">
@@ -192,10 +195,9 @@
                                 </tbody>
                             </table>
                         </div>
-                    </div>
+                </div>
 
-                    <!-- RIGHT COLUMN: VISUALIZATIONS & INGESTION -->
-                    <div class="visuals-column">
+                <div class="workspace-view" id="workspace-view-visuals">
                         <!-- PORTFOLIO ALLOCATION CHART -->
                         <div class="chart-card glass-panel">
                             <h2 class="card-title">Portfolio Allocation</h2>
@@ -272,7 +274,6 @@
                                 </button>
                             </form>
                         </div>
-                    </div>
                 </div>
 
                 </div> <!-- end #dashboard-main-view -->

@@ -105,6 +105,28 @@ function switchTab(tabName, pushState = true) {
     }
 }
 
+// WORKSPACE SUB-TAB SWITCHER (Holdings vs Allocation & Add Position)
+function switchWorkspaceView(viewName) {
+    const views = ["holdings", "visuals"];
+    views.forEach(v => {
+        const tabEl = document.getElementById(`wtab-${v}`);
+        const contentEl = document.getElementById(`workspace-view-${v}`);
+
+        if (v === viewName) {
+            tabEl.classList.add("active");
+            contentEl.classList.add("active-content");
+        } else {
+            tabEl.classList.remove("active");
+            contentEl.classList.remove("active-content");
+        }
+    });
+
+    // Resize chart to prevent visual glitches when its container becomes visible
+    if (viewName === "visuals" && allocationChart) {
+        allocationChart.resize();
+    }
+}
+
 // Handle browser back/forward buttons
 window.addEventListener("popstate", (event) => {
     const tabName = (event.state && event.state.tab) || "dashboard";
