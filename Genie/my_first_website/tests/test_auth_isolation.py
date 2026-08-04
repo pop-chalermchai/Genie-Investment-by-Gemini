@@ -15,7 +15,13 @@ def _hdr(make_token, uid):
 
 def test_no_token_is_unauthorized(multiuser):
     client, _ = multiuser
-    assert client.get("/api/init-data").status_code == 401
+    # init-data is intentionally public — it powers the logged-out research
+    # view — but must not leak any user-scoped data to an anonymous caller.
+    r = client.get("/api/init-data")
+    assert r.status_code == 200
+    body = r.get_json()
+    assert body["holdings"] == []
+    assert body["portfolios"] == []
     assert client.get("/api/holdings").status_code == 401
 
 

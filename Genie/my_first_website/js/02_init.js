@@ -26,11 +26,13 @@ function fetchInitData(onComplete = null) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-    // Gate the app on auth. The backend tells us whether a login is required
-    // (see /api/auth-config); if so and there's no session, show login and stop.
+    let isAllowed = true;
     if (window.GenieAuth) {
-        const allowed = await GenieAuth.ensureAllowed();
-        if (!allowed) return;
+        // Allow public access to initialization, only force auth check on protected routes/actions
+        isAllowed = window.GenieAuth.hasSession();
+        if (window.location.hash.includes("type=recovery")) {
+            await GenieAuth.ensureAllowed();
+        }
     }
     loadUserProfile(); // fire-and-forget: applies name/avatar/preferences when it lands
     fetchInitData(() => {
@@ -60,9 +62,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         const path = window.location.pathname.substring(1);
         const validTabs = ["dashboard", "team", "research", "transactions"];
         if (validTabs.includes(path)) {
-            switchTab(path, false);
+            if (!isAllowed && path !== "research") {
+                switchTab("research", false);
+                if (window.GenieAuth) window.GenieAuth.showLogin();
+            } else {
+                switchTab(path, false);
+            }
         } else {
-            switchTab("dashboard", false);
+            switchTab(isAllowed ? "dashboard" : "research", false);
         }
 
         fetchLivePrices(); // runs in background, silently updates prices
@@ -72,6 +79,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 // TAB SWITCHER
 function switchTab(tabName, pushState = true) {
+    if (window.GenieAuth && !window.GenieAuth.hasSession() && tabName !== "research") {
+        window.GenieAuth.showLogin();
+        if (!activeTab) tabName = "research";
+        else return;
+    }
+
     activeTab = tabName;
     
     // Toggle navigation classes

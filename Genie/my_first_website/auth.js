@@ -273,11 +273,13 @@
         });
       },
       function () {
-        // No valid session — surface a 401-like response and prompt login.
-        showLogin();
-        return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 401,
-          headers: { "Content-Type": "application/json" },
+        // No valid session — make the request WITHOUT token.
+        return _origFetch(input, init).then(function (resp) {
+          // If the endpoint actually requires auth, it returns 401. 
+          if (resp.status === 401) {
+            showLogin();
+          }
+          return resp;
         });
       }
     );
@@ -290,6 +292,7 @@
     overlay.id = "genie-auth-overlay";
     overlay.innerHTML =
       '<div class="genie-auth-card">' +
+      '  <button type="button" id="genie-auth-close" aria-label="Close">✕</button>' +
       '  <img src="./assets/Genie.png?v=2" alt="Genie" class="genie-auth-logo" onerror="this.style.display=\'none\'"/>' +
       '  <h2>Genie</h2>' +
       '  <p class="genie-auth-sub" id="genie-auth-sub">Sign in to continue</p>' +
@@ -314,8 +317,11 @@
     style.textContent =
       "#genie-auth-overlay{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;" +
       "background:rgba(10,12,20,.92);backdrop-filter:blur(6px);font-family:inherit;}" +
-      ".genie-auth-card{background:#151823;border:1px solid #262b3d;border-radius:16px;padding:32px 28px;width:min(360px,90vw);" +
+      ".genie-auth-card{position:relative;background:#151823;border:1px solid #262b3d;border-radius:16px;padding:32px 28px;width:min(360px,90vw);" +
       "box-shadow:0 20px 60px rgba(0,0,0,.5);text-align:center;color:#e8eaf0;}" +
+      "#genie-auth-close{position:absolute;top:12px;right:12px;width:28px;height:28px;border:0;border-radius:8px;" +
+      "background:transparent;color:#8b90a3;font-size:1rem;line-height:1;cursor:pointer;}" +
+      "#genie-auth-close:hover{background:rgba(255,255,255,.08);color:#e8eaf0;}" +
       ".genie-auth-logo{width:56px;height:56px;border-radius:12px;object-fit:cover;margin-bottom:10px;}" +
       ".genie-auth-card h2{margin:0 0 2px;font-size:1.25rem;}" +
       ".genie-auth-sub{margin:0 0 20px;color:#8b90a3;font-size:.9rem;}" +
@@ -349,6 +355,23 @@
     var forgotWrap = document.getElementById("genie-auth-forgot-wrap");
     var successEl = document.getElementById("genie-auth-success");
     var successMsg = document.getElementById("genie-auth-success-msg");
+    var closeBtn = document.getElementById("genie-auth-close");
+
+    // Dismissing just cancels this login attempt — the app already supports
+    // browsing (research) without a session, so closing simply returns there.
+    function closeOverlay() {
+      document.removeEventListener("keydown", onKeydown);
+      overlay.remove();
+      style.remove();
+    }
+    function onKeydown(e) {
+      if (e.key === "Escape") closeOverlay();
+    }
+    document.addEventListener("keydown", onKeydown);
+    closeBtn.addEventListener("click", closeOverlay);
+    overlay.addEventListener("click", function (e) {
+      if (e.target === overlay) closeOverlay(); // click on the backdrop only
+    });
 
     function setMode(m) {
       mode = m;

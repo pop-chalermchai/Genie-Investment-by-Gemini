@@ -423,6 +423,10 @@ let userProfile = null;
 const PROFILE_AVATARS = ["🧞", "🧞‍♂️", "🧞‍♀️", "🦁", "🐯", "🦊", "🐼", "🦅", "🚀", "💎", "📈", "🪙"];
 
 function loadUserProfile() {
+    if (window.GenieAuth && !window.GenieAuth.hasSession()) {
+        applyProfile({ display_name: "Guest", role: "guest", avatar_emoji: "👀" });
+        return Promise.resolve();
+    }
     return fetch('/api/profile?t=' + Date.now())
         .then(r => r.json())
         .then(p => { if (p && !p.error) applyProfile(p); })

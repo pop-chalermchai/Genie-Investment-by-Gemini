@@ -264,6 +264,14 @@ def require_auth(fn):
     return wrapper
 
 
+def optional_auth(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        g.user_id = _resolve_user_id()
+        return fn(*args, **kwargs)
+    return wrapper
+
+
 def _get_user_role(cursor, is_postgres, user_id):
     execute_sql(cursor, is_postgres, "SELECT role FROM profiles WHERE user_id=?", (user_id,))
     rows = fetch_all_as_dict(cursor, is_postgres)
@@ -409,7 +417,7 @@ def get_transactions():
 
 
 @app.route('/api/stock/chart', methods=['GET'])
-@require_auth
+@optional_auth
 @rate_limited
 def get_stock_chart():
     ticker = request.args.get('ticker')
@@ -560,37 +568,42 @@ def _parse_research_date(value, default=None):
 
 
 @app.route('/api/init-data', methods=['GET'])
-@require_auth
+@optional_auth
 def get_init_data():
     try:
         conn, is_postgres = get_db_connection()
         cursor = conn.cursor()
 
-        # New users get default categories on first load.
-        ensure_user_seeded(cursor, is_postgres, g.user_id)
-        conn.commit()
+        holdings = []
+        feed_items = []
+        ports = []
 
-        # 1. Holdings
-        execute_sql(cursor, is_postgres, _HOLDINGS_QUERY, (g.user_id,))
-        holdings = fetch_all_as_dict(cursor, is_postgres)
+        if g.user_id:
+            # New users get default categories on first load.
+            ensure_user_seeded(cursor, is_postgres, g.user_id)
+            conn.commit()
 
-        # 2. Reports
+            # 1. Holdings
+            execute_sql(cursor, is_postgres, _HOLDINGS_QUERY, (g.user_id,))
+            holdings = fetch_all_as_dict(cursor, is_postgres)
+
+            # 2b. Feed items (daily digest — macro/news bulletins)
+            feed_items = _load_feed_items(cursor, is_postgres, g.user_id)
+
+            # 3. Portfolios
+            portfolios_query = """
+                SELECT
+                    p.id, p.name, p.category_id as "categoryId", c.name as category, p.parent_id as "parentId",
+                    (SELECT name FROM portfolios WHERE id = p.parent_id) as "parentName"
+                FROM portfolios p
+                LEFT JOIN categories c ON p.category_id = c.id
+                WHERE p.user_id = ?
+            """
+            execute_sql(cursor, is_postgres, portfolios_query, (g.user_id,))
+            ports = fetch_all_as_dict(cursor, is_postgres)
+
+        # 2. Reports (always loads admin reports, plus user reports if logged in)
         reports = _load_reports(cursor, is_postgres, g.user_id)
-
-        # 2b. Feed items (daily digest — macro/news bulletins)
-        feed_items = _load_feed_items(cursor, is_postgres, g.user_id)
-
-        # 3. Portfolios
-        portfolios_query = """
-            SELECT
-                p.id, p.name, p.category_id as "categoryId", c.name as category, p.parent_id as "parentId",
-                (SELECT name FROM portfolios WHERE id = p.parent_id) as "parentName"
-            FROM portfolios p
-            LEFT JOIN categories c ON p.category_id = c.id
-            WHERE p.user_id = ?
-        """
-        execute_sql(cursor, is_postgres, portfolios_query, (g.user_id,))
-        ports = fetch_all_as_dict(cursor, is_postgres)
 
         conn.close()
         return jsonify({
@@ -644,7 +657,7 @@ def get_feed_items():
 
 
 @app.route('/api/stock', methods=['GET'])
-@require_auth
+@optional_auth
 @rate_limited
 def get_stock():
     ticker = request.args.get('ticker')
@@ -682,7 +695,7 @@ def get_stock():
 
 
 @app.route('/api/stock/sector', methods=['GET'])
-@require_auth
+@optional_auth
 @rate_limited
 def get_stock_sector():
     """Best-effort sector/industry lookup for the ingest auto-fill. Uses Yahoo's
@@ -1338,7 +1351,7 @@ def delete_transaction():
 
 
 @app.route('/api/categories', methods=['GET'])
-@require_auth
+@optional_auth
 def get_categories():
     try:
         conn, is_postgres = get_db_connection()
@@ -1439,7 +1452,7 @@ def _ensure_sector(cursor, is_postgres, user_id, name):
 
 
 @app.route('/api/sectors', methods=['GET'])
-@require_auth
+@optional_auth
 def get_sectors():
     try:
         conn, is_postgres = get_db_connection()
