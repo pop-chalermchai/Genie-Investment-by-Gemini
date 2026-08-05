@@ -575,7 +575,6 @@ def get_init_data():
         cursor = conn.cursor()
 
         holdings = []
-        feed_items = []
         ports = []
 
         if g.user_id:
@@ -586,9 +585,6 @@ def get_init_data():
             # 1. Holdings
             execute_sql(cursor, is_postgres, _HOLDINGS_QUERY, (g.user_id,))
             holdings = fetch_all_as_dict(cursor, is_postgres)
-
-            # 2b. Feed items (daily digest — macro/news bulletins)
-            feed_items = _load_feed_items(cursor, is_postgres, g.user_id)
 
             # 3. Portfolios
             portfolios_query = """
@@ -602,8 +598,10 @@ def get_init_data():
             execute_sql(cursor, is_postgres, portfolios_query, (g.user_id,))
             ports = fetch_all_as_dict(cursor, is_postgres)
 
-        # 2. Reports (always loads admin reports, plus user reports if logged in)
+        # The Equity Research page (reports + daily digest) is public — always
+        # loads admin-authored content, plus the caller's own if logged in.
         reports = _load_reports(cursor, is_postgres, g.user_id)
+        feed_items = _load_feed_items(cursor, is_postgres, g.user_id)
 
         conn.close()
         return jsonify({
