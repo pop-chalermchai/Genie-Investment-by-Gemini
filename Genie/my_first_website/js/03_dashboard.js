@@ -316,6 +316,7 @@ function handleIngest(event) {
     const currency = document.getElementById("ingest-currency").value;
     const manualPriceRaw = document.getElementById("ingest-market-price").value;
     const manualPrice = manualPriceRaw !== "" ? parseFloat(manualPriceRaw) : null;
+    const txDate = document.getElementById("ingest-tx-date").value || null;
 
     fetch('/api/ingest', {
         method: 'POST',
@@ -323,7 +324,7 @@ function handleIngest(event) {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            type: txType, assetType, ticker, companyName, sector, portfolio, shares, avgCost, currency, manualPrice
+            type: txType, assetType, ticker, companyName, sector, portfolio, shares, avgCost, currency, manualPrice, date: txDate
         })
     })
     .then(response => response.json())
@@ -332,6 +333,7 @@ function handleIngest(event) {
             document.getElementById("ingest-form").reset();
             document.getElementById("ingest-asset-type").value = "STOCK";
             document.getElementById("ingest-tx-type").value = "BUY";
+            document.getElementById("ingest-tx-date").value = new Date().toISOString().split('T')[0];
             toggleAssetType();
             toggleTxType();
             

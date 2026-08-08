@@ -35,6 +35,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
     loadUserProfile(); // fire-and-forget: applies name/avatar/preferences when it lands
+    document.getElementById("ingest-tx-date").value = new Date().toISOString().split('T')[0];
     fetchInitData(() => {
         // Apply cached prices from localStorage for instant first render
         try {
